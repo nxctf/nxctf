@@ -1,0 +1,42 @@
+name: Update Supabase types
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm run update-types
+      - name: Check for changes
+        id: git_status
+        run: |
+          echo "status=$(git status -s)" >> $GITHUB_OUTPUT
+      - name: Commit updated types
+        if: ${{ contains(steps.git_status.outputs.status, 'src/lib/supabase/database.types.ts') }}
+        run: |
+          git add src/lib/supabase/database.types.ts
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit -m "chore: update Supabase database types"
+      - name: Push changes
+        if: ${{ contains(steps.git_status.outputs.status, 'src/lib/supabase/database.types.ts') }}
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+

@@ -1,0 +1,26 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc"],
+  "categories": {
+    "correctness": "error"
+  },
+  "options": {
+    "denyWarnings": true,
+    "reportUnusedDisableDirectives": "error"
+  },
+  "rules": {
+    "no-debugger": "error",
+    "no-unused-vars": "error",
+    "no-unused-private-class-members": "error",
+    "typescript/no-useless-empty-export": "error",
+    "typescript/prefer-as-const": "error",
+    "unicorn/no-empty-file": "error",
+    "unicorn/no-useless-spread": "error"
+  },
+  "ignorePatterns": [
+    ".next*/**",
+    "node_modules/**",
+    "tsconfig.tsbuildinfo",
+    "src/lib/supabase/database.types.ts"
+  ]
+}
