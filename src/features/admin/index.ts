@@ -1,0 +1,5 @@
+export { AdminChallengesPage } from './challenges'
+export { AdminOverviewPage } from './overview'
+export { AdminEventPage } from './event'
+export { AdminSolversPage } from './solvers'
+export { AdminAdminsPage } from './admins'
