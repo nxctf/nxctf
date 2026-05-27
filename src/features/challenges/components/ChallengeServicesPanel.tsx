@@ -3,13 +3,11 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Clock, Loader2, Play, RefreshCcw } from 'lucide-react'
 import toast from 'react-hot-toast'
-import {
-  SURFACE_GLASS_CARD_COMPACT_CLASS,
-  SURFACE_GLASS_CONTROL_COMPACT_CLASS,
-} from '@/shared/styles'
+import { SURFACE_GLASS_CARD_COMPACT_CLASS } from '@/shared/styles'
 import { parseNxctlService, type NxctlServiceEntry } from '../lib/nxctl-services'
 
 type ServiceAction = 'up' | 'restart' | 'extend'
+type ServiceActionLoadingState = ServiceAction | null
 
 interface ChallengeServicesPanelProps {
   open: boolean
@@ -86,36 +84,150 @@ const getNxctlErrorMessage = (data: any) => {
   )
 }
 
+const isNxctlNotFoundError = (status: number, data: any): boolean => {
+  const getCode = (val: any): string | null => {
+    if (!val) return null
+    if (typeof val === 'string') return val
+    if (typeof val === 'object') {
+      if (typeof val.error === 'string') return val.error
+      if (typeof val.code === 'string') return val.code
+    }
+    return null
+  }
+
+  const code = getCode(data?.detail) || getCode(data?.error) || getCode(data)
+  if (code === 'challenge_not_found_or_not_authorized') return false
+  return status === 404 || code === 'challenge_not_found'
+}
+
 const ChallengeServicesPanel: React.FC<ChallengeServicesPanelProps> = ({
   open,
   services = [],
 }) => {
+  const serviceActionButtonClass =
+    'inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-gray-200/80 bg-white/50 px-2.5 text-[11px] font-medium text-gray-600 shadow-sm backdrop-blur-md transition-all hover:border-blue-500/40 hover:bg-white/80 disabled:opacity-40 dark:border-gray-700/80 dark:bg-[#111622]/60 dark:text-gray-300 dark:hover:bg-[#151b2a]'
+  const serviceActionButtonIconClass = 'shrink-0'
+  const rawServicesKey = services.join('\u0000')
+  const parsedServices = useMemo(
+    () => (rawServicesKey ? rawServicesKey.split('\u0000') : [])
+      .map(parseNxctlService)
+      .filter((service) => service.name.trim() !== ''),
+    [rawServicesKey]
+  )
+  const serviceListKey = useMemo(
+    () => parsedServices.map((service) => `${service.name}:${service.key || ''}`).join('\u0000'),
+    [parsedServices]
+  )
+
   const [serviceDetails, setServiceDetails] = useState<Record<string, any>>({})
   const [serviceDetailsFetchTime, setServiceDetailsFetchTime] = useState<Record<string, number>>({})
-  const [serviceActionLoading, setServiceActionLoading] = useState<Record<string, boolean>>({})
+  const [serviceActionLoading, setServiceActionLoading] = useState<Record<string, ServiceActionLoadingState>>({})
+  const [serviceDetailsLoading, setServiceDetailsLoading] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {}
+    parsedServices.forEach((service) => {
+      initial[service.name] = true
+    })
+    return initial
+  })
+  const [serviceDetailsError, setServiceDetailsError] = useState<Record<string, string | null>>({})
+  const [hiddenServices, setHiddenServices] = useState<Record<string, boolean>>({})
   const [nowTick, setNowTick] = useState<number>(() => Date.now())
-  const parsedServices = useMemo(
-    () => services.map(parseNxctlService).filter((service) => service.name.trim() !== ''),
-    [services]
+  const inspectRunRef = React.useRef(0)
+
+  const visibleServices = useMemo(
+    () => parsedServices.filter((service) => !hiddenServices[service.name]),
+    [parsedServices, hiddenServices]
   )
+
+  useEffect(() => {
+    const activeNames = new Set(parsedServices.map((service) => service.name))
+
+    setServiceDetails((prev) => {
+      const next: Record<string, any> = {}
+      Object.entries(prev).forEach(([name, details]) => {
+        if (activeNames.has(name)) next[name] = details
+      })
+      return next
+    })
+    setServiceDetailsFetchTime((prev) => {
+      const next: Record<string, number> = {}
+      Object.entries(prev).forEach(([name, fetchTime]) => {
+        if (activeNames.has(name)) next[name] = fetchTime
+      })
+      return next
+    })
+    setServiceDetailsLoading(() => {
+      const next: Record<string, boolean> = {}
+      parsedServices.forEach((service) => {
+        next[service.name] = true
+      })
+      return next
+    })
+    setServiceDetailsError(() => {
+      const next: Record<string, string | null> = {}
+      parsedServices.forEach((service) => {
+        next[service.name] = null
+      })
+      return next
+    })
+    setServiceActionLoading(() => {
+      const next: Record<string, ServiceActionLoadingState> = {}
+      parsedServices.forEach((service) => {
+        next[service.name] = null
+      })
+      return next
+    })
+    setHiddenServices(() => {
+      const next: Record<string, boolean> = {}
+      parsedServices.forEach((service) => {
+        next[service.name] = false
+      })
+      return next
+    })
+  }, [serviceListKey, parsedServices])
 
   useEffect(() => {
     if (!open || parsedServices.length === 0) return
 
+    const runId = inspectRunRef.current + 1
+    inspectRunRef.current = runId
+    const isCurrentRun = () => inspectRunRef.current === runId
+
     parsedServices.forEach(async (service) => {
+      setServiceDetailsLoading((prev) => ({ ...prev, [service.name]: true }))
+      setServiceDetailsError((prev) => ({ ...prev, [service.name]: null }))
       try {
         const res = await fetch(`/api/nxctl?action=inspect&name=${encodeURIComponent(service.name)}`, {
           headers: buildNxctlHeaders(service),
         })
         const data = await res.json()
+        if (!isCurrentRun()) return
+
         if (res.ok) {
           setServiceDetails((prev) => ({ ...prev, [service.name]: data }))
           setServiceDetailsFetchTime((prev) => ({ ...prev, [service.name]: Date.now() }))
+          setServiceDetailsError((prev) => ({ ...prev, [service.name]: null }))
+        } else {
+          if (isNxctlNotFoundError(res.status, data)) {
+            setHiddenServices((prev) => ({ ...prev, [service.name]: true }))
+          } else {
+            setServiceDetailsError((prev) => ({ ...prev, [service.name]: getNxctlErrorMessage(data) }))
+          }
         }
-      } catch (error) {
+      } catch (error: any) {
+        if (!isCurrentRun()) return
         console.error(`Failed to fetch service details for ${service.name}`, error)
+        setServiceDetailsError((prev) => ({ ...prev, [service.name]: error.message || 'Failed to inspect service status' }))
+      } finally {
+        if (isCurrentRun()) {
+          setServiceDetailsLoading((prev) => ({ ...prev, [service.name]: false }))
+        }
       }
     })
+
+    return () => {
+      inspectRunRef.current += 1
+    }
   }, [open, parsedServices])
 
   // global ticking state to re-render countdowns every second while panel is open
@@ -126,22 +238,34 @@ const ChallengeServicesPanel: React.FC<ChallengeServicesPanelProps> = ({
   }, [open])
 
   const inspectService = async (service: NxctlServiceEntry) => {
+    setServiceDetailsLoading((prev) => ({ ...prev, [service.name]: true }))
+    setServiceDetailsError((prev) => ({ ...prev, [service.name]: null }))
     try {
       const resInspect = await fetch(`/api/nxctl?action=inspect&name=${encodeURIComponent(service.name)}`, {
         headers: buildNxctlHeaders(service),
       })
+      const dataInspect = await resInspect.json()
       if (resInspect.ok) {
-        const dataInspect = await resInspect.json()
         setServiceDetails((prev) => ({ ...prev, [service.name]: dataInspect }))
         setServiceDetailsFetchTime((prev) => ({ ...prev, [service.name]: Date.now() }))
+        setServiceDetailsError((prev) => ({ ...prev, [service.name]: null }))
+      } else {
+        if (isNxctlNotFoundError(resInspect.status, dataInspect)) {
+          setHiddenServices((prev) => ({ ...prev, [service.name]: true }))
+        } else {
+          setServiceDetailsError((prev) => ({ ...prev, [service.name]: getNxctlErrorMessage(dataInspect) }))
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Failed to refresh service details for ${service.name}`, error)
+      setServiceDetailsError((prev) => ({ ...prev, [service.name]: error.message || 'Failed to inspect service status' }))
+    } finally {
+      setServiceDetailsLoading((prev) => ({ ...prev, [service.name]: false }))
     }
   }
 
   const handleServiceAction = async (service: NxctlServiceEntry, action: ServiceAction) => {
-    setServiceActionLoading((prev) => ({ ...prev, [service.name]: true }))
+    setServiceActionLoading((prev) => ({ ...prev, [service.name]: action }))
     const toastId = toast.loading(`${action}ing ${service.name}...`)
 
     try {
@@ -154,8 +278,8 @@ const ChallengeServicesPanel: React.FC<ChallengeServicesPanelProps> = ({
       const data = await res.json()
       if (res.ok) {
         toast.success(`Successfully ${action}ed ${service.name}`, { id: toastId })
-        // Add small delay then refresh to let backend settle
-        setTimeout(() => inspectService(service), 500)
+        await new Promise((resolve) => setTimeout(resolve, 500))
+        await inspectService(service)
       } else {
         toast.error(`Failed to ${action} ${service.name}: ${getNxctlErrorMessage(data)}`, { id: toastId })
       }
@@ -163,19 +287,11 @@ const ChallengeServicesPanel: React.FC<ChallengeServicesPanelProps> = ({
       console.error(`Failed to ${action} ${service.name}`, error)
       toast.error(`Error ${action}ing ${service.name}`, { id: toastId })
     } finally {
-      setServiceActionLoading((prev) => ({ ...prev, [service.name]: false }))
+      setServiceActionLoading((prev) => ({ ...prev, [service.name]: null }))
     }
   }
 
-  function formatMinutes(sec?: number | null) {
-    if (!sec || sec <= 0) return null
-
-    const mins = Math.ceil(sec / 60)
-
-    return `${mins}m`
-  }
-
-  if (parsedServices.length === 0) return null
+  if (visibleServices.length === 0) return null
 
   return (
     <div>
@@ -183,37 +299,36 @@ const ChallengeServicesPanel: React.FC<ChallengeServicesPanelProps> = ({
         <span className="h-4 w-4">🌐</span> <span>NXCTL Services</span>
       </p>
       <div className="grid grid-cols-1 gap-1.5">
-        {parsedServices.map((service, idx) => {
+        {visibleServices.map((service, idx) => {
           const details = serviceDetails[service.name]
           const isRunning = details?.runtime?.status === 'running'
           const serviceType = details?.challenge?.type
           const endpoints = Array.isArray(details?.exports)
             ? details.exports
-                .map((item: any, exportIdx: number) => {
-                  const endpoint = getExportEndpoint(item)
-                  if (!endpoint) return null
+              .map((item: any, exportIdx: number) => {
+                const endpoint = getExportEndpoint(item)
+                if (!endpoint) return null
 
-                  const isTcp = isTcpEndpoint(item, serviceType)
-                  return {
-                    key: `${endpoint}-${exportIdx}`,
-                    endpoint,
-                    provider: item?.provider ? String(item.provider) : '',
-                    port: item?.port ? String(item.port) : '',
-                    status: item?.status ? String(item.status) : '',
-                    type: item?.type ? String(item.type) : String(serviceType || ''),
-                    isTcp,
-                    command: isTcp ? toTcpCommand(endpoint) : endpoint,
-                  }
-                })
-                .filter(Boolean)
+                const isTcp = isTcpEndpoint(item, serviceType)
+                return {
+                  key: `${endpoint}-${exportIdx}`,
+                  endpoint,
+                  provider: item?.provider ? String(item.provider) : '',
+                  port: item?.port ? String(item.port) : '',
+                  status: item?.status ? String(item.status) : '',
+                  type: item?.type ? String(item.type) : String(serviceType || ''),
+                  isTcp,
+                  command: isTcp ? toTcpCommand(endpoint) : endpoint,
+                }
+              })
+              .filter(Boolean)
             : []
 
-          // Use remaining_seconds directly from API, calculate expires_at for display
+          // Use remaining_seconds directly from API and keep countdown local between refreshes.
           const remainingSecFromApi = details?.runtime?.remaining_seconds ?? null
           const fetchTime = serviceDetailsFetchTime[service.name] ?? nowTick
           const timeSinceFetch = Math.max(0, (nowTick - fetchTime) / 1000)
           const remainingSec = remainingSecFromApi !== null ? Math.max(0, remainingSecFromApi - timeSinceFetch) : null
-          const expiresAtMs = remainingSec !== null ? nowTick + remainingSec * 1000 : null
           const restartCooldownSec = typeof details?.runtime?.restart_cooldown === 'number' ? details.runtime.restart_cooldown : (details?.runtime?.restart_cooldown ? Number(details.runtime.restart_cooldown) : 0)
 
           // Use backend's extend_availability data
@@ -236,119 +351,173 @@ const ChallengeServicesPanel: React.FC<ChallengeServicesPanelProps> = ({
             if (remainingSec <= thresholdSec) return 'text-yellow-400 font-medium'
             return 'text-gray-400'
           })()
+          const isLoading = serviceDetailsLoading[service.name] ?? (!details && open)
+          const errorMessage = serviceDetailsError[service.name]
+          const actionLoading = serviceActionLoading[service.name] ?? null
+          const isActionLoading = actionLoading !== null
 
           return (
-            <div key={`${service.name}-${idx}`} className={`group flex flex-col gap-2 p-3 ${SURFACE_GLASS_CARD_COMPACT_CLASS} hover:border-blue-500/40`}>
-              <div className="flex items-center gap-2">
-                <code className="select-none text-[13px] md:text-sm font-mono text-gray-900 dark:text-cyan-300 break-all flex-1 font-semibold">{service.name}</code>
-                <button
-                  type="button"
-                  className={`select-none p-1.5 text-gray-500 hover:text-green-600 disabled:opacity-50 dark:text-gray-400 dark:hover:text-green-400 md:p-2 ${SURFACE_GLASS_CONTROL_COMPACT_CLASS}`}
-                  onClick={() => handleServiceAction(service, 'up')}
-                  title="Start Service"
-                  disabled={serviceActionLoading[service.name] || isRunning}
-                >
-                  {serviceActionLoading[service.name] ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
-                </button>
-                <button
-                  type="button"
-                  className={`flex select-none items-center gap-1 p-1.5 text-gray-500 hover:text-yellow-600 disabled:opacity-50 dark:text-gray-400 dark:hover:text-yellow-400 md:p-2 ${SURFACE_GLASS_CONTROL_COMPACT_CLASS}`}
-                  onClick={() => handleServiceAction(service, 'restart')}
-                  title={(() => {
-                    if (serviceActionLoading[service.name]) return 'Please wait...'
-                    if (!isRunning) return 'Cannot restart: service is not running'
-                    if (restartCooldownSec && restartCooldownSec > 0) return `Restart cooldown: ${formatSecs(restartCooldownSec)}`
-                    return 'Restart Service'
-                  })()}
-                  disabled={serviceActionLoading[service.name] || !isRunning || (restartCooldownSec && restartCooldownSec > 0)}
-                >
-                  {serviceActionLoading[service.name] ? <Loader2 size={14} className="animate-spin" /> : <RefreshCcw size={14} />}
-                  {formatMinutes(restartCooldownSec) && (
-                    <span className="text-[10px] text-yellow-300 font-semibold">
-                      {formatMinutes(restartCooldownSec)}
-                    </span>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  className={`flex select-none items-center gap-1 p-1.5 text-gray-500 hover:text-blue-600 disabled:opacity-50 dark:text-gray-400 dark:hover:text-blue-400 md:p-2 ${SURFACE_GLASS_CONTROL_COMPACT_CLASS}`}
-                  onClick={() => handleServiceAction(service, 'extend')}
-                  title={(() => {
-                    if (serviceActionLoading[service.name]) return 'Please wait...'
-                    if (!isRunning) return 'Cannot extend: service is not running'
-                    if (!remainingSec) return 'No expiration available to extend'
-                    if (!canExtend) {
-                      if (extendAvailability?.cooldown_remaining_seconds && extendAvailability.cooldown_remaining_seconds > 0) {
-                        return `Extend cooldown: ${formatSecs(extendAvailability.cooldown_remaining_seconds)}`
-                      }
-                      return `Can extend when remaining ≤ ${formatSecs(thresholdSec)}`
+            <div key={`${service.name}-${idx}`} className={`group flex min-h-[74px] flex-col gap-1.5 px-3 py-2.5 transition-colors duration-200 ${SURFACE_GLASS_CARD_COMPACT_CLASS} hover:border-blue-500/40`}>
+              {/* Header: name + action buttons + timer */}
+              <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 min-h-9">
+                <div className="min-w-0">
+                  <code className="block truncate select-none text-[12px] font-mono font-semibold leading-none text-gray-900 dark:text-cyan-300">
+                    {service.name}
+                  </code>
+                </div>
+
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    className={serviceActionButtonClass}
+                    onClick={() => handleServiceAction(service, 'up')}
+                    title={(() => {
+                      if (isLoading) return 'Checking status...'
+                      if (errorMessage) return `Error: ${errorMessage}`
+                      if (isActionLoading) return 'Please wait...'
+                      if (isRunning) return 'Service is already running'
+                      return 'Start Service'
+                    })()}
+                    disabled={
+                      isLoading ||
+                      !!errorMessage ||
+                      isActionLoading ||
+                      isRunning
                     }
-                    return `Extend service time`
-                  })()}
-                  disabled={serviceActionLoading[service.name] || !isRunning || !remainingSec || !canExtend}
-                >
-                  {serviceActionLoading[service.name] ? <Loader2 size={14} className="animate-spin" /> : <Clock size={14} />}
-                  {Number(extendAvailability?.cooldown_remaining_seconds) > 0 && (
-                    <span className="text-[10px] text-blue-300 font-semibold">{Math.ceil(extendAvailability.cooldown_remaining_seconds / 60)}m</span>
-                  )}
-                  {!canExtend && remainingSec && remainingSec > thresholdSec && (
-                    <span className="text-[10px] text-blue-300 font-semibold">{formatSecs(Math.floor(remainingSec - thresholdSec))}</span>
-                  )}
-                </button>
+                  >
+                    {actionLoading === 'up' ? <Loader2 size={12} className={`${serviceActionButtonIconClass} animate-spin`} /> : <Play size={12} className={serviceActionButtonIconClass} />}
+                    <span>Start</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={serviceActionButtonClass}
+                    onClick={() => handleServiceAction(service, 'restart')}
+                    title={(() => {
+                      if (isLoading) return 'Checking status...'
+                      if (errorMessage) return `Error: ${errorMessage}`
+                      if (isActionLoading) return 'Please wait...'
+                      if (!isRunning) return 'Cannot restart: service is not running'
+                      if (restartCooldownSec && restartCooldownSec > 0) return `Restart cooldown: ${formatSecs(restartCooldownSec)}`
+                      return 'Restart Service'
+                    })()}
+                    disabled={
+                      isLoading ||
+                      !!errorMessage ||
+                      isActionLoading ||
+                      !isRunning ||
+                      !!(restartCooldownSec && restartCooldownSec > 0)
+                    }
+                  >
+                    {actionLoading === 'restart' ? <Loader2 size={12} className={`${serviceActionButtonIconClass} animate-spin`} /> : <RefreshCcw size={12} className={serviceActionButtonIconClass} />}
+                    <span>Restart</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={serviceActionButtonClass}
+                    onClick={() => handleServiceAction(service, 'extend')}
+                    title={(() => {
+                      if (isLoading) return 'Checking status...'
+                      if (errorMessage) return `Error: ${errorMessage}`
+                      if (isActionLoading) return 'Please wait...'
+                      if (!isRunning) return 'Cannot extend: service is not running'
+                      if (!remainingSec) return 'No expiration available to extend'
+                      if (!canExtend) {
+                        if (extendAvailability?.cooldown_remaining_seconds && extendAvailability.cooldown_remaining_seconds > 0) {
+                          return `Extend cooldown: ${formatSecs(extendAvailability.cooldown_remaining_seconds)}`
+                        }
+                        return `Can extend when remaining ≤ ${formatSecs(thresholdSec)}`
+                      }
+                      return `Extend service time`
+                    })()}
+                    disabled={
+                      isLoading ||
+                      !!errorMessage ||
+                      isActionLoading ||
+                      !isRunning ||
+                      !remainingSec ||
+                      !canExtend
+                    }
+                  >
+                    {actionLoading === 'extend' ? <Loader2 size={12} className={`${serviceActionButtonIconClass} animate-spin`} /> : <Clock size={12} className={serviceActionButtonIconClass} />}
+                    <span>Extend</span>
+                  </button>
+                </div>
+
+                {isRunning && remainingSec !== null ? (
+                  <span className={`w-[56px] text-right text-[11px] tabular-nums ${remainingClass}`}>
+                    {formatSecs(Math.floor(remainingSec))}
+                  </span>
+                ) : (
+                  <span className="w-[56px]" />
+                )}
               </div>
 
-              {details && (
-                <div className="mt-1 flex flex-col gap-2 border-t border-gray-200/80 pt-2 dark:border-gray-700/70">
-                  <div className="flex select-none items-center gap-2 text-[13px] md:text-sm">
-                    <span className={`w-2 h-2 rounded-full ${isRunning ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                    <span className="text-gray-400">Status: {details.runtime?.status || 'stopped'}</span>
-                    {isRunning && remainingSec !== null && (
-                      <div className="ml-auto flex items-center gap-2">
-                        <span className="text-gray-500 text-[11px]">Expires: {expiresAtMs ? new Date(expiresAtMs).toLocaleTimeString() : '(unknown)'}</span>
-                        <span className={`font-bold px-2 py-0.5 rounded ${remainingClass}`}>
-                          {formatSecs(Math.floor(remainingSec))}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {isRunning && (
-                    endpoints.length > 0 ? (
-                      <div className="flex flex-col gap-1.5">
-                        {endpoints.map((endpoint: any, endpointIdx: number) => {
-                          return (
-                            <div key={endpoint.key} className="flex flex-col">
-                              {endpoint.isTcp || !isHttpEndpoint(endpoint.endpoint) ? (
-                                <div className="flex items-center gap-2">
-                                  <code className="flex-1 select-all break-all rounded-lg border border-gray-300/60 bg-gray-200/50 px-2 py-1.5 font-mono text-[13px] text-gray-900 shadow-inner dark:border-gray-700/70 dark:bg-black/40 dark:text-green-300">
-                                    {endpoint.command}
-                                  </code>
-                                  <button
-                                    className="select-none rounded-lg border border-green-500/20 bg-green-500/10 px-3 py-1.5 text-[13px] font-bold text-green-700 shadow-sm transition hover:bg-green-500/20 dark:text-green-300"
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(endpoint.command)
-                                      toast.success('Copied endpoint')
-                                    }}
-                                  >
-                                    Copy
-                                  </button>
-                                </div>
-                              ) : (
-                                <div className="flex items-center gap-2">
-                                  <a href={endpoint.endpoint} target="_blank" rel="noreferrer" className="flex-1 select-none break-all rounded-lg border border-blue-500/20 bg-blue-500/10 px-2 py-1.5 text-[13px] font-semibold text-blue-600 shadow-inner transition hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300 md:text-sm">
-                                    {endpoint.endpoint}
-                                  </a>
-                                </div>
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    ) : (
-                      <span className="text-xs text-yellow-500">Waiting for endpoint allocation...</span>
-                    )
-                  )}
+              {/* Per-service loading */}
+              {isLoading && !details && (
+                <div className="flex items-center gap-1.5 text-[11px] text-gray-400 select-none pl-3">
+                  <Loader2 size={10} className="animate-spin text-blue-500" />
+                  <span>Checking...</span>
                 </div>
+              )}
+
+              {/* Per-service error */}
+              {errorMessage && (
+                <div className="flex items-center gap-1.5 text-[11px] select-none pl-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
+                  <span className="text-red-400 truncate flex-1">{errorMessage}</span>
+                  <button
+                    type="button"
+                    className="text-[11px] text-blue-500 hover:text-blue-400 hover:underline font-medium flex items-center gap-0.5 shrink-0 disabled:opacity-50"
+                    onClick={() => inspectService(service)}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <Loader2 size={9} className="animate-spin" />
+                    ) : (
+                      <RefreshCcw size={9} />
+                    )}
+                    Retry
+                  </button>
+                </div>
+              )}
+
+              {/* Endpoints (only when running) */}
+              {details && isRunning && (
+                endpoints.length > 0 ? (
+                  <div className="flex flex-col gap-1 pl-3 pr-1">
+                    {endpoints.map((endpoint: any) => (
+                      <div key={endpoint.key} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 min-w-0">
+                        {endpoint.isTcp || !isHttpEndpoint(endpoint.endpoint) ? (
+                          <>
+                            <code className="min-w-0 truncate rounded border border-gray-700/50 bg-black/30 px-2 py-1 font-mono text-[11px] text-green-300">
+                              {endpoint.command}
+                            </code>
+                            <button
+                              className="select-none shrink-0 rounded border border-green-500/20 bg-green-500/10 px-2 py-1 text-[10px] font-bold text-green-400 transition hover:bg-green-500/20"
+                              onClick={() => {
+                                navigator.clipboard.writeText(endpoint.command)
+                                toast.success('Copied endpoint')
+                              }}
+                            >
+                              Copy
+                            </button>
+                          </>
+                        ) : (
+                          <a href={endpoint.endpoint} target="_blank" rel="noreferrer" className="col-span-2 block w-full truncate rounded border border-blue-500/15 bg-blue-500/5 px-2 py-1 text-[11px] font-medium text-blue-400 transition hover:text-blue-300 hover:underline">
+                            {endpoint.endpoint}
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-[11px] text-yellow-500 pl-3">Waiting for endpoint allocation...</span>
+                )
+              )}
+
+              {/* Stopped state - minimal */}
+              {details && !isRunning && (
+                <span className="text-[11px] text-gray-500 select-none pl-3">Stopped</span>
               )}
             </div>
           )

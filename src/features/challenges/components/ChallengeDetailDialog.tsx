@@ -115,6 +115,7 @@ const ChallengeDetailDialog: React.FC<ChallengeDetailDialogProps> = ({
   services = [],
 }) => {
   const [solvesSortOrder, setSolvesSortOrder] = useState<'newest' | 'oldest'>('oldest')
+  const contentScrollRef = React.useRef<HTMLDivElement | null>(null)
 
   const solverCount = solvers.length > 0 ? solvers.length : (challenge?.total_solves ?? 0)
 
@@ -132,6 +133,10 @@ const ChallengeDetailDialog: React.FC<ChallengeDetailDialogProps> = ({
       return solvesSortOrder === 'newest' ? timeB - timeA : timeA - timeB
     })
   }, [solvers, solvesSortOrder])
+
+  React.useEffect(() => {
+    contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [challenge?.id, challengeTab])
 
   if (!challenge) return null
 
@@ -227,7 +232,7 @@ const ChallengeDetailDialog: React.FC<ChallengeDetailDialogProps> = ({
         </div>
 
         {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto px-4 pb-2 md:px-6 scroll-hidden">
+        <div ref={contentScrollRef} className="flex-1 overflow-y-auto px-4 pb-2 md:px-6 scroll-hidden">
           {challengeTab === 'challenge' && (
             <div className="min-h-full flex flex-col pb-5">
               {/* Description at the Top */}
