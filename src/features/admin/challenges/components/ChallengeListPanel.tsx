@@ -1,7 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ShieldAlert } from 'lucide-react'
+import { Power, PowerOff, ShieldAlert } from 'lucide-react'
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@/shared/ui'
 import { EmptyState } from '@/shared/components'
 import ChallengeFilterBar from '@/features/challenges/components/ChallengeFilterBar'
@@ -19,6 +19,8 @@ interface ChallengeListPanelProps {
   onFiltersChange: React.Dispatch<React.SetStateAction<AdminChallengeFilterState>>
   onEventChange: (eventId: AdminChallengeEventId) => void
   onAdd: () => void
+  nxctlGlobalAction?: 'up' | 'down' | null
+  onNxctlGlobalAction?: (action: 'up' | 'down') => void
   onEdit: (challenge: Challenge) => void
   onDelete: (id: string) => void
   onViewFlag: (id: string) => void
@@ -37,6 +39,8 @@ const ChallengeListPanel: React.FC<ChallengeListPanelProps> = ({
   onFiltersChange,
   onEventChange,
   onAdd,
+  nxctlGlobalAction,
+  onNxctlGlobalAction,
   onEdit,
   onDelete,
   onViewFlag,
@@ -57,9 +61,30 @@ const ChallengeListPanel: React.FC<ChallengeListPanelProps> = ({
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               {isGlobalAdmin && (
                 <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onNxctlGlobalAction?.('up')}
+                    disabled={!!nxctlGlobalAction}
+                    title="Start all NXCTL services"
+                  >
+                    <Power size={14} />
+                    Up All
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onNxctlGlobalAction?.('down')}
+                    disabled={!!nxctlGlobalAction}
+                    title="Stop all NXCTL services"
+                    className="hover:border-red-500/40 hover:text-red-600 dark:hover:text-red-300"
+                  >
+                    <PowerOff size={14} />
+                    Down All
+                  </Button>
                   <Link href="/admin/event"><Button variant="outline" size="sm">Events</Button></Link>
                   <Link href="/admin/admins"><Button variant="outline" size="sm">Roles</Button></Link>
                 </>

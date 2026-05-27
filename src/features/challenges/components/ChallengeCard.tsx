@@ -115,20 +115,23 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge, highlightTeamS
           )}
 
           {/* Header Area */}
-          <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center justify-between gap-2 mb-3">
 
             {/* LEFT: Category Badge + Feature Badge */}
-            <div className="flex items-center gap-2">
-              <div className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md w-fit transition-opacity duration-400
+            <div className="min-w-0 flex flex-1 items-center gap-1.5 overflow-hidden pr-1">
+              <div
+                title={challenge.category}
+                className={`min-w-0 max-w-[104px] sm:max-w-[118px] truncate whitespace-nowrap text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-md transition-opacity duration-400
                 ${isAnySolved
                   ? `${categoryBadgeColor} opacity-60`
-                  : categoryBadgeColor}`}>
+                  : categoryBadgeColor}`}
+              >
                 {challenge.category}
               </div>
 
               {/* Feature Badge (T / S / TS) */}
               {featureBadge && (
-                <span className="text-[11px] font-bold bg-gray-700/60 text-gray-400 px-1.5 rounded uppercase tracking-tight">
+                <span className="shrink-0 text-[10px] font-bold bg-gray-700/60 text-gray-400 px-1.5 rounded uppercase tracking-tight">
                   {featureBadge}
                 </span>
               )}
@@ -136,7 +139,7 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge, highlightTeamS
 
             {/* RIGHT: Points */}
             {/* mr-8 to avoid overlap with flag badge */}
-            <div className={`text-base font-black tracking-tight leading-none transition-colors duration-400 ${isSolved ? 'mr-8' : isTeamSolved ? 'mr-8' : ''}
+            <div className={`shrink-0 text-base font-black tracking-tight leading-none transition-colors duration-400 ${isSolved ? 'mr-8' : isTeamSolved ? 'mr-8' : ''}
                 ${isSolved
                 ? 'text-green-400'
                 : isTeamSolved

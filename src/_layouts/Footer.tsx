@@ -16,9 +16,15 @@ const Footer: React.FC = () => {
           <div className="flex flex-col items-center md:items-start space-y-2 overflow-hidden">
             <div className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-              <span className="text-lg font-black tracking-tighter text-gray-900 dark:text-white uppercase leading-none">
+              <a
+                href={APP.nxctf.nxctf_url}
+                target="_blank"
+                rel="noopener"
+                className="text-lg font-black tracking-tighter text-gray-900 dark:text-white uppercase leading-none transition-colors hover:text-blue-600 dark:hover:text-blue-400"
+                title={`${APP.nxctf.nxctf_title} website`}
+              >
                 {APP.shortName}<span className="text-blue-600"></span>
-              </span>
+              </a>
             </div>
 
             <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
@@ -32,7 +38,8 @@ const Footer: React.FC = () => {
 
           {/* KOLOM TENGAH: Support & Links */}
           <div className="flex flex-col items-center justify-center space-y-4">
-            <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">
+            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">
+              <a href={APP.nxctf.nxctf_url} className="hover:text-blue-500 transition-colors">Site</a>
               <a href={APP.nxctf.nxctf_github} className="hover:text-blue-500 transition-colors">Repo</a>
               <a href={APP.nxctf.nxctf_docs} className="hover:text-blue-500 transition-colors">Docs</a>
               <a href={APP.links.discord} className="hover:text-blue-500 transition-colors">Discord</a>

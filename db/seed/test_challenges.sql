@@ -2101,3 +2101,397 @@ Flag for testing: `NXCTF{network_test_5_4c12}`',
 );
 INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
 VALUES ('668f2c6b-1149-4449-9d40-a430350944fc', 'NXCTF{network_test_5_4c12}', '6ccbe14cd0d11928d695bf926b3dda0f4196adcd4fe91cb413ca1688e0bdd02a');
+
+-- Event: Service
+INSERT INTO public.events (id, name, description, join_mode, start_time, end_time, always_show_challenges)
+VALUES (
+    '6861e36b-30b7-4200-a3ad-b9046691d5cf',
+    'Service',
+    'Event untuk testing challenge service NXCTL.',
+    'open',
+    now(),
+    now() + interval '30 days',
+    true
+);
+
+INSERT INTO public.challenges (
+            id, event_id, title, description, category, points, difficulty,
+            is_active, hint, services, flag_placeholder, attachments
+        )
+VALUES (
+    '9583bdc9-cbe0-4706-bf33-c8342a7a0844',
+    '6861e36b-30b7-4200-a3ad-b9046691d5cf',
+    'FGTE Corp',
+    'Service test challenge for NXCTL.
+
+Name: FGTE0/FGTE_Corp
+Primary: 44488/http
+Ports: 44488:80/http
+Key: required
+
+Flag for testing: `NXCTF{service_fgte_corp}`',
+    'Service',
+    100,
+    'Easy',
+    true,
+    NULL,
+    ARRAY['{"name":"FGTE0/FGTE_Corp","key":"aria123"}'],
+    false,
+    '[]'::jsonb
+);
+INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
+VALUES ('9583bdc9-cbe0-4706-bf33-c8342a7a0844', 'NXCTF{service_fgte_corp}', 'd242662f8db22b4715cc6b912186f20a28853e92c6707b52817d059f7ad0c7bf');
+
+INSERT INTO public.challenges (
+            id, event_id, title, description, category, points, difficulty,
+            is_active, hint, services, flag_placeholder, attachments
+        )
+VALUES (
+    '11363052-6686-4896-b2ec-f772155cf766',
+    '6861e36b-30b7-4200-a3ad-b9046691d5cf',
+    'Network Panel Aria',
+    'Service test challenge for NXCTL.
+
+Name: FGTE0/Network_Panel_Aria
+Primary: 45709/http
+Ports: 45709:80/http
+Key: required
+
+Flag for testing: `NXCTF{service_network_panel_aria}`',
+    'Service',
+    100,
+    'Easy',
+    true,
+    NULL,
+    ARRAY['{"name":"FGTE0/Network_Panel_Aria","key":"aria123"}'],
+    false,
+    '[]'::jsonb
+);
+INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
+VALUES ('11363052-6686-4896-b2ec-f772155cf766', 'NXCTF{service_network_panel_aria}', '1631cb1181afd25b92f09a13a8734d7a0f84c8950cf4f5c48c07f5f4d8b2eaf4');
+
+INSERT INTO public.challenges (
+            id, event_id, title, description, category, points, difficulty,
+            is_active, hint, services, flag_placeholder, attachments
+        )
+VALUES (
+    'b6f04dad-d47b-4212-b4d9-ccfcd4e0607b',
+    '6861e36b-30b7-4200-a3ad-b9046691d5cf',
+    'Secure Document',
+    'Service test challenge for NXCTL.
+
+Name: FGTE0/Secure_Document
+Primary: 44426/http
+Ports: 44426:80/http
+Key: required
+
+Flag for testing: `NXCTF{service_secure_document}`',
+    'Service',
+    100,
+    'Easy',
+    true,
+    NULL,
+    ARRAY['{"name":"FGTE0/Secure_Document","key":"aria123"}'],
+    false,
+    '[]'::jsonb
+);
+INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
+VALUES ('b6f04dad-d47b-4212-b4d9-ccfcd4e0607b', 'NXCTF{service_secure_document}', '9b7a5c9dbdd3e43856821f4d4e3d2813f737107d9cc950f048d29334b7902c96');
+
+INSERT INTO public.challenges (
+            id, event_id, title, description, category, points, difficulty,
+            is_active, hint, services, flag_placeholder, attachments
+        )
+VALUES (
+    'c2e5f3b2-25d5-4077-8151-c136cb2be74b',
+    '6861e36b-30b7-4200-a3ad-b9046691d5cf',
+    'Linux',
+    'Service test challenge for NXCTL.
+
+Name: Linux
+Primary: 41022/tcp
+Ports: 41022:22/tcp
+Key: not required
+
+Flag for testing: `NXCTF{service_linux}`',
+    'Service',
+    100,
+    'Easy',
+    true,
+    NULL,
+    ARRAY['Linux'],
+    false,
+    '[]'::jsonb
+);
+INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
+VALUES ('c2e5f3b2-25d5-4077-8151-c136cb2be74b', 'NXCTF{service_linux}', '668602a7c9b9baa6a09b23f75385553e8a4b0ed0bb538d7f4b479000b0203d4a');
+
+INSERT INTO public.challenges (
+            id, event_id, title, description, category, points, difficulty,
+            is_active, hint, services, flag_placeholder, attachments
+        )
+VALUES (
+    '629a1cfe-8a79-46c5-98e3-852a6fcfa411',
+    '6861e36b-30b7-4200-a3ad-b9046691d5cf',
+    'Access',
+    'Service test challenge for NXCTL.
+
+Name: access
+Primary: 48092/tcp
+Ports: 48092:22/tcp
+Key: not required
+
+Flag for testing: `NXCTF{service_access}`',
+    'Service',
+    100,
+    'Easy',
+    true,
+    NULL,
+    ARRAY['access'],
+    false,
+    '[]'::jsonb
+);
+INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
+VALUES ('629a1cfe-8a79-46c5-98e3-852a6fcfa411', 'NXCTF{service_access}', 'cb377376bfe18cc46cdf4d0a92404b5e4801491d76c8987591829664ef2a5b26');
+
+INSERT INTO public.challenges (
+            id, event_id, title, description, category, points, difficulty,
+            is_active, hint, services, flag_placeholder, attachments
+        )
+VALUES (
+    'ad5e6cc9-1835-491a-a26b-a08bf985a131',
+    '6861e36b-30b7-4200-a3ad-b9046691d5cf',
+    'Baby Stack',
+    'Service test challenge for NXCTL.
+
+Name: baby-stack
+Primary: 42949/tcp
+Ports: 42949:9001/tcp
+Key: not required
+
+Flag for testing: `NXCTF{service_baby_stack}`',
+    'Service',
+    100,
+    'Easy',
+    true,
+    NULL,
+    ARRAY['baby-stack'],
+    false,
+    '[]'::jsonb
+);
+INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
+VALUES ('ad5e6cc9-1835-491a-a26b-a08bf985a131', 'NXCTF{service_baby_stack}', '53ee133577b337f903723556dfbfa8fb13a02814abefc1fd513cd2ae37ab751b');
+
+INSERT INTO public.challenges (
+            id, event_id, title, description, category, points, difficulty,
+            is_active, hint, services, flag_placeholder, attachments
+        )
+VALUES (
+    '796081e8-0308-40d9-967a-746e4dba1acc',
+    '6861e36b-30b7-4200-a3ad-b9046691d5cf',
+    'Buffering Overflow',
+    'Service test challenge for NXCTL.
+
+Name: buffering_overflow
+Primary: 47148/tcp
+Ports: 47148:1111/tcp
+Key: not required
+
+Flag for testing: `NXCTF{service_buffering_overflow}`',
+    'Service',
+    100,
+    'Easy',
+    true,
+    NULL,
+    ARRAY['buffering_overflow'],
+    false,
+    '[]'::jsonb
+);
+INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
+VALUES ('796081e8-0308-40d9-967a-746e4dba1acc', 'NXCTF{service_buffering_overflow}', 'b3d46172276b2510bced53c8d9940a53e1f64f55e8173a96d071d5504ac9262e');
+
+INSERT INTO public.challenges (
+            id, event_id, title, description, category, points, difficulty,
+            is_active, hint, services, flag_placeholder, attachments
+        )
+VALUES (
+    '75700617-a1a7-4488-9aa8-b1fd319eb160',
+    '6861e36b-30b7-4200-a3ad-b9046691d5cf',
+    'Evil PHP',
+    'Service test challenge for NXCTL.
+
+Name: evil_php
+Primary: 44642/http
+Ports: 44642:80/http, 40943:22/tcp
+Key: not required
+
+Flag for testing: `NXCTF{service_evil_php}`',
+    'Service',
+    100,
+    'Easy',
+    true,
+    NULL,
+    ARRAY['evil_php'],
+    false,
+    '[]'::jsonb
+);
+INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
+VALUES ('75700617-a1a7-4488-9aa8-b1fd319eb160', 'NXCTF{service_evil_php}', 'ef4fbf53acb8b588e8b409f95d4ea90aa0b88480f0d6109d35681596a8165138');
+
+INSERT INTO public.challenges (
+            id, event_id, title, description, category, points, difficulty,
+            is_active, hint, services, flag_placeholder, attachments
+        )
+VALUES (
+    'bbeddd37-c6d3-412d-b406-a99d4b555e47',
+    '6861e36b-30b7-4200-a3ad-b9046691d5cf',
+    'Ret2win',
+    'Service test challenge for NXCTL.
+
+Name: ret2win
+Primary: 40761/tcp
+Ports: 40761:1337/tcp
+Key: not required
+
+Flag for testing: `NXCTF{service_ret2win}`',
+    'Service',
+    100,
+    'Easy',
+    true,
+    NULL,
+    ARRAY['ret2win'],
+    false,
+    '[]'::jsonb
+);
+INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
+VALUES ('bbeddd37-c6d3-412d-b406-a99d4b555e47', 'NXCTF{service_ret2win}', 'b118c0e3a8053cbfac406e3d4e99cdd7658df5836a78cb4450c864fe56d94596');
+
+INSERT INTO public.challenges (
+            id, event_id, title, description, category, points, difficulty,
+            is_active, hint, services, flag_placeholder, attachments
+        )
+VALUES (
+    'b66c1c83-5dc3-4551-bdb7-3bc525df0732',
+    '6861e36b-30b7-4200-a3ad-b9046691d5cf',
+    'School',
+    'Service test challenge for NXCTL.
+
+Name: school
+Primary: 48581/http
+Ports: 48581:8000/http
+Key: not required
+
+Flag for testing: `NXCTF{service_school}`',
+    'Service',
+    100,
+    'Easy',
+    true,
+    NULL,
+    ARRAY['school'],
+    false,
+    '[]'::jsonb
+);
+INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
+VALUES ('b66c1c83-5dc3-4551-bdb7-3bc525df0732', 'NXCTF{service_school}', 'c7ad302c0e27dfd88e03fc2114abbc0410548ae4d831427cfe3e7c94d4d0959d');
+
+INSERT INTO public.challenges (
+            id, event_id, title, description, category, points, difficulty,
+            is_active, hint, services, flag_placeholder, attachments
+        )
+VALUES (
+    'f8b4adb0-8dda-4139-9cc7-9eed21e425dc',
+    '6861e36b-30b7-4200-a3ad-b9046691d5cf',
+    'Simplee',
+    'Service test challenge for NXCTL.
+
+Name: simplee
+Primary: 48300/http
+Ports: 48300:80/http
+Key: not required
+
+Flag for testing: `NXCTF{service_simplee}`',
+    'Service',
+    100,
+    'Easy',
+    true,
+    NULL,
+    ARRAY['simplee'],
+    false,
+    '[]'::jsonb
+);
+INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
+VALUES ('f8b4adb0-8dda-4139-9cc7-9eed21e425dc', 'NXCTF{service_simplee}', 'c1ea6ae4e7dccfe5bc196294b49f00aaaba2ff6203a85191b96990008fc7350c');
+
+-- Service challenge multi-task questions
+INSERT INTO public.sub_challenges (challenge_id, question, answer, order_number, is_sequential)
+VALUES
+(
+    '9583bdc9-cbe0-4706-bf33-c8342a7a0844',
+    'Start the `FGTE0/FGTE_Corp` service. What protocol is used by the primary endpoint?',
+    'http',
+    1,
+    true
+),
+(
+    '9583bdc9-cbe0-4706-bf33-c8342a7a0844',
+    'Inspect the service metadata. What is the internal container port?',
+    '80',
+    2,
+    true
+),
+(
+    '9583bdc9-cbe0-4706-bf33-c8342a7a0844',
+    'What NXCTL challenge key unlocks this protected service?',
+    'aria123',
+    3,
+    true
+),
+(
+    '75700617-a1a7-4488-9aa8-b1fd319eb160',
+    'The `evil_php` service exposes more than one endpoint. What is the HTTP internal port?',
+    '80',
+    1,
+    false
+),
+(
+    '75700617-a1a7-4488-9aa8-b1fd319eb160',
+    'The `evil_php` service also exposes SSH. What TCP internal port is used for SSH?',
+    '22',
+    2,
+    false
+),
+(
+    '75700617-a1a7-4488-9aa8-b1fd319eb160',
+    'What is the NXCTL service name for this challenge?',
+    'evil_php',
+    3,
+    false
+),
+(
+    'c2e5f3b2-25d5-4077-8151-c136cb2be74b',
+    'Start the `Linux` service. What protocol should you use to connect?',
+    'tcp',
+    1,
+    true
+),
+(
+    'c2e5f3b2-25d5-4077-8151-c136cb2be74b',
+    'What internal port does the `Linux` SSH service expose?',
+    '22',
+    2,
+    true
+),
+(
+    'f8b4adb0-8dda-4139-9cc7-9eed21e425dc',
+    'Start `simplee`. What protocol is used by its public endpoint?',
+    'http',
+    1,
+    false
+),
+(
+    'f8b4adb0-8dda-4139-9cc7-9eed21e425dc',
+    'What is the NXCTL service name for this challenge?',
+    'simplee',
+    2,
+    false
+);

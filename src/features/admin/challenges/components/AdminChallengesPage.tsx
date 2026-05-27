@@ -6,6 +6,7 @@ import toast from 'react-hot-toast'
 
 import { Loader } from '@/shared/components'
 import { useAuth } from '@/shared/contexts/AuthContext'
+import { supabase } from '@/lib/supabase/client'
 import APP from '@/config'
 
 import ChallengeListPanel from './ChallengeListPanel'
@@ -54,6 +55,7 @@ export default function AdminChallengesPage() {
   const [pendingDelete, setPendingDelete] = useState<Challenge | null>(null)
   const [deleteConfirmInput, setDeleteConfirmInput] = useState("")
   const [eventId, setEventId] = useState<AdminChallengeEventId>('all')
+  const [nxctlGlobalAction, setNxctlGlobalAction] = useState<'up' | 'down' | null>(null)
   const [filters, setFilters] = useState<AdminChallengeFilterState>({
     category: "all",
     difficulty: "all",
@@ -117,6 +119,48 @@ export default function AdminChallengesPage() {
     }
   }
 
+  const handleNxctlGlobalAction = async (action: 'up' | 'down') => {
+    if (action === 'down' && !window.confirm('Stop all NXCTL services?')) return
+
+    setNxctlGlobalAction(action)
+    const toastId = toast.loading(`${action === 'up' ? 'Starting' : 'Stopping'} all NXCTL services...`)
+
+    try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData.session?.access_token
+
+      if (!accessToken) {
+        toast.error('Admin session not found', { id: toastId })
+        return
+      }
+
+      const res = await fetch('/api/nxctl', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ action, all: true }),
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        const detail = typeof data?.detail === 'string'
+          ? data.detail
+          : data?.detail?.message || data?.error || 'Unknown error'
+        toast.error(`NXCTL ${action} all failed: ${detail}`, { id: toastId })
+        return
+      }
+
+      toast.success(`NXCTL ${action} all completed`, { id: toastId })
+    } catch (error) {
+      console.error(`Failed to run NXCTL ${action} all`, error)
+      toast.error(`NXCTL ${action} all failed`, { id: toastId })
+    } finally {
+      setNxctlGlobalAction(null)
+    }
+  }
+
   // Memoized Filtered List
   const filteredChallenges = useMemo(() => {
     return getFilteredAdminChallenges({
@@ -147,6 +191,8 @@ export default function AdminChallengesPage() {
             onFiltersChange={setFilters}
             onEventChange={setEventId}
             onAdd={handleOpenAdd}
+            nxctlGlobalAction={nxctlGlobalAction}
+            onNxctlGlobalAction={handleNxctlGlobalAction}
             onEdit={handleOpenEdit}
             onDelete={handleAskDelete}
             onViewFlag={handleViewFlag}

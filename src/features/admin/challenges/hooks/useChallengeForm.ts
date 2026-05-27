@@ -14,6 +14,7 @@ import {
 } from '../lib'
 import APP from '@/config'
 import toast from 'react-hot-toast'
+import { normalizeNxctlServiceValues } from '@/features/challenges/lib/nxctl-services'
 
 export const EMPTY_CHALLENGE_FORM: ChallengeFormData = {
   title: '',
@@ -188,7 +189,7 @@ export function useChallengeForm() {
         event_id: formData.event_id ?? null,
         flag: (formData.flag || '').trim(),
         flag_placeholder: !!formData.flag_placeholder,
-        services: (formData.services || []).filter(n => n.trim() !== ''),
+        services: normalizeNxctlServiceValues(formData.services || []),
       }
 
       if (editing && typeof formData.is_active !== 'undefined') payload.is_active = !!formData.is_active

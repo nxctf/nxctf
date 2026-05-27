@@ -3,7 +3,7 @@
 // React Imports
 import { useEffect, useState } from 'react'
 import { motion } from "framer-motion";
-import { Star, GitBranch, Users, Github, BookOpen, ScrollText, Info, ListOrdered, MessageSquare, Clock } from 'lucide-react'
+import { Star, GitBranch, Users, Github, BookOpen, ScrollText, Info, ListOrdered, MessageSquare, Clock, Globe } from 'lucide-react'
 import Image from "next/image";
 
 // Shared Imports
@@ -60,9 +60,10 @@ function fillContributors(list: string[], minLength = 14) {
 const filledContributors = fillContributors(CONTRIBUTORS, 14);
 
 const LINKS = [
-  { name: "GitHub", href: APP.nxctf.nxctf_github || "#", icon: Github },
-  { name: "Docs", href: APP.nxctf.nxctf_docs || "#", icon: BookOpen },
-  { name: "Discord", href: APP.nxctf?.nxctf_discord || "#", icon: MessageSquare },
+  { name: "Website", href: APP.nxctf.nxctf_url || "#", icon: Globe, description: "Official site" },
+  { name: "GitHub", href: APP.nxctf.nxctf_github || "#", icon: Github, description: "Source code" },
+  { name: "Docs", href: APP.nxctf.nxctf_docs || "#", icon: BookOpen, description: "Documentation" },
+  { name: "Discord", href: APP.nxctf?.nxctf_discord || "#", icon: MessageSquare, description: "Community chat" },
 ];
 
 export default function InfoPage() {
@@ -213,7 +214,7 @@ export default function InfoPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          className="mb-8 grid w-full max-w-3xl grid-cols-1 gap-4 sm:grid-cols-3"
+          className="mb-8 grid w-full max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
         >
           {LINKS.map((link, i) => {
             const Icon = link.icon;
@@ -233,7 +234,7 @@ export default function InfoPage() {
                   <span className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-blue-500 transition-colors">
                     {link.name}
                   </span>
-                  <span className="text-[10px] text-gray-500 font-medium">Join our {link.name}</span>
+                  <span className="text-[10px] text-gray-500 font-medium">{link.description}</span>
                 </div>
               </a>
             );

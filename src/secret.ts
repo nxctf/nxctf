@@ -11,9 +11,11 @@
 // NXCTL / other secret tokens (server-only)
 export const NXCTL_API_URL = process.env.NXCTL_API_URL || ''
 export const NXCTL_API_TOKEN = process.env.NXCTL_API_TOKEN || ''
+export const NXCTL_API_ADMIN_SECRET = process.env.NXCTL_API_ADMIN_SECRET || ''
 
 const SECRETS = {
   NXCTL_API_URL,
   NXCTL_API_TOKEN,
+  NXCTL_API_ADMIN_SECRET,
 }
 export default SECRETS

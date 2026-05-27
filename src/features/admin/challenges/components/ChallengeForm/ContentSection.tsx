@@ -4,6 +4,7 @@ import { MarkdownRenderer } from '@/shared/markdown/MarkdownRenderer'
 import { Flag as FlagIcon, Zap, Type } from 'lucide-react'
 import { ChallengeFormData } from '../../types'
 import { cn } from '@/shared/lib/utils'
+import { parseNxctlService, serializeNxctlService } from '@/features/challenges/lib/nxctl-services'
 import {
   ADMIN_INPUT_CLASS,
   ADMIN_MUTED_INPUT_CLASS,
@@ -29,6 +30,13 @@ export const ContentSection: React.FC<ContentSectionProps> = ({
   handleViewFlag,
   editing
 }) => {
+  const updateService = (index: number, patch: Partial<{ name: string; key: string }>) => {
+    const current = parseNxctlService(formData.services[index] || '')
+    const next = [...formData.services]
+    next[index] = serializeNxctlService({ ...current, ...patch })
+    onChange({ ...formData, services: next })
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
       <div className="md:col-span-2">
@@ -95,16 +103,28 @@ export const ContentSection: React.FC<ContentSectionProps> = ({
         </div>
         {formData.services.length === 0 && <p className="text-xs text-muted-foreground">No CTFC services added</p>}
         <div className="space-y-2 mt-2">
-          {formData.services.map((name, idx) => (
-            <div key={idx} className="flex items-center gap-2">
-              <Input value={name} onChange={e => {
-                const next = [...formData.services];
-                next[idx] = e.target.value;
-                onChange({ ...formData, services: next });
-              }} placeholder="service-name" className={ADMIN_MUTED_INPUT_CLASS} />
-              <Button type="button" variant="ghost" onClick={() => onChange({ ...formData, services: formData.services.filter((_, i) => i !== idx) })}>✕</Button>
-            </div>
-          ))}
+          {formData.services.map((rawService, idx) => {
+            const service = parseNxctlService(rawService)
+
+            return (
+              <div key={idx} className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+                <Input
+                  value={service.name}
+                  onChange={e => updateService(idx, { name: e.target.value })}
+                  placeholder="service-name"
+                  className={ADMIN_MUTED_INPUT_CLASS}
+                />
+                <Input
+                  value={service.key}
+                  onChange={e => updateService(idx, { key: e.target.value })}
+                  placeholder="challenge key (optional)"
+                  type="password"
+                  className={ADMIN_MUTED_INPUT_CLASS}
+                />
+                <Button type="button" variant="ghost" onClick={() => onChange({ ...formData, services: formData.services.filter((_, i) => i !== idx) })}>✕</Button>
+              </div>
+            )
+          })}
         </div>
       </div>
     </div>
