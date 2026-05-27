@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useMemo, useState } from 'react'
-import { Clock, Loader2, Play, RefreshCcw } from 'lucide-react'
+import { Clock, Loader2, Play, PowerOff, RefreshCcw } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { SURFACE_GLASS_CARD_COMPACT_CLASS } from '@/shared/styles'
 import { parseNxctlService, type NxctlServiceEntry } from '../lib/nxctl-services'
@@ -29,12 +29,37 @@ const isTcpEndpoint = (item: any, fallbackType?: string) => {
   return type === 'tcp' || endpoint.startsWith('tcp://')
 }
 
-const toTcpCommand = (endpoint: string) => {
+const parseTcpEndpoint = (endpoint: string) => {
   const match = endpoint.match(/^tcp:\/\/([^/:]+):(\d+)/i)
-  return match ? `nc ${match[1]} ${match[2]}` : endpoint
+  if (match) return { host: match[1], port: match[2] }
+
+  const fallbackMatch = endpoint.match(/^([^/:]+):(\d+)$/i)
+  return fallbackMatch ? { host: fallbackMatch[1], port: fallbackMatch[2] } : null
+}
+
+const toTcpCommand = (endpoint: string) => {
+  const parsed = parseTcpEndpoint(endpoint)
+  return parsed ? `nc ${parsed.host} ${parsed.port}` : endpoint
+}
+
+const toSshCommand = (endpoint: string, user?: string) => {
+  const parsed = parseTcpEndpoint(endpoint)
+  if (!parsed) return endpoint
+
+  const login = user ? `${user}@` : ''
+  return `ssh ${login}${parsed.host} -p ${parsed.port}`
 }
 
 const isHttpEndpoint = (endpoint: string) => /^https?:\/\//i.test(endpoint)
+
+const formatDuration = (seconds: number) => {
+  if (seconds <= 0) return '0s'
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const sec = seconds % 60
+  if (h > 0) return `${h}h ${m}m ${sec}s`
+  return `${m}m ${sec}s`
+}
 
 const stringifyNxctlDetail = (value: unknown): string | null => {
   if (!value) return null
@@ -133,6 +158,7 @@ const ChallengeServicesPanel: React.FC<ChallengeServicesPanelProps> = ({
   const [hiddenServices, setHiddenServices] = useState<Record<string, boolean>>({})
   const [nowTick, setNowTick] = useState<number>(() => Date.now())
   const inspectRunRef = React.useRef(0)
+  const expiryReminderRef = React.useRef<Record<string, boolean>>({})
 
   const visibleServices = useMemo(
     () => parsedServices.filter((service) => !hiddenServices[service.name]),
@@ -184,6 +210,7 @@ const ChallengeServicesPanel: React.FC<ChallengeServicesPanelProps> = ({
       })
       return next
     })
+    expiryReminderRef.current = {}
   }, [serviceListKey, parsedServices])
 
   useEffect(() => {
@@ -236,6 +263,45 @@ const ChallengeServicesPanel: React.FC<ChallengeServicesPanelProps> = ({
     const id = setInterval(() => setNowTick(Date.now()), 1000)
     return () => clearInterval(id)
   }, [open])
+
+  useEffect(() => {
+    if (!open) {
+      expiryReminderRef.current = {}
+      return
+    }
+
+    visibleServices.forEach((service) => {
+      const details = serviceDetails[service.name]
+      const isRunning = details?.runtime?.status === 'running'
+      const remainingSecFromApi = details?.runtime?.remaining_seconds ?? null
+      const fetchTime = serviceDetailsFetchTime[service.name] ?? nowTick
+      const timeSinceFetch = Math.max(0, (nowTick - fetchTime) / 1000)
+      const remainingSec = remainingSecFromApi !== null ? Math.max(0, remainingSecFromApi - timeSinceFetch) : null
+      const thresholdSec = Number(details?.runtime?.extend?.threshold_seconds || 300)
+
+      if (!isRunning || remainingSec === null || remainingSec <= 0) {
+        expiryReminderRef.current[service.name] = false
+        return
+      }
+
+      if (remainingSec > thresholdSec) {
+        expiryReminderRef.current[service.name] = false
+        return
+      }
+
+      if (expiryReminderRef.current[service.name]) return
+
+      expiryReminderRef.current[service.name] = true
+      toast(
+        `${service.name} expires in ${formatDuration(Math.floor(remainingSec))}. Extend it if needed.`,
+        {
+          icon: '!',
+          duration: 7000,
+          id: `nxctl-expiry-${service.name}`,
+        }
+      )
+    })
+  }, [open, visibleServices, serviceDetails, serviceDetailsFetchTime, nowTick])
 
   const inspectService = async (service: NxctlServiceEntry) => {
     setServiceDetailsLoading((prev) => ({ ...prev, [service.name]: true }))
@@ -310,6 +376,15 @@ const ChallengeServicesPanel: React.FC<ChallengeServicesPanelProps> = ({
                 if (!endpoint) return null
 
                 const isTcp = isTcpEndpoint(item, serviceType)
+                const endpointType = String(item?.type || '').toLowerCase()
+                const isReturnedTcp =
+                  endpointType === 'tcp' ||
+                  endpoint.toLowerCase().startsWith('tcp://') ||
+                  (!isHttpEndpoint(endpoint) && parseTcpEndpoint(endpoint) !== null)
+                const isSsh = isReturnedTcp && service.options.type === 'ssh'
+                const command = isSsh ? toSshCommand(endpoint, service.options.user) : isTcp ? toTcpCommand(endpoint) : endpoint
+                const password = isSsh ? service.options.pass || '' : ''
+
                 return {
                   key: `${endpoint}-${exportIdx}`,
                   endpoint,
@@ -318,7 +393,11 @@ const ChallengeServicesPanel: React.FC<ChallengeServicesPanelProps> = ({
                   status: item?.status ? String(item.status) : '',
                   type: item?.type ? String(item.type) : String(serviceType || ''),
                   isTcp,
-                  command: isTcp ? toTcpCommand(endpoint) : endpoint,
+                  isSsh,
+                  command,
+                  password,
+                  copyText: password ? `${command}\npassword: ${password}` : command,
+                  copyMessage: password ? 'Copied SSH details' : 'Copied endpoint',
                 }
               })
               .filter(Boolean)
@@ -345,11 +424,11 @@ const ChallengeServicesPanel: React.FC<ChallengeServicesPanelProps> = ({
             return `${m}m ${sec}s`
           }
 
-          const remainingClass = (() => {
-            if (remainingSec === null) return 'text-gray-500'
-            if (remainingSec <= 60) return 'text-red-400 font-semibold'
-            if (remainingSec <= thresholdSec) return 'text-yellow-400 font-medium'
-            return 'text-gray-400'
+          const timerClass = (() => {
+            if (remainingSec === null) return 'border-gray-700/60 bg-gray-900/40 text-gray-500'
+            if (remainingSec <= 60) return 'border-red-500/30 bg-red-500/10 text-red-300'
+            if (remainingSec <= thresholdSec) return 'border-yellow-500/30 bg-yellow-500/10 text-yellow-300'
+            return 'border-cyan-500/20 bg-cyan-500/10 text-cyan-300'
           })()
           const isLoading = serviceDetailsLoading[service.name] ?? (!details && open)
           const errorMessage = serviceDetailsError[service.name]
@@ -360,13 +439,11 @@ const ChallengeServicesPanel: React.FC<ChallengeServicesPanelProps> = ({
             <div key={`${service.name}-${idx}`} className={`group flex min-h-[74px] flex-col gap-1.5 px-3 py-2.5 transition-colors duration-200 ${SURFACE_GLASS_CARD_COMPACT_CLASS} hover:border-blue-500/40`}>
               {/* Header: name + action buttons + timer */}
               <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 min-h-9">
-                <div className="min-w-0">
-                  <code className="block truncate select-none text-[12px] font-mono font-semibold leading-none text-gray-900 dark:text-cyan-300">
+                <div className="min-w-0 color-primary font-medium truncate">
                     {service.name}
-                  </code>
                 </div>
 
-                <div className="flex items-center gap-1 shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                   <button
                     type="button"
                     className={serviceActionButtonClass}
@@ -444,17 +521,27 @@ const ChallengeServicesPanel: React.FC<ChallengeServicesPanelProps> = ({
                 </div>
 
                 {isRunning && remainingSec !== null ? (
-                  <span className={`w-[56px] text-right text-[11px] tabular-nums ${remainingClass}`}>
+                  <span
+                    className={`inline-flex h-7 min-w-[100px] select-none items-center justify-between gap-1 rounded-md border px-2 text-[10px] font-semibold tabular-nums ${timerClass}`}
+                    title="Time remaining"
+                  >
+                    <Clock size={11} className="shrink-0 opacity-80" />
                     {formatSecs(Math.floor(remainingSec))}
                   </span>
                 ) : (
-                  <span className="w-[56px]" />
+                  <span
+                    className={`inline-flex h-7 min-w-[100px] select-none items-center justify-between gap-1 rounded-md border px-2 text-[10px] font-semibold tabular-nums ${timerClass}`}
+                    title="Time remaining"
+                  >
+                    <Clock size={11} className="shrink-0 opacity-80" />
+                    {details ? 'Not running' : 'Unknown status'}
+                  </span>
                 )}
               </div>
 
               {/* Per-service loading */}
               {isLoading && !details && (
-                <div className="flex items-center gap-1.5 text-[11px] text-gray-400 select-none pl-3">
+                <div className="flex items-center gap-1.5 text-[11px] text-gray-400 select-none">
                   <Loader2 size={10} className="animate-spin text-blue-500" />
                   <span>Checking...</span>
                 </div>
@@ -462,7 +549,7 @@ const ChallengeServicesPanel: React.FC<ChallengeServicesPanelProps> = ({
 
               {/* Per-service error */}
               {errorMessage && (
-                <div className="flex items-center gap-1.5 text-[11px] select-none pl-3">
+                <div className="flex items-center gap-1.5 text-[11px] select-none">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
                   <span className="text-red-400 truncate flex-1">{errorMessage}</span>
                   <button
@@ -484,24 +571,35 @@ const ChallengeServicesPanel: React.FC<ChallengeServicesPanelProps> = ({
               {/* Endpoints (only when running) */}
               {details && isRunning && (
                 endpoints.length > 0 ? (
-                  <div className="flex flex-col gap-1 pl-3 pr-1">
+                  <div className="flex flex-col gap-1">
                     {endpoints.map((endpoint: any) => (
-                      <div key={endpoint.key} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 min-w-0">
+                      <div key={endpoint.key} className="flex min-w-0 flex-col gap-1">
                         {endpoint.isTcp || !isHttpEndpoint(endpoint.endpoint) ? (
-                          <>
-                            <code className="min-w-0 truncate rounded border border-gray-700/50 bg-black/30 px-2 py-1 font-mono text-[11px] text-green-300">
-                              {endpoint.command}
-                            </code>
-                            <button
-                              className="select-none shrink-0 rounded border border-green-500/20 bg-green-500/10 px-2 py-1 text-[10px] font-bold text-green-400 transition hover:bg-green-500/20"
-                              onClick={() => {
-                                navigator.clipboard.writeText(endpoint.command)
-                                toast.success('Copied endpoint')
-                              }}
-                            >
-                              Copy
-                            </button>
-                          </>
+                          <div className="flex min-w-0 flex-col gap-1">
+                            <div className={`grid items-center gap-2 min-w-0 ${endpoint.isSsh && endpoint.password ? 'grid-cols-[minmax(0,1fr)_minmax(70px,120px)_auto]' : 'grid-cols-[minmax(0,1fr)_auto]'}`}>
+                              <code className={`min-w-0 truncate rounded border px-2 py-1 font-mono text-[11px] ${endpoint.isSsh ? 'border-cyan-500/20 bg-cyan-500/10 text-cyan-200' : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300'}`}>
+                                {endpoint.command}
+                              </code>
+                              {endpoint.isSsh && endpoint.password && (
+                                <code
+                                  className="min-w-0 truncate rounded border border-amber-500/20 bg-amber-500/10 px-2 py-1 font-mono text-[11px] text-amber-300"
+                                  title={`Password: ${endpoint.password}`}
+                                >
+                                  <span className="select-none pr-1 text-[9px] font-bold uppercase tracking-wider text-amber-500/70">pw</span>
+                                  {endpoint.password}
+                                </code>
+                              )}
+                              <button
+                                className={`select-none shrink-0 rounded px-2 py-1 text-[10px] font-bold transition ${endpoint.isSsh ? 'border border-cyan-500/20 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20' : 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20'}`}
+                                onClick={() => {
+                                  navigator.clipboard.writeText(endpoint.copyText)
+                                  toast.success(endpoint.copyMessage)
+                                }}
+                              >
+                                Copy
+                              </button>
+                            </div>
+                          </div>
                         ) : (
                           <a href={endpoint.endpoint} target="_blank" rel="noreferrer" className="col-span-2 block w-full truncate rounded border border-blue-500/15 bg-blue-500/5 px-2 py-1 text-[11px] font-medium text-blue-400 transition hover:text-blue-300 hover:underline">
                             {endpoint.endpoint}
@@ -511,13 +609,16 @@ const ChallengeServicesPanel: React.FC<ChallengeServicesPanelProps> = ({
                     ))}
                   </div>
                 ) : (
-                  <span className="text-[11px] text-yellow-500 pl-3">Waiting for endpoint allocation...</span>
+                  <span className="text-[11px] text-yellow-500">Waiting for endpoint allocation...</span>
                 )
               )}
 
               {/* Stopped state - minimal */}
               {details && !isRunning && (
-                <span className="text-[11px] text-gray-500 select-none pl-3">Stopped</span>
+                <span className="inline-flex items-center gap-1.5 text-[11px] text-gray-500 select-none">
+                  <PowerOff size={11} className="shrink-0 opacity-70" />
+                  Stopped
+                </span>
               )}
             </div>
           )

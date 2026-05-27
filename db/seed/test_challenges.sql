@@ -3,6 +3,9 @@
 -- Generated for testing purpose
 -- ==============================================
 
+-- reset
+
+
 -- Test Events
 INSERT INTO public.events (id, name, description, join_mode, start_time, end_time)
 VALUES ('9165b1c7-c72b-491d-81f6-887257c14ebe', 'NXCTF Public Qualifier', 'Event kualifikasi publik untuk semua peserta.', 'open', now(), now() + interval '7 days');
@@ -2219,7 +2222,7 @@ Flag for testing: `NXCTF{service_linux}`',
     'Easy',
     true,
     NULL,
-    ARRAY['Linux'],
+    ARRAY['{"name":"Linux","options":{"type":"ssh","user":"level1","pass":"level1"}}'],
     false,
     '[]'::jsonb
 );
@@ -2247,7 +2250,7 @@ Flag for testing: `NXCTF{service_access}`',
     'Easy',
     true,
     NULL,
-    ARRAY['access'],
+    ARRAY['{"name":"access","options":{"type":"ssh","user":"ubuntu","pass":"password"}}'],
     false,
     '[]'::jsonb
 );
@@ -2331,7 +2334,7 @@ Flag for testing: `NXCTF{service_evil_php}`',
     'Easy',
     true,
     NULL,
-    ARRAY['evil_php'],
+    ARRAY['{"name":"evil_php","options":{"type":"ssh"}}'],
     false,
     '[]'::jsonb
 );

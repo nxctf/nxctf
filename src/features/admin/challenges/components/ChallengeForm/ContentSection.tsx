@@ -1,10 +1,10 @@
 import React from 'react'
-import { Label, Input, Textarea, Button } from '@/shared/ui'
+import { Label, Input, Textarea, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui'
 import { MarkdownRenderer } from '@/shared/markdown/MarkdownRenderer'
-import { Flag as FlagIcon, Zap, Type } from 'lucide-react'
+import { Flag as FlagIcon, X as XIcon, Zap, Type } from 'lucide-react'
 import { ChallengeFormData } from '../../types'
 import { cn } from '@/shared/lib/utils'
-import { parseNxctlService, serializeNxctlService } from '@/features/challenges/lib/nxctl-services'
+import { parseNxctlService, serializeNxctlService, type NxctlServiceOptions } from '@/features/challenges/lib/nxctl-services'
 import {
   ADMIN_INPUT_CLASS,
   ADMIN_MUTED_INPUT_CLASS,
@@ -30,7 +30,7 @@ export const ContentSection: React.FC<ContentSectionProps> = ({
   handleViewFlag,
   editing
 }) => {
-  const updateService = (index: number, patch: Partial<{ name: string; key: string }>) => {
+  const updateService = (index: number, patch: Partial<{ name: string; key: string; options: NxctlServiceOptions }>) => {
     const current = parseNxctlService(formData.services[index] || '')
     const next = [...formData.services]
     next[index] = serializeNxctlService({ ...current, ...patch })
@@ -105,23 +105,67 @@ export const ContentSection: React.FC<ContentSectionProps> = ({
         <div className="space-y-2 mt-2">
           {formData.services.map((rawService, idx) => {
             const service = parseNxctlService(rawService)
+            const isSshService = service.options.type === 'ssh'
 
             return (
-              <div key={idx} className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
-                <Input
-                  value={service.name}
-                  onChange={e => updateService(idx, { name: e.target.value })}
-                  placeholder="service-name"
-                  className={ADMIN_MUTED_INPUT_CLASS}
-                />
-                <Input
-                  value={service.key}
-                  onChange={e => updateService(idx, { key: e.target.value })}
-                  placeholder="challenge key (optional)"
-                  type="password"
-                  className={ADMIN_MUTED_INPUT_CLASS}
-                />
-                <Button type="button" variant="ghost" onClick={() => onChange({ ...formData, services: formData.services.filter((_, i) => i !== idx) })}>✕</Button>
+              <div key={idx} className="rounded-xl border border-gray-200/70 bg-gray-50/40 p-2 dark:border-gray-800/80 dark:bg-gray-900/20">
+                <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_120px_auto]">
+                  <Input
+                    value={service.name}
+                    onChange={e => updateService(idx, { name: e.target.value })}
+                    placeholder="service-name"
+                    className={ADMIN_MUTED_INPUT_CLASS}
+                  />
+                  <Input
+                    value={service.key}
+                    onChange={e => updateService(idx, { key: e.target.value })}
+                    placeholder="challenge key (optional)"
+                    type="password"
+                    className={ADMIN_MUTED_INPUT_CLASS}
+                  />
+                  <Select
+                    value={isSshService ? 'ssh' : 'default'}
+                    onValueChange={(value) => updateService(idx, {
+                      options: value === 'ssh'
+                        ? { ...service.options, type: 'ssh' }
+                        : {},
+                    })}
+                  >
+                    <SelectTrigger className={ADMIN_MUTED_INPUT_CLASS}>
+                      <SelectValue placeholder="Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="default">Default</SelectItem>
+                      <SelectItem value="ssh">SSH</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    aria-label="Remove service"
+                    title="Remove service"
+                    onClick={() => onChange({ ...formData, services: formData.services.filter((_, i) => i !== idx) })}
+                  >
+                    <XIcon size={14} />
+                  </Button>
+                </div>
+                {isSshService && (
+                  <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <Input
+                      value={service.options.user || ''}
+                      onChange={e => updateService(idx, { options: { ...service.options, type: 'ssh', user: e.target.value } })}
+                      placeholder="ssh user"
+                      className={ADMIN_MUTED_INPUT_CLASS}
+                    />
+                    <Input
+                      value={service.options.pass || ''}
+                      onChange={e => updateService(idx, { options: { ...service.options, type: 'ssh', pass: e.target.value } })}
+                      placeholder="ssh password (optional)"
+                      type="password"
+                      className={ADMIN_MUTED_INPUT_CLASS}
+                    />
+                  </div>
+                )}
               </div>
             )
           })}
