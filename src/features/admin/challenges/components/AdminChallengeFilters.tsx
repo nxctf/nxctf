@@ -114,7 +114,7 @@ export default function AdminChallengeFilters({
             variant="outline"
             size="sm"
             onClick={onClear}
-            className="h-9 shrink-0 rounded-xl px-3.5 text-xs font-bold text-gray-500 hover:text-red-600 dark:border-gray-800"
+            className="h-9 shrink-0 rounded-xl border-blue-600 bg-blue-600 px-3.5 text-xs font-bold text-white hover:border-blue-500 hover:bg-blue-500 dark:border-blue-600 dark:bg-blue-600 dark:text-white"
           >
             Clear
           </Button>

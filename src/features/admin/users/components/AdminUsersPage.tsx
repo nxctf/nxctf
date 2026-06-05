@@ -30,6 +30,12 @@ export default function AdminUsersPage() {
   )
   const adminUsersData = useAdminUsersData()
   const { user, authLoading, accessReady, isAllowed, isLoading } = adminUsersData
+  const hasActiveUserFilters =
+    adminUsersData.query.trim().length > 0 ||
+    adminUsersData.searchQuery.trim().length > 0 ||
+    adminUsersData.roleFilter !== 'all' ||
+    adminUsersData.sortMode !== 'newest' ||
+    adminUsersData.pageSize !== 100
 
   useEffect(() => {
     if (searchParams.get('tab') === 'roles') setActiveTab('roles')
@@ -58,7 +64,59 @@ export default function AdminUsersPage() {
         }
         filters={
           activeTab === 'users' ? (
-            <AdminFilterToolbar>
+            <AdminFilterToolbar
+              actions={
+                <>
+                  <AdminFilterSelect
+                    value={adminUsersData.roleFilter}
+                    onValueChange={(value) => {
+                      adminUsersData.setRoleFilter(value as 'all' | 'admin' | 'user')
+                      adminUsersData.setPage(1)
+                    }}
+                    placeholder="Role"
+                    className="w-full sm:w-[130px]"
+                    options={[
+                      { value: 'all', label: 'All roles' },
+                      { value: 'admin', label: 'Admin' },
+                      { value: 'user', label: 'User' },
+                    ]}
+                  />
+
+                  <AdminFilterSelect
+                    value={adminUsersData.sortMode}
+                    defaultValue="newest"
+                    onValueChange={(value) => {
+                      adminUsersData.setSortMode(value as 'newest' | 'oldest' | 'username_asc' | 'updated_desc' | 'role')
+                      adminUsersData.setPage(1)
+                    }}
+                    placeholder="Sort"
+                    className="w-full sm:w-[150px]"
+                    options={[
+                      { value: 'newest', label: 'Newest' },
+                      { value: 'oldest', label: 'Oldest' },
+                      { value: 'username_asc', label: 'Username' },
+                      { value: 'updated_desc', label: 'Recently updated' },
+                      { value: 'role', label: 'Role' },
+                    ]}
+                  />
+
+                  <AdminFilterSelect
+                    value={String(adminUsersData.pageSize)}
+                    defaultValue="100"
+                    onValueChange={(value) => {
+                      adminUsersData.setPageSize(Number(value))
+                      adminUsersData.setPage(1)
+                    }}
+                    placeholder="Rows"
+                    className="w-full sm:w-[120px]"
+                    options={[100, 500, 1000].map((option) => ({
+                      value: String(option),
+                      label: `${option} rows`,
+                    }))}
+                  />
+                </>
+              }
+            >
               <form
                 onSubmit={(e) => {
                   e.preventDefault()
@@ -77,7 +135,7 @@ export default function AdminUsersPage() {
                   wrapperClassName="w-full"
                 />
 
-                {adminUsersData.searchQuery && (
+                {hasActiveUserFilters && (
                   <Button
                     type="button"
                     variant="outline"
@@ -85,62 +143,17 @@ export default function AdminUsersPage() {
                     onClick={() => {
                       adminUsersData.setQuery('')
                       adminUsersData.setSearchQuery('')
+                      adminUsersData.setRoleFilter('all')
+                      adminUsersData.setSortMode('newest')
+                      adminUsersData.setPageSize(100)
                       adminUsersData.setPage(1)
                     }}
-                    className="h-9 shrink-0 rounded-xl px-3.5 text-xs font-bold text-gray-500 hover:text-red-600 dark:border-gray-800"
+                    className="h-9 shrink-0 rounded-xl border-blue-600 bg-blue-600 px-3.5 text-xs font-bold text-white hover:border-blue-500 hover:bg-blue-500 dark:border-blue-600 dark:bg-blue-600 dark:text-white"
                   >
                     Clear
                   </Button>
                 )}
               </form>
-
-              <AdminFilterSelect
-                value={adminUsersData.roleFilter}
-                onValueChange={(value) => {
-                  adminUsersData.setRoleFilter(value as 'all' | 'admin' | 'user')
-                  adminUsersData.setPage(1)
-                }}
-                placeholder="Role"
-                className="w-full sm:w-[130px]"
-                options={[
-                  { value: 'all', label: 'All roles' },
-                  { value: 'admin', label: 'Admin' },
-                  { value: 'user', label: 'User' },
-                ]}
-              />
-
-              <AdminFilterSelect
-                value={adminUsersData.sortMode}
-                defaultValue="newest"
-                onValueChange={(value) => {
-                  adminUsersData.setSortMode(value as 'newest' | 'oldest' | 'username_asc' | 'updated_desc' | 'role')
-                  adminUsersData.setPage(1)
-                }}
-                placeholder="Sort"
-                className="w-full sm:w-[150px]"
-                options={[
-                  { value: 'newest', label: 'Newest' },
-                  { value: 'oldest', label: 'Oldest' },
-                  { value: 'username_asc', label: 'Username' },
-                  { value: 'updated_desc', label: 'Recently updated' },
-                  { value: 'role', label: 'Role' },
-                ]}
-              />
-
-              <AdminFilterSelect
-                value={String(adminUsersData.pageSize)}
-                defaultValue="100"
-                onValueChange={(value) => {
-                  adminUsersData.setPageSize(Number(value))
-                  adminUsersData.setPage(1)
-                }}
-                placeholder="Rows"
-                className="w-full sm:w-[120px]"
-                options={[100, 500, 1000].map((option) => ({
-                  value: String(option),
-                  label: `${option} rows`,
-                }))}
-              />
             </AdminFilterToolbar>
           ) : null
         }

@@ -1,5 +1,6 @@
 "use client"
 import OverviewStatsCards from './OverviewStatsCards'
+import ChallengeDistributionCard from './ChallengeDistributionCard'
 import RecentSolvesCard from './RecentSolvesCard'
 import StatsGraph from './StatsGraph'
 import { useAdminOverviewData } from '../hooks/useAdminOverviewData'
@@ -33,12 +34,14 @@ export default function AdminOverviewPage() {
 
   return (
     <AdminPageShell>
-      <div className="py-2.5 space-y-5">
+      <div className="py-5 pt-7.5 space-y-5">
         <OverviewStatsCards siteInfo={siteInfo} challenges={challenges} />
 
         <div className="grid min-w-0 grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
           <AdminPanel
             title="Solve Activity"
+            headerClassName="!h-14 !px-4 !py-0"
+            contentClassName="!py-1 scroll-hidden"
             action={
               <AdminFilterSelect
                 value={timeRange}
@@ -62,6 +65,8 @@ export default function AdminOverviewPage() {
 
           <RecentSolvesCard solves={recentSolves} />
         </div>
+
+        <ChallengeDistributionCard challenges={challenges} />
       </div>
     </AdminPageShell>
   )

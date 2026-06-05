@@ -28,14 +28,16 @@ export default function AdminChallengesToolbar({
   selectedEventId,
   onEventChange,
 }: AdminChallengesToolbarProps) {
+  const selectedEventValue = selectedEventId === null ? 'main' : selectedEventId
+
   return (
     <div className="flex flex-col gap-3.5">
       {/* Row 1: Event Selector on the left, Status & Actions on the right */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1.5 border-b border-gray-100/50 dark:border-gray-800/30">
         <div className="flex items-center gap-3">
           <EventSelect
-            value={selectedEventId as string}
-            onChange={(val) => onEventChange(val as any)}
+            value={selectedEventValue}
+            onChange={(val) => onEventChange(val === 'main' ? null : val)}
             events={events}
             className="w-full sm:w-[220px]"
           />

@@ -63,6 +63,7 @@ const StatsGraph = ({ data, range }: StatsGraphProps) => {
       },
       y: {
         min: 0,
+        grace: '10%',
         border: {
           display: false
         },
@@ -71,6 +72,7 @@ const StatsGraph = ({ data, range }: StatsGraphProps) => {
         },
         ticks: {
           color: 'rgb(156, 163, 175)',
+          stepSize: 2,
           padding: 10,
           callback: function (this: Scale<CoreScaleOptions>, tickValue: string | number, _index: number, _ticks: Tick[]) {
             return typeof tickValue === 'number' ? tickValue.toFixed(0) : String(tickValue)
@@ -144,7 +146,7 @@ const StatsGraph = ({ data, range }: StatsGraphProps) => {
   }
 
   return (
-    <div className="h-[310px] w-full pt-2">
+    <div className="h-[310px] w-full">
       <Line options={options} data={chartData} />
     </div>
   )

@@ -76,10 +76,11 @@ export default function AdminChallengesPage() {
 
       const urlEvent = searchParams.get('event')
       const urlAdd = searchParams.get('add') === '1'
+      const resolvedUrlEvent = urlEvent === 'main' ? null : urlEvent
 
-      if (urlEvent) setEventId(urlEvent)
+      if (urlEvent) setEventId(resolvedUrlEvent)
       if (urlAdd) {
-        resetForm({ event_id: urlEvent && urlEvent !== 'all' ? urlEvent : null })
+        resetForm({ event_id: resolvedUrlEvent && resolvedUrlEvent !== 'all' ? resolvedUrlEvent : null })
         setOpenForm(true)
       }
     }

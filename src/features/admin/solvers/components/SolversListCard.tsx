@@ -53,7 +53,15 @@ const SolversListCard: React.FC<SolversListCardProps> = ({
                     {searching ? 'Searching...' : 'Search'}
                   </Button>
 
-                  <Button variant="outline" size="sm" onClick={onReset} className="h-9 shrink-0 rounded-xl border-gray-200/50 px-4 text-xs font-semibold text-gray-700 hover:border-blue-500/40 dark:border-gray-800/50 dark:text-gray-200">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onReset}
+                    className={searchQuery.trim().length > 0
+                      ? "h-9 shrink-0 rounded-xl border-blue-600 bg-blue-600 px-4 text-xs font-semibold text-white hover:border-blue-500 hover:bg-blue-500 dark:border-blue-600 dark:bg-blue-600 dark:text-white"
+                      : "h-9 shrink-0 rounded-xl border-gray-200/50 px-4 text-xs font-semibold text-gray-700 hover:border-blue-500/40 dark:border-gray-800/50 dark:text-gray-200"
+                    }
+                  >
                     Reset
                   </Button>
                 </>
