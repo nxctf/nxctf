@@ -31,7 +31,8 @@ export default function AdminUsersPage() {
     adminUsersData.searchQuery.trim().length > 0 ||
     adminUsersData.roleFilter !== 'all' ||
     adminUsersData.sortMode !== 'newest' ||
-    adminUsersData.pageSize !== 100
+    adminUsersData.pageSize !== 100 ||
+    adminUsersData.statusFilter !== 'all'
 
   if (authLoading || !accessReady) return <AdminContentLoading variant="users" />
   if (!user || !isAllowed) return null
@@ -71,6 +72,21 @@ export default function AdminUsersPage() {
                       { value: 'all', label: 'All roles' },
                       { value: 'admin', label: 'Admin' },
                       { value: 'user', label: 'User' },
+                    ]}
+                  />
+
+                  <AdminFilterSelect
+                    value={adminUsersData.statusFilter}
+                    onValueChange={(value) => {
+                      adminUsersData.setStatusFilter(value as 'all' | 'banned' | 'active')
+                      adminUsersData.setPage(1)
+                    }}
+                    placeholder="Status"
+                    className="w-full sm:w-[130px]"
+                    options={[
+                      { value: 'all', label: 'All status' },
+                      { value: 'banned', label: 'Suspended' },
+                      { value: 'active', label: 'Active' },
                     ]}
                   />
 
@@ -136,6 +152,7 @@ export default function AdminUsersPage() {
                       adminUsersData.setQuery('')
                       adminUsersData.setSearchQuery('')
                       adminUsersData.setRoleFilter('all')
+                      adminUsersData.setStatusFilter('all')
                       adminUsersData.setSortMode('newest')
                       adminUsersData.setPageSize(100)
                       adminUsersData.setPage(1)

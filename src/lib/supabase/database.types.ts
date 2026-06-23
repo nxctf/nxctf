@@ -584,6 +584,27 @@ export type Database = {
         Args: { p_event_id: string; p_user_id: string };
         Returns: boolean;
       };
+      admin_ban_user: {
+        Args: {
+          p_user_id: string;
+          p_duration_minutes: number | null;
+          p_reason: string | null;
+        };
+        Returns: boolean;
+      };
+      admin_change_password: {
+        Args: {
+          p_user_id: string;
+          p_new_password: string;
+        };
+        Returns: boolean;
+      };
+      admin_unban_user: {
+        Args: {
+          p_user_id: string;
+        };
+        Returns: boolean;
+      };
       admin_remove_event_member: {
         Args: { p_event_id: string; p_user_id: string };
         Returns: boolean;
@@ -644,6 +665,7 @@ export type Database = {
           p_role?: string;
           p_search?: string | null;
           p_sort_by?: string;
+          p_status?: string;
         };
         Returns: {
           id: string;
@@ -655,6 +677,8 @@ export type Database = {
           profile_picture_url: string | null;
           created_at: string;
           updated_at: string;
+          banned_until: string | null;
+          ban_reason: string | null;
           total_count: number;
         }[];
       };

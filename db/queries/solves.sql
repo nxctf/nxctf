@@ -355,9 +355,9 @@ BEGIN
     u.username::TEXT,
     s.created_at AS solved_at,
     COALESCE(
+      u.profile_picture_url,
       au.raw_user_meta_data->>'picture',
-      au.raw_user_meta_data->>'avatar_url',
-      u.profile_picture_url
+      au.raw_user_meta_data->>'avatar_url'
     )::TEXT AS picture
   FROM public.solves s
   JOIN public.users u ON u.id = s.user_id

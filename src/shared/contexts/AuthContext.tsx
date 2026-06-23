@@ -1,6 +1,7 @@
 'use client'
 import { createContext, useContext, useState, useEffect } from 'react'
 import type { User } from '@/shared/types'
+import { BannedOverlay } from '@/features/auth'
 
 type AuthContextType = {
   user: User | null
@@ -31,9 +32,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  const isBanned = user && !user.is_admin && user.banned_until && new Date(user.banned_until) > new Date()
+
   return (
     <AuthContext.Provider value={{ user, setUser, loading }}>
-      {children}
+      {isBanned ? <BannedOverlay user={user} variant="fullscreen" /> : children}
     </AuthContext.Provider>
   )
 }

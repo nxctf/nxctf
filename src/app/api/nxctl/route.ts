@@ -103,6 +103,32 @@ async function getAdminScopeForRequest(request: Request) {
   }
 }
 
+async function isUserBanned(request: Request) {
+  const token = getBearerToken(request)
+  if (!token || !SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    return false
+  }
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+    global: {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  })
+
+  try {
+    const { data } = await supabase.rpc('is_current_user_banned')
+    return !!data
+  } catch {
+    return false
+  }
+}
+
 function servicePath(name: string) {
   return encodeURIComponent(name)
 }
@@ -198,6 +224,10 @@ function jsonError(message: string, status = 400) {
 }
 
 export async function GET(request: Request) {
+  if (await isUserBanned(request)) {
+    return jsonError('Your account is temporarily banned', 403)
+  }
+
   const { searchParams } = new URL(request.url)
   const action = searchParams.get('action')
   const challengeKey = challengeKeyFromRequest(request, searchParams.get('key'))
@@ -252,6 +282,10 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  if (await isUserBanned(request)) {
+    return jsonError('Your account is temporarily banned', 403)
+  }
+
   try {
     const body = await request.json()
     const action = body?.action as NxctlAction | undefined

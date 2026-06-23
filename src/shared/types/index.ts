@@ -6,6 +6,8 @@ export interface User {
   score: number
   rank?: number
   is_admin?: boolean
+  banned_until?: string | null
+  ban_reason?: string | null
   created_at: string
   updated_at: string
 }

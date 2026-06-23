@@ -92,9 +92,9 @@ BEGIN
         'first_solve_count', COALESCE(fs.first_solves, 0),
         'first_solve_score', COALESCE(fs.first_solve_score, 0),
         'picture', COALESCE(
+          u.profile_picture_url,
           au.raw_user_meta_data->>'picture',
-          au.raw_user_meta_data->>'avatar_url',
-          u.profile_picture_url
+          au.raw_user_meta_data->>'avatar_url'
         )::TEXT
       )
       ORDER BY (u.id = t.captain_user_id) DESC, tm.joined_at ASC

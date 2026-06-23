@@ -180,6 +180,10 @@ BEGIN
     RETURN json_build_object('success', false, 'message', 'Not authenticated');
   END IF;
 
+  IF public.is_banned(v_user_id) THEN
+    RETURN json_build_object('success', false, 'message', 'Your account is currently banned/suspended.');
+  END IF;
+
     SELECT cf.flag_hash, c.points, c.max_points, c.is_dynamic, c.is_active, c.is_maintenance, c.min_points, c.decay_per_solve,
         c.event_id, e.start_time, e.end_time, (e.id IS NOT NULL), e.join_mode
     INTO v_flag_hash, v_points, v_max_points, v_is_dynamic, v_is_active, v_is_maintenance, v_min_points, v_decay_per_solve,
@@ -670,7 +674,8 @@ CREATE POLICY "Challenges user select visible"
 ON public.challenges
 FOR SELECT
 USING (
-  is_active = true
+  NOT public.is_current_user_banned()
+  AND is_active = true
   AND (
     event_id IS NULL
     OR EXISTS (

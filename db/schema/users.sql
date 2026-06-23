@@ -9,6 +9,8 @@ CREATE TABLE public.users (
   bio VARCHAR(255) DEFAULT '',
   sosmed JSONB DEFAULT '{}'::jsonb,
   profile_picture_url VARCHAR(2048) DEFAULT NULL,
+  banned_until TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+  ban_reason VARCHAR(255) DEFAULT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );

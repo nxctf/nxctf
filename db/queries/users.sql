@@ -42,6 +42,30 @@ SECURITY DEFINER;
 
 GRANT EXECUTE ON FUNCTION has_admin_access() TO authenticated;
 
+CREATE OR REPLACE FUNCTION public.is_banned(p_user_id UUID)
+RETURNS BOOLEAN AS $$
+DECLARE
+  v_banned_until TIMESTAMPTZ;
+BEGIN
+  IF p_user_id IS NULL THEN
+    RETURN FALSE;
+  END IF;
+  SELECT banned_until INTO v_banned_until FROM public.users WHERE id = p_user_id;
+  RETURN v_banned_until IS NOT NULL AND v_banned_until > now();
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION public.is_banned(UUID) TO authenticated, anon;
+
+CREATE OR REPLACE FUNCTION public.is_current_user_banned()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN public.is_banned(auth.uid()::uuid);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION public.is_current_user_banned() TO authenticated, anon;
+
 CREATE OR REPLACE FUNCTION get_email_by_username(p_username TEXT)
 RETURNS TEXT AS $$
 DECLARE v_email TEXT;
@@ -67,7 +91,9 @@ RETURNS TABLE (
   picture TEXT,
   profile_picture_url TEXT,
   solved_event_ids UUID[],
-  has_main_solved BOOLEAN
+  has_main_solved BOOLEAN,
+  banned_until TIMESTAMPTZ,
+  ban_reason TEXT
 ) AS $$
 BEGIN
   RETURN QUERY
@@ -75,9 +101,9 @@ BEGIN
     u.id,
     u.username::TEXT,
     COALESCE(
+      u.profile_picture_url,
       au.raw_user_meta_data->>'picture',
-      au.raw_user_meta_data->>'avatar_url',
-      u.profile_picture_url
+      au.raw_user_meta_data->>'avatar_url'
     )::TEXT AS picture,
     u.profile_picture_url::TEXT,
     COALESCE(
@@ -95,7 +121,9 @@ BEGIN
       JOIN public.challenges c ON c.id = s.challenge_id
       WHERE s.user_id = u.id
         AND c.event_id IS NULL
-    ) AS has_main_solved
+    ) AS has_main_solved,
+    u.banned_until,
+    u.ban_reason
   FROM public.users u
   LEFT JOIN auth.users au ON au.id = u.id
   WHERE u.id = p_id;
@@ -127,9 +155,9 @@ BEGIN
 
   SELECT
     COALESCE(
+      v_user.profile_picture_url,
       au.raw_user_meta_data->>'picture',
-      au.raw_user_meta_data->>'avatar_url',
-      v_user.profile_picture_url
+      au.raw_user_meta_data->>'avatar_url'
     ),
     NULLIF(
       GREATEST(
@@ -325,9 +353,9 @@ BEGIN
       ) THEN s.created_at ELSE NULL END) ASC
     ) AS rank,
     COALESCE(
+      u.profile_picture_url,
       au.raw_user_meta_data->>'picture',
-      au.raw_user_meta_data->>'avatar_url',
-      u.profile_picture_url
+      au.raw_user_meta_data->>'avatar_url'
     )::TEXT AS picture
   FROM public.users u
   LEFT JOIN auth.users au ON au.id = u.id
@@ -360,9 +388,9 @@ LANGUAGE sql
 AS $$
   SELECT u.id, u.username::TEXT,
     COALESCE(
+      u.profile_picture_url,
       au.raw_user_meta_data->>'picture',
-      au.raw_user_meta_data->>'avatar_url',
-      u.profile_picture_url
+      au.raw_user_meta_data->>'avatar_url'
     )::TEXT AS picture
   FROM public.users u
   LEFT JOIN auth.users au ON au.id = u.id
@@ -769,7 +797,8 @@ CREATE OR REPLACE FUNCTION public.get_admin_users_paginated(
   p_role text default 'all',
   p_sort_by text default 'newest',
   p_limit int default 100,
-  p_offset int default 0
+  p_offset int default 0,
+  p_status text default 'all'
 )
 RETURNS TABLE (
   id uuid,
@@ -781,6 +810,8 @@ RETURNS TABLE (
   profile_picture_url text,
   created_at timestamptz,
   updated_at timestamptz,
+  banned_until timestamptz,
+  ban_reason text,
   total_count bigint
 ) AS $$
 BEGIN
@@ -797,9 +828,15 @@ BEGIN
       COALESCE(u.is_admin, false) AS is_admin,
       u.bio::text,
       u.sosmed,
-      u.profile_picture_url::text,
+      COALESCE(
+        u.profile_picture_url,
+        au.raw_user_meta_data->>'picture',
+        au.raw_user_meta_data->>'avatar_url'
+      )::text AS profile_picture_url,
       u.created_at,
-      u.updated_at
+      u.updated_at,
+      u.banned_until,
+      u.ban_reason
     FROM public.users u
     LEFT JOIN auth.users au ON au.id = u.id
     WHERE (
@@ -812,6 +849,10 @@ BEGIN
       p_role = 'all' OR
       (p_role = 'admin' AND u.is_admin = true) OR
       (p_role = 'user' AND u.is_admin = false)
+    ) AND (
+      p_status = 'all' OR
+      (p_status = 'banned' AND u.banned_until IS NOT NULL AND u.banned_until > now()) OR
+      (p_status = 'active' AND (u.banned_until IS NULL OR u.banned_until <= now()))
     )
   ),
   total_cnt AS (
@@ -827,6 +868,8 @@ BEGIN
     f.profile_picture_url,
     f.created_at,
     f.updated_at,
+    f.banned_until,
+    f.ban_reason,
     tc.cnt
   FROM filtered_users f
   CROSS JOIN total_cnt tc
@@ -842,7 +885,7 @@ $$ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, auth;
 
-GRANT EXECUTE ON FUNCTION public.get_admin_users_paginated(text, text, text, int, int) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_admin_users_paginated(text, text, text, int, int, text) TO authenticated;
 
 -- RLS/POLICY
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
@@ -852,3 +895,85 @@ CREATE POLICY "Users can select all"
   ON public.users
   FOR SELECT
   USING (true);
+
+-- Admin control functions (running as SECURITY DEFINER to bypass RLS and edit auth.users/public.users)
+CREATE OR REPLACE FUNCTION public.admin_ban_user(
+  p_user_id UUID,
+  p_duration_minutes INT,
+  p_reason TEXT DEFAULT 'Banned by administrator'
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+  v_banned_until TIMESTAMPTZ := NULL;
+BEGIN
+  IF NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Only global admins can ban users';
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM public.users WHERE id = p_user_id AND is_admin = true) THEN
+    RAISE EXCEPTION 'Cannot ban an admin user';
+  END IF;
+
+  IF p_duration_minutes IS NULL OR p_duration_minutes <= 0 THEN
+    v_banned_until := '9999-12-31 23:59:59+00'::TIMESTAMPTZ;
+  ELSE
+    v_banned_until := now() + (p_duration_minutes * interval '1 minute');
+  END IF;
+
+  UPDATE public.users
+  SET banned_until = v_banned_until,
+      ban_reason = p_reason,
+      updated_at = now()
+  WHERE id = p_user_id;
+
+  RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+GRANT EXECUTE ON FUNCTION public.admin_ban_user(UUID, INT, TEXT) TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.admin_unban_user(
+  p_user_id UUID
+)
+RETURNS BOOLEAN AS $$
+BEGIN
+  IF NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Only global admins can unban users';
+  END IF;
+
+  UPDATE public.users
+  SET banned_until = NULL,
+      ban_reason = NULL,
+      updated_at = now()
+  WHERE id = p_user_id;
+
+  RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+GRANT EXECUTE ON FUNCTION public.admin_unban_user(UUID) TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.admin_change_password(
+  p_user_id UUID,
+  p_new_password TEXT
+)
+RETURNS BOOLEAN AS $$
+BEGIN
+  IF NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Only global admins can change user passwords';
+  END IF;
+
+  IF p_new_password IS NULL OR length(p_new_password) < 6 THEN
+    RAISE EXCEPTION 'Password must be at least 6 characters long';
+  END IF;
+
+  UPDATE auth.users
+  SET encrypted_password = crypt(p_new_password, gen_salt('bf', 10)),
+      updated_at = now()
+  WHERE id = p_user_id;
+
+  RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = auth, public, extensions;
+
+GRANT EXECUTE ON FUNCTION public.admin_change_password(UUID, TEXT) TO authenticated;

@@ -15,6 +15,8 @@ function normalizeAdminUser(row: any): AdminUserRow {
     bio: row.bio ? String(row.bio) : null,
     sosmed: normalizeSocialLinks(row.sosmed),
     profile_picture_url: row.profile_picture_url ? String(row.profile_picture_url) : null,
+    banned_until: row.banned_until ? String(row.banned_until) : null,
+    ban_reason: row.ban_reason ? String(row.ban_reason) : null,
     created_at: String(row.created_at ?? ''),
     updated_at: String(row.updated_at ?? ''),
   }
@@ -26,6 +28,7 @@ export async function getAdminUsers(params?: {
   sortBy?: 'newest' | 'oldest' | 'username_asc' | 'updated_desc' | 'role'
   limit?: number
   offset?: number
+  status?: 'all' | 'banned' | 'active'
 }): Promise<{ users: AdminUserRow[]; totalCount: number }> {
   try {
     const { data, error } = await supabase.rpc('get_admin_users_paginated', {
@@ -34,6 +37,7 @@ export async function getAdminUsers(params?: {
       p_sort_by: params?.sortBy || 'newest',
       p_limit: params?.limit || 100,
       p_offset: params?.offset || 0,
+      p_status: params?.status || 'all',
     })
 
     if (error) {
@@ -50,5 +54,54 @@ export async function getAdminUsers(params?: {
   } catch (error) {
     console.error('Error fetching admin users:', error)
     return { users: [], totalCount: 0 }
+  }
+}
+
+export async function adminChangePassword(userId: string, password: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await supabase.rpc('admin_change_password', {
+      p_user_id: userId,
+      p_new_password: password
+    })
+    if (error) {
+      return { success: false, error: error.message }
+    }
+    return { success: true }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Network error' }
+  }
+}
+
+export async function adminBanUser(
+  userId: string,
+  durationMinutes: number | null,
+  reason: string | null
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await supabase.rpc('admin_ban_user', {
+      p_user_id: userId,
+      p_duration_minutes: durationMinutes,
+      p_reason: reason || 'Banned by administrator'
+    })
+    if (error) {
+      return { success: false, error: error.message }
+    }
+    return { success: true }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Network error' }
+  }
+}
+
+export async function adminUnbanUser(userId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await supabase.rpc('admin_unban_user', {
+      p_user_id: userId
+    })
+    if (error) {
+      return { success: false, error: error.message }
+    }
+    return { success: true }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Network error' }
   }
 }
