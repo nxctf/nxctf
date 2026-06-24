@@ -142,26 +142,6 @@ END;
 $$ LANGUAGE plpgsql
 SECURITY DEFINER SET search_path = public, auth, extensions;
 GRANT EXECUTE ON FUNCTION is_admin() TO authenticated;
-CREATE OR REPLACE FUNCTION has_admin_access()
-RETURNS BOOLEAN AS $$
-DECLARE
-  v_user_id UUID := auth.uid()::uuid;
-BEGIN
-  IF v_user_id IS NULL THEN
-    RETURN FALSE;
-  END IF;
-  IF is_admin() THEN
-    RETURN TRUE;
-  END IF;
-  RETURN EXISTS (
-    SELECT 1
-    FROM public.event_admins ea
-    WHERE ea.user_id = v_user_id
-  );
-END;
-$$ LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = public, auth, extensions;
-GRANT EXECUTE ON FUNCTION has_admin_access() TO authenticated;
 CREATE OR REPLACE FUNCTION public.is_banned(p_user_id UUID)
 RETURNS BOOLEAN AS $$
 DECLARE
@@ -365,61 +345,10 @@ END;
 $$ LANGUAGE plpgsql
 SECURITY DEFINER SET search_path = public, auth, extensions;
 GRANT EXECUTE ON FUNCTION detail_user_lite(UUID, UUID, TEXT) TO authenticated;
-CREATE OR REPLACE FUNCTION get_leaderboard(
-  limit_rows integer DEFAULT 100,
-  offset_rows integer DEFAULT 0,
-  p_event_id UUID DEFAULT NULL,
-  p_event_mode TEXT DEFAULT 'any'
-)
-RETURNS TABLE (
-  id UUID,
-  username TEXT,
-  score BIGINT,
-  last_solve TIMESTAMPTZ,
-  rank BIGINT,
-  picture TEXT
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT
-    u.id,
-    u.username::TEXT,
-    COALESCE(
-      SUM(
-        CASE WHEN public.match_event_mode(p_event_mode, p_event_id, c.event_id) THEN c.points ELSE 0 END
-      ), 0
-    ) AS score,
-    MAX(
-      CASE WHEN public.match_event_mode(p_event_mode, p_event_id, c.event_id) THEN s.created_at ELSE NULL END
-    ) AS last_solve,
-    ROW_NUMBER() OVER (
-      ORDER BY COALESCE(
-        SUM(CASE WHEN public.match_event_mode(p_event_mode, p_event_id, c.event_id) THEN c.points ELSE 0 END), 0
-      ) DESC,
-      MAX(CASE WHEN public.match_event_mode(p_event_mode, p_event_id, c.event_id) THEN s.created_at ELSE NULL END) ASC
-    ) AS rank,
-    resolve_profile_picture(u.profile_picture_url, au.raw_user_meta_data)::TEXT AS picture
-  FROM public.users u
-  LEFT JOIN auth.users au ON au.id = u.id
-  LEFT JOIN public.solves s ON u.id = s.user_id
-  LEFT JOIN public.challenges c ON s.challenge_id = c.id
-  GROUP BY u.id, u.username, au.raw_user_meta_data, u.profile_picture_url
-  HAVING COALESCE(
-    SUM(
-      CASE WHEN public.match_event_mode(p_event_mode, p_event_id, c.event_id) THEN c.points ELSE 0 END
-    ), 0
-  ) > 0
-  ORDER BY score DESC, last_solve ASC
-  LIMIT limit_rows OFFSET offset_rows;
-END;
-$$ LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public, auth;
-GRANT EXECUTE ON FUNCTION get_leaderboard(integer, integer, uuid, text) TO authenticated;
 CREATE OR REPLACE FUNCTION resolve_user_pictures(p_user_ids UUID[])
 RETURNS TABLE (user_id UUID, username TEXT, picture TEXT)
 SECURITY DEFINER
-SET search_path = public, auth
+SET search_path = public, auth, extensions
 LANGUAGE sql
 AS $$
   SELECT u.id, u.username::TEXT,
@@ -429,67 +358,6 @@ AS $$
   WHERE u.id = ANY(p_user_ids);
 $$;
 GRANT EXECUTE ON FUNCTION resolve_user_pictures(UUID[]) TO authenticated;
-CREATE OR REPLACE FUNCTION get_top_progress(
-  p_user_ids UUID[],
-  p_limit INT DEFAULT 1000,
-  p_offset INT DEFAULT 0,
-  p_event_id UUID DEFAULT NULL,
-  p_event_mode TEXT DEFAULT 'any'
-)
-RETURNS TABLE (
-  user_id UUID,
-  username TEXT,
-  created_at TIMESTAMPTZ,
-  points INTEGER
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT
-    s.user_id,
-    u.username::TEXT,
-    s.created_at,
-    c.points
-  FROM public.solves s
-  JOIN public.challenges c ON c.id = s.challenge_id
-  JOIN public.users u ON u.id = s.user_id
-  WHERE s.user_id = ANY(p_user_ids)
-    AND public.match_event_mode(p_event_mode, p_event_id, c.event_id)
-  ORDER BY s.created_at ASC
-  LIMIT p_limit OFFSET p_offset;
-END;
-$$ LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public, auth;
-GRANT EXECUTE ON FUNCTION get_top_progress(UUID[], INT, INT, UUID, TEXT) TO authenticated;
-CREATE OR REPLACE FUNCTION get_info()
-RETURNS JSON AS $$
-DECLARE
-  v_total_users BIGINT;
-  v_total_admins BIGINT;
-  v_total_solves BIGINT;
-  v_unique_solvers BIGINT;
-  v_total_challenges BIGINT;
-  v_active_challenges BIGINT;
-BEGIN
-  SELECT COUNT(*)::BIGINT INTO v_total_users FROM public.users;
-  SELECT COUNT(*)::BIGINT INTO v_total_admins FROM public.users WHERE is_admin = TRUE;
-  SELECT COUNT(*)::BIGINT INTO v_total_solves FROM public.solves;
-  SELECT COUNT(DISTINCT user_id)::BIGINT INTO v_unique_solvers FROM public.solves;
-  SELECT COUNT(*)::BIGINT INTO v_total_challenges FROM public.challenges;
-  SELECT COUNT(*)::BIGINT INTO v_active_challenges FROM public.challenges WHERE is_active = TRUE;
-  RETURN json_build_object(
-    'total_users', v_total_users,
-    'total_admins', v_total_admins,
-    'total_solves', v_total_solves,
-    'unique_solvers', v_unique_solvers,
-    'total_challenges', v_total_challenges,
-    'active_challenges', v_active_challenges,
-    'success', true
-  );
-END;
-$$ LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = public, auth, extensions;
-GRANT EXECUTE ON FUNCTION get_info() TO authenticated;
 CREATE OR REPLACE FUNCTION public.get_admin_users()
 RETURNS TABLE (
   id UUID,
@@ -559,26 +427,6 @@ $$ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, auth;
 GRANT EXECUTE ON FUNCTION public.get_admin_users() TO authenticated;
-CREATE OR REPLACE FUNCTION get_solve_info(
-  p_user_id UUID,
-  p_challenge_id UUID
-)
-RETURNS TABLE (
-  username TEXT,
-  challenge TEXT
-) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT
-    u.username::TEXT,
-    c.title::TEXT
-  FROM public.users u
-  JOIN public.challenges c ON c.id = p_challenge_id
-  WHERE u.id = p_user_id;
-END;
-$$ LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = public, auth, extensions;
-GRANT EXECUTE ON FUNCTION get_solve_info(UUID, UUID) TO authenticated;
 -- INSERT
 CREATE OR REPLACE FUNCTION create_profile(p_id uuid, p_username text)
 RETURNS void AS $$
@@ -941,99 +789,99 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = auth, public, extensions;
 GRANT EXECUTE ON FUNCTION public.admin_change_password(UUID, TEXT) TO authenticated;
--- Single session active enforcement (1 device at a time, skip admins)
-CREATE OR REPLACE FUNCTION public.limit_user_sessions()
-RETURNS TRIGGER AS $$
-DECLARE
-  v_is_admin BOOLEAN := FALSE;
-BEGIN
-  -- 1. Get admin status from public.users table
-  SELECT COALESCE(is_admin, FALSE) INTO v_is_admin
-  FROM public.users
-  WHERE id = NEW.user_id;
-  -- 2. If user is an admin, allow multiple sessions (bypass deletion)
-  IF v_is_admin THEN
-    RETURN NEW;
-  END IF;
-  -- 3. If not an admin, delete all other sessions
-  DELETE FROM auth.sessions
-  WHERE user_id = NEW.user_id AND id <> NEW.id;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = auth, public;
--- Trigger to execute after a new session is inserted
-DROP TRIGGER IF EXISTS tr_limit_user_sessions ON auth.sessions;
-CREATE TRIGGER tr_limit_user_sessions
-AFTER INSERT ON auth.sessions
-FOR EACH ROW
-EXECUTE FUNCTION public.limit_user_sessions();
--- RPC function to verify if caller's session is still active
-CREATE OR REPLACE FUNCTION public.is_current_session_active()
-RETURNS BOOLEAN AS $$
-BEGIN
-  RETURN EXISTS (
-    SELECT 1 FROM auth.sessions WHERE id = (auth.jwt() ->> 'session_id')::uuid
-  );
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = auth, public;
-GRANT EXECUTE ON FUNCTION public.is_current_session_active() TO authenticated, anon;
--- Helper to retrieve system setting value
-CREATE OR REPLACE FUNCTION public.get_system_setting(p_key VARCHAR)
-RETURNS VARCHAR
-SECURITY DEFINER
-SET search_path = public
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  v_val VARCHAR;
-BEGIN
-  SELECT value INTO v_val FROM public.system_settings WHERE key = p_key;
-  RETURN COALESCE(v_val, 'false');
-END;
-$$;
-GRANT EXECUTE ON FUNCTION public.get_system_setting(VARCHAR) TO authenticated, anon;
--- Admin function to update system settings
-CREATE OR REPLACE FUNCTION public.update_system_settings(p_settings JSONB)
-RETURNS BOOLEAN
-SECURITY DEFINER
-SET search_path = public
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  v_key TEXT;
-  v_val TEXT;
-BEGIN
-  IF NOT public.is_admin() THEN
-    RAISE EXCEPTION 'Only global admins can update system settings';
-  END IF;
-  FOR v_key, v_val IN SELECT * FROM jsonb_each_text(p_settings)
-  LOOP
-    INSERT INTO public.system_settings (key, value, updated_at)
-    VALUES (v_key, v_val, now())
-    ON CONFLICT (key) DO UPDATE
-    SET value = EXCLUDED.value, updated_at = now();
-  END LOOP;
-  RETURN TRUE;
-END;
-$$;
-GRANT EXECUTE ON FUNCTION public.update_system_settings(JSONB) TO authenticated;
--- RLS/POLICY for system_settings
-ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Allow select for everyone" ON public.system_settings;
-CREATE POLICY "Allow select for everyone"
-  ON public.system_settings
-  FOR SELECT
-  USING (true);
-DROP POLICY IF EXISTS "Allow all for admin users only" ON public.system_settings;
-CREATE POLICY "Allow all for admin users only"
-  ON public.system_settings
-  FOR ALL
-  TO authenticated
-  USING (public.is_admin())
-  WITH CHECK (public.is_admin());
-GRANT SELECT ON public.system_settings TO authenticated, anon;
 
 -- <<< END: queries/users.sql
+
+-- >>> BEGIN: queries/scoreboard.sql
+-- ==============================================
+-- Queries: scoreboard
+-- Relocated from users.sql
+-- ==============================================
+CREATE OR REPLACE FUNCTION get_leaderboard(
+  limit_rows integer DEFAULT 100,
+  offset_rows integer DEFAULT 0,
+  p_event_id UUID DEFAULT NULL,
+  p_event_mode TEXT DEFAULT 'any'
+)
+RETURNS TABLE (
+  id UUID,
+  username TEXT,
+  score BIGINT,
+  last_solve TIMESTAMPTZ,
+  rank BIGINT,
+  picture TEXT
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    u.id,
+    u.username::TEXT,
+    COALESCE(
+      SUM(
+        CASE WHEN public.match_event_mode(p_event_mode, p_event_id, c.event_id) THEN c.points ELSE 0 END
+      ), 0
+    ) AS score,
+    MAX(
+      CASE WHEN public.match_event_mode(p_event_mode, p_event_id, c.event_id) THEN s.created_at ELSE NULL END
+    ) AS last_solve,
+    ROW_NUMBER() OVER (
+      ORDER BY COALESCE(
+        SUM(CASE WHEN public.match_event_mode(p_event_mode, p_event_id, c.event_id) THEN c.points ELSE 0 END), 0
+      ) DESC,
+      MAX(CASE WHEN public.match_event_mode(p_event_mode, p_event_id, c.event_id) THEN s.created_at ELSE NULL END) ASC
+    ) AS rank,
+    public.resolve_profile_picture(u.profile_picture_url, au.raw_user_meta_data)::TEXT AS picture
+  FROM public.users u
+  LEFT JOIN auth.users au ON au.id = u.id
+  LEFT JOIN public.solves s ON u.id = s.user_id
+  LEFT JOIN public.challenges c ON s.challenge_id = c.id
+  GROUP BY u.id, u.username, au.raw_user_meta_data, u.profile_picture_url
+  HAVING COALESCE(
+    SUM(
+      CASE WHEN public.match_event_mode(p_event_mode, p_event_id, c.event_id) THEN c.points ELSE 0 END
+    ), 0
+  ) > 0
+  ORDER BY score DESC, last_solve ASC
+  LIMIT limit_rows OFFSET offset_rows;
+END;
+$$ LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, auth, extensions;
+GRANT EXECUTE ON FUNCTION get_leaderboard(integer, integer, uuid, text) TO authenticated;
+CREATE OR REPLACE FUNCTION get_top_progress(
+  p_user_ids UUID[],
+  p_limit INT DEFAULT 1000,
+  p_offset INT DEFAULT 0,
+  p_event_id UUID DEFAULT NULL,
+  p_event_mode TEXT DEFAULT 'any'
+)
+RETURNS TABLE (
+  user_id UUID,
+  username TEXT,
+  created_at TIMESTAMPTZ,
+  points INTEGER
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    s.user_id,
+    u.username::TEXT,
+    s.created_at,
+    c.points
+  FROM public.solves s
+  JOIN public.challenges c ON c.id = s.challenge_id
+  JOIN public.users u ON u.id = s.user_id
+  WHERE s.user_id = ANY(p_user_ids)
+    AND public.match_event_mode(p_event_mode, p_event_id, c.event_id)
+  ORDER BY s.created_at ASC
+  LIMIT p_limit OFFSET p_offset;
+END;
+$$ LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, auth, extensions;
+GRANT EXECUTE ON FUNCTION get_top_progress(UUID[], INT, INT, UUID, TEXT) TO authenticated;
+
+-- <<< END: queries/scoreboard.sql
 
 -- >>> BEGIN: queries/admin_audit_logs.sql
 -- ==============================================
@@ -1317,6 +1165,73 @@ CREATE POLICY "Admin audit logs select global admin"
   ON public.admin_audit_logs
   FOR SELECT
   USING (public.is_admin());
+-- RELOCATED FUNCTIONS
+CREATE OR REPLACE FUNCTION public.get_auth_audit_logs(
+  p_limit int default 50,
+  p_offset int default 0,
+  p_action_filters text[] default null
+)
+RETURNS TABLE (
+  id uuid,
+  created_at timestamptz,
+  ip_address text,
+  payload jsonb,
+  user_id uuid,
+  username text,
+  email text
+)
+language plpgsql
+security definer
+set search_path = public, auth, extensions
+as $$
+BEGIN
+  IF NOT is_admin() THEN
+    RAISE EXCEPTION 'Only global admin can view audit logs';
+  END IF;
+  RETURN QUERY
+  WITH audit_rows AS (
+    SELECT
+      ale.id,
+      ale.created_at,
+      ale.ip_address::text AS ip_address,
+      ale.payload::jsonb AS payload,
+      NULLIF(COALESCE(
+        ale.payload->>'actor_id',
+        ale.payload->>'user_id',
+        ale.payload->'traits'->>'user_id'
+      ), '') AS payload_user_id,
+      NULLIF(COALESCE(
+        ale.payload->'traits'->>'user_email',
+        ale.payload->>'actor_username',
+        ale.payload->>'email'
+      ), '') AS payload_email
+    FROM auth.audit_log_entries ale
+    WHERE (p_action_filters IS NULL OR ale.payload->>'action' = ANY(p_action_filters))
+  )
+  SELECT
+    ar.id,
+    ar.created_at,
+    ar.ip_address,
+    ar.payload,
+    au.id,
+    u.username::text,
+    au.email::text
+  FROM audit_rows ar
+  LEFT JOIN auth.users au
+    ON (
+      ar.payload_user_id ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+      AND au.id = ar.payload_user_id::uuid
+    )
+    OR (
+      ar.payload_email IS NOT NULL
+      AND lower(au.email) = lower(ar.payload_email)
+    )
+  LEFT JOIN public.users u ON u.id = au.id
+  ORDER BY ar.created_at DESC
+  LIMIT p_limit OFFSET p_offset;
+END;
+$$;
+grant execute on function public.get_auth_audit_logs(int, int, text[]) to authenticated;
 
 -- <<< END: queries/admin_audit_logs.sql
 
@@ -1326,6 +1241,26 @@ CREATE POLICY "Admin audit logs select global admin"
 -- Source: sql/chema.sql
 -- ==============================================
 -- SELECT
+CREATE OR REPLACE FUNCTION has_admin_access()
+RETURNS BOOLEAN AS $$
+DECLARE
+  v_user_id UUID := auth.uid()::uuid;
+BEGIN
+  IF v_user_id IS NULL THEN
+    RETURN FALSE;
+  END IF;
+  IF is_admin() THEN
+    RETURN TRUE;
+  END IF;
+  RETURN EXISTS (
+    SELECT 1
+    FROM public.event_admins ea
+    WHERE ea.user_id = v_user_id
+  );
+END;
+$$ LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public, auth, extensions;
+GRANT EXECUTE ON FUNCTION has_admin_access() TO authenticated;
 CREATE OR REPLACE FUNCTION can_manage_event(p_event_id UUID)
 RETURNS BOOLEAN AS $$
 DECLARE
@@ -2037,6 +1972,41 @@ CREATE POLICY "Event participants self select"
   ON public.event_participants
   FOR SELECT
   USING (user_id = auth.uid()::uuid);
+-- RELOCATED FUNCTIONS
+CREATE OR REPLACE FUNCTION set_challenges_event(
+  p_event_id UUID,
+  p_challenge_ids UUID[]
+)
+RETURNS INTEGER AS $$
+DECLARE
+  v_count INTEGER;
+  v_before JSONB;
+BEGIN
+  IF NOT is_admin() THEN
+    RAISE EXCEPTION 'Only admin can update challenges event';
+  END IF;
+  SELECT jsonb_agg(jsonb_build_object('id', c.id, 'title', c.title, 'event_id', c.event_id))
+  INTO v_before
+  FROM public.challenges c
+  WHERE c.id = ANY(p_challenge_ids);
+  UPDATE public.challenges
+  SET event_id = p_event_id,
+      updated_at = now()
+  WHERE id = ANY(p_challenge_ids);
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  PERFORM public.write_admin_audit_log(
+    'UPDATE',
+    'challenge',
+    p_event_id,
+    jsonb_build_object('challenges', COALESCE(v_before, '[]'::jsonb)),
+    jsonb_build_object('event_id', p_event_id, 'challenge_count', v_count),
+    jsonb_build_object('administrative_action', 'set_challenges_event')
+  );
+  RETURN v_count;
+END;
+$$ LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public, auth, extensions;
+GRANT EXECUTE ON FUNCTION set_challenges_event(UUID, UUID[]) TO authenticated;
 
 -- <<< END: queries/event_membership.sql
 
@@ -2045,6 +2015,8 @@ CREATE POLICY "Event participants self select"
 -- Queries: challenge_flags
 -- Source: sql/chema.sql
 -- ==============================================
+ALTER TABLE public.challenge_flags DROP CONSTRAINT IF EXISTS challenge_flags_flag_hash_key;
+ALTER TABLE public.challenge_flags DROP COLUMN IF EXISTS flag_hash;
 -- SELECT
 CREATE OR REPLACE FUNCTION get_flag(p_challenge_id uuid)
 RETURNS text AS $$
@@ -2062,25 +2034,9 @@ END;
 $$ LANGUAGE plpgsql
 SECURITY DEFINER SET search_path = public, auth, extensions;
 GRANT EXECUTE ON FUNCTION get_flag(p_challenge_id uuid) TO authenticated;
--- UPDATE
-CREATE OR REPLACE FUNCTION generate_flag_hash(flag_text TEXT)
-RETURNS TEXT AS $$
-BEGIN
-  RETURN encode(digest(flag_text, 'sha256'), 'hex');
-END;
-$$ LANGUAGE plpgsql IMMUTABLE;
-CREATE OR REPLACE FUNCTION auto_update_flag_hash()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.flag_hash = generate_flag_hash(NEW.flag);
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS trigger_auto_flag_hash ON public.challenge_flags;
-CREATE TRIGGER trigger_auto_flag_hash
-  BEFORE INSERT OR UPDATE ON public.challenge_flags
-  FOR EACH ROW
-  EXECUTE FUNCTION auto_update_flag_hash();
+DROP FUNCTION IF EXISTS auto_update_flag_hash();
+DROP FUNCTION IF EXISTS generate_flag_hash(TEXT);
 -- RLS
 ALTER TABLE public.challenge_flags ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Challenge flags admin all" ON public.challenge_flags;
@@ -2089,6 +2045,62 @@ CREATE POLICY "Challenge flags admin all"
   FOR ALL
   USING (is_admin() OR can_manage_challenge(challenge_id))
   WITH CHECK (is_admin() OR can_manage_challenge(challenge_id));
+-- RELOCATED FUNCTIONS
+CREATE OR REPLACE FUNCTION public.get_flag_placeholder(p_flag TEXT)
+RETURNS TEXT
+LANGUAGE plpgsql
+IMMUTABLE
+AS $$
+DECLARE
+    v_result TEXT := '';
+    v_char TEXT;
+    i INT;
+BEGIN
+    IF p_flag IS NULL THEN RETURN NULL; END IF;
+    FOR i IN 1..length(p_flag) LOOP
+        v_char := substr(p_flag, i, 1);
+        IF v_char ~ '[a-z]' THEN
+            v_result := v_result || 'x';
+        ELSIF v_char ~ '[A-Z]' THEN
+            v_result := v_result || 'X';
+        ELSIF v_char ~ '[0-9]' THEN
+            v_result := v_result || '0';
+        ELSIF v_char = '_' THEN
+            v_result := v_result || '_';
+        ELSIF v_char = '{' THEN
+            v_result := v_result || '{';
+        ELSIF v_char = '}' THEN
+            v_result := v_result || '}';
+        ELSE
+            v_result := v_result || '?';
+        END IF;
+    END LOOP;
+    RETURN v_result;
+END;
+$$;
+GRANT EXECUTE ON FUNCTION public.get_flag_placeholder(TEXT) TO authenticated;
+CREATE OR REPLACE FUNCTION public.get_challenge_placeholder(p_challenge_id UUID)
+RETURNS TEXT
+LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public, auth, extensions
+AS $$
+DECLARE
+    v_flag TEXT;
+    v_show_placeholder BOOLEAN;
+BEGIN
+    SELECT c.flag_placeholder, cf.flag
+    INTO v_show_placeholder, v_flag
+    FROM public.challenges c
+    JOIN public.challenge_flags cf ON cf.challenge_id = c.id
+    WHERE c.id = p_challenge_id;
+    IF v_show_placeholder THEN
+        RETURN public.get_flag_placeholder(v_flag);
+    ELSE
+        RETURN NULL;
+    END IF;
+END;
+$$;
+GRANT EXECUTE ON FUNCTION public.get_challenge_placeholder(UUID) TO authenticated;
 
 -- <<< END: queries/challenge_flags.sql
 
@@ -2209,40 +2221,6 @@ END;
 $$ LANGUAGE plpgsql
 SECURITY DEFINER SET search_path = public, auth, extensions;
 GRANT EXECUTE ON FUNCTION update_event(UUID, TEXT, TEXT, TIMESTAMPTZ, TIMESTAMPTZ, BOOLEAN, TEXT) TO authenticated;
-CREATE OR REPLACE FUNCTION set_challenges_event(
-  p_event_id UUID,
-  p_challenge_ids UUID[]
-)
-RETURNS INTEGER AS $$
-DECLARE
-  v_count INTEGER;
-  v_before JSONB;
-BEGIN
-  IF NOT is_admin() THEN
-    RAISE EXCEPTION 'Only admin can update challenges event';
-  END IF;
-  SELECT jsonb_agg(jsonb_build_object('id', c.id, 'title', c.title, 'event_id', c.event_id))
-  INTO v_before
-  FROM public.challenges c
-  WHERE c.id = ANY(p_challenge_ids);
-  UPDATE public.challenges
-  SET event_id = p_event_id,
-      updated_at = now()
-  WHERE id = ANY(p_challenge_ids);
-  GET DIAGNOSTICS v_count = ROW_COUNT;
-  PERFORM public.write_admin_audit_log(
-    'UPDATE',
-    'challenge',
-    p_event_id,
-    jsonb_build_object('challenges', COALESCE(v_before, '[]'::jsonb)),
-    jsonb_build_object('event_id', p_event_id, 'challenge_count', v_count),
-    jsonb_build_object('administrative_action', 'set_challenges_event')
-  );
-  RETURN v_count;
-END;
-$$ LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = public, auth, extensions;
-GRANT EXECUTE ON FUNCTION set_challenges_event(UUID, UUID[]) TO authenticated;
 -- DELETE
 CREATE OR REPLACE FUNCTION delete_event(
   p_event_id UUID
@@ -2442,23 +2420,6 @@ END;
 $$ LANGUAGE plpgsql
 SECURITY DEFINER SET search_path = public, auth, extensions;
 GRANT EXECUTE ON FUNCTION get_difficulty_totals(UUID, TEXT) TO authenticated;
-CREATE OR REPLACE FUNCTION get_user_first_bloods(p_user_id UUID)
-RETURNS TABLE(challenge_id UUID)
-AS $$
-BEGIN
-  RETURN QUERY
-  SELECT t.challenge_id
-  FROM (
-    SELECT
-      s.challenge_id,
-      s.user_id,
-      ROW_NUMBER() OVER (PARTITION BY s.challenge_id ORDER BY s.created_at ASC, s.id ASC) AS rn
-    FROM public.solves s
-  ) AS t
-  WHERE t.rn = 1 AND t.user_id = p_user_id;
-END;
-$$ LANGUAGE plpgsql;
-GRANT EXECUTE ON FUNCTION get_user_first_bloods(UUID) TO authenticated;
 -- INSERT
 CREATE OR REPLACE FUNCTION add_challenge(
   p_title TEXT,
@@ -2526,7 +2487,7 @@ CREATE OR REPLACE FUNCTION submit_flag(
 RETURNS json AS $$
 DECLARE
   v_user_id uuid := auth.uid()::uuid;
-  v_flag_hash TEXT;
+  v_flag TEXT;
   v_points INTEGER;
   v_max_points INTEGER;
   v_is_dynamic BOOLEAN;
@@ -2538,17 +2499,19 @@ DECLARE
   v_existing INT;
   v_is_correct BOOLEAN;
   v_access JSON;
+  v_is_admin_override BOOLEAN := FALSE;
 BEGIN
   v_access := public.validate_challenge_access(p_challenge_id, v_user_id);
   IF NOT (v_access->>'success')::BOOLEAN THEN
     RETURN v_access;
   END IF;
-  SELECT cf.flag_hash, c.points, c.max_points, c.is_dynamic, c.min_points, c.decay_per_solve, c.event_id
-  INTO v_flag_hash, v_points, v_max_points, v_is_dynamic, v_min_points, v_decay_per_solve, v_event_id
+  v_is_admin_override := public.is_admin() OR public.can_manage_challenge(p_challenge_id);
+  SELECT cf.flag, c.points, c.max_points, c.is_dynamic, c.min_points, c.decay_per_solve, c.event_id
+  INTO v_flag, v_points, v_max_points, v_is_dynamic, v_min_points, v_decay_per_solve, v_event_id
   FROM public.challenge_flags cf
   JOIN public.challenges c ON c.id = cf.challenge_id
   WHERE cf.challenge_id = p_challenge_id;
-  v_is_correct := encode(digest(p_flag, 'sha256'), 'hex') = v_flag_hash;
+  v_is_correct := p_flag = v_flag;
   IF NOT v_is_correct THEN
     RETURN json_build_object('success', false, 'message', 'Incorrect flag');
   END IF;
@@ -2576,11 +2539,17 @@ END;
 $$ LANGUAGE plpgsql
 SECURITY DEFINER SET search_path = public, auth, extensions;
 GRANT EXECUTE ON FUNCTION submit_flag(uuid, text) TO authenticated;
--- UPDATE
-UPDATE challenges
-SET total_solves = (
-  SELECT COUNT(*) FROM solves WHERE challenge_id = challenges.id
-);
+CREATE OR REPLACE FUNCTION public.sync_challenge_solves()
+RETURNS void AS $$
+BEGIN
+  UPDATE public.challenges c
+  SET total_solves = (
+    SELECT COUNT(*)::integer FROM public.solves s WHERE s.challenge_id = c.id
+  );
+END;
+$$ LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public, auth, extensions;
+GRANT EXECUTE ON FUNCTION public.sync_challenge_solves() TO authenticated;
 CREATE OR REPLACE FUNCTION update_challenge(
   p_challenge_id UUID,
   p_title TEXT,
@@ -2845,28 +2814,6 @@ CREATE TRIGGER trigger_handle_challenge_activation
 AFTER UPDATE OF is_active ON public.challenges
 FOR EACH ROW
 EXECUTE FUNCTION handle_challenge_activation();
-CREATE OR REPLACE FUNCTION public.get_challenge_placeholder(p_challenge_id UUID)
-RETURNS TEXT
-LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = public, auth, extensions
-AS $$
-DECLARE
-    v_flag TEXT;
-    v_show_placeholder BOOLEAN;
-BEGIN
-    SELECT c.flag_placeholder, cf.flag
-    INTO v_show_placeholder, v_flag
-    FROM public.challenges c
-    JOIN public.challenge_flags cf ON cf.challenge_id = c.id
-    WHERE c.id = p_challenge_id;
-    IF v_show_placeholder THEN
-        RETURN public.get_flag_placeholder(v_flag);
-    ELSE
-        RETURN NULL;
-    END IF;
-END;
-$$;
-GRANT EXECUTE ON FUNCTION public.get_challenge_placeholder(UUID) TO authenticated;
 -- DELETE
 CREATE OR REPLACE FUNCTION delete_challenge(
   p_challenge_id UUID
@@ -3769,11 +3716,7 @@ BEGIN
   SELECT
     u.username::TEXT,
     s.created_at AS solved_at,
-    COALESCE(
-      u.profile_picture_url,
-      au.raw_user_meta_data->>'picture',
-      au.raw_user_meta_data->>'avatar_url'
-    )::TEXT AS picture
+    public.resolve_profile_picture(u.profile_picture_url, au.raw_user_meta_data)::TEXT AS picture
   FROM public.solves s
   JOIN public.users u ON u.id = s.user_id
   LEFT JOIN auth.users au ON au.id = u.id
@@ -3782,7 +3725,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, auth;
+SET search_path = public, auth, extensions;
 GRANT EXECUTE ON FUNCTION get_challenge_solvers(UUID) TO authenticated, anon;
 -- DELETE
 CREATE OR REPLACE FUNCTION delete_solver(
@@ -3825,7 +3768,7 @@ CREATE OR REPLACE FUNCTION get_solved_event_ids()
 RETURNS TABLE (event_id UUID)
 LANGUAGE sql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, auth, extensions
 AS $$
   SELECT DISTINCT c.event_id
   FROM public.solves s
@@ -3841,6 +3784,45 @@ CREATE POLICY "Solves can select all"
   ON public.solves
   FOR SELECT
   USING (true);
+-- RELOCATED FUNCTIONS
+CREATE OR REPLACE FUNCTION get_solve_info(
+  p_user_id UUID,
+  p_challenge_id UUID
+)
+RETURNS TABLE (
+  username TEXT,
+  challenge TEXT
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    u.username::TEXT,
+    c.title::TEXT
+  FROM public.users u
+  JOIN public.challenges c ON c.id = p_challenge_id
+  WHERE u.id = p_user_id;
+END;
+$$ LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public, auth, extensions;
+GRANT EXECUTE ON FUNCTION get_solve_info(UUID, UUID) TO authenticated;
+CREATE OR REPLACE FUNCTION get_user_first_bloods(p_user_id UUID)
+RETURNS TABLE(challenge_id UUID)
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT t.challenge_id
+  FROM (
+    SELECT
+      s.challenge_id,
+      s.user_id,
+      ROW_NUMBER() OVER (PARTITION BY s.challenge_id ORDER BY s.created_at ASC, s.id ASC) AS rn
+    FROM public.solves s
+  ) AS t
+  WHERE t.rn = 1 AND t.user_id = p_user_id;
+END;
+$$ LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public, auth, extensions;
+GRANT EXECUTE ON FUNCTION get_user_first_bloods(UUID) TO authenticated;
 
 -- <<< END: queries/solves.sql
 
@@ -3850,8 +3832,6 @@ CREATE POLICY "Solves can select all"
 -- Source: sql/teams.sql
 -- ==============================================
 -- SELECT
-ALTER TABLE public.teams
-  ADD COLUMN IF NOT EXISTS picture_url VARCHAR(2048) DEFAULT NULL;
 CREATE OR REPLACE FUNCTION generate_team_invite_code()
 RETURNS TEXT AS $$
 BEGIN
@@ -4969,105 +4949,127 @@ GRANT SELECT ON public.notifications TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_logs(INT, INT, UUID, TEXT) TO anon;
 GRANT SELECT ON public.challenges TO anon;
 GRANT SELECT ON public.events TO anon;
-CREATE OR REPLACE FUNCTION public.get_auth_audit_logs(
-  p_limit int default 50,
-  p_offset int default 0,
-  p_action_filters text[] default null
-)
-RETURNS TABLE (
-  id uuid,
-  created_at timestamptz,
-  ip_address text,
-  payload jsonb,
-  user_id uuid,
-  username text,
-  email text
-)
-language plpgsql
-security definer
-set search_path = public, auth
-as $$
+-- RELOCATED FUNCTIONS
+CREATE OR REPLACE FUNCTION get_info()
+RETURNS JSON AS $$
+DECLARE
+  v_total_users BIGINT;
+  v_total_admins BIGINT;
+  v_total_solves BIGINT;
+  v_unique_solvers BIGINT;
+  v_total_challenges BIGINT;
+  v_active_challenges BIGINT;
 BEGIN
-  IF NOT is_admin() THEN
-    RAISE EXCEPTION 'Only global admin can view audit logs';
-  END IF;
-  RETURN QUERY
-  WITH audit_rows AS (
-    SELECT
-      ale.id,
-      ale.created_at,
-      ale.ip_address::text AS ip_address,
-      ale.payload::jsonb AS payload,
-      NULLIF(COALESCE(
-        ale.payload->>'actor_id',
-        ale.payload->>'user_id',
-        ale.payload->'traits'->>'user_id'
-      ), '') AS payload_user_id,
-      NULLIF(COALESCE(
-        ale.payload->'traits'->>'user_email',
-        ale.payload->>'actor_username',
-        ale.payload->>'email'
-      ), '') AS payload_email
-    FROM auth.audit_log_entries ale
-    WHERE (p_action_filters IS NULL OR ale.payload->>'action' = ANY(p_action_filters))
-  )
-  SELECT
-    ar.id,
-    ar.created_at,
-    ar.ip_address,
-    ar.payload,
-    au.id,
-    u.username::text,
-    au.email::text
-  FROM audit_rows ar
-  LEFT JOIN auth.users au
-    ON (
-      ar.payload_user_id ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-      AND au.id = ar.payload_user_id::uuid
-    )
-    OR (
-      ar.payload_email IS NOT NULL
-      AND lower(au.email) = lower(ar.payload_email)
-    )
-  LEFT JOIN public.users u ON u.id = au.id
-  ORDER BY ar.created_at DESC
-  LIMIT p_limit OFFSET p_offset;
+  SELECT COUNT(*)::BIGINT INTO v_total_users FROM public.users;
+  SELECT COUNT(*)::BIGINT INTO v_total_admins FROM public.users WHERE is_admin = TRUE;
+  SELECT COUNT(*)::BIGINT INTO v_total_solves FROM public.solves;
+  SELECT COUNT(DISTINCT user_id)::BIGINT INTO v_unique_solvers FROM public.solves;
+  SELECT COUNT(*)::BIGINT INTO v_total_challenges FROM public.challenges;
+  SELECT COUNT(*)::BIGINT INTO v_active_challenges FROM public.challenges WHERE is_active = TRUE;
+  RETURN json_build_object(
+    'total_users', v_total_users,
+    'total_admins', v_total_admins,
+    'total_solves', v_total_solves,
+    'unique_solvers', v_unique_solvers,
+    'total_challenges', v_total_challenges,
+    'active_challenges', v_active_challenges,
+    'success', true
+  );
 END;
-$$;
-grant execute on function public.get_auth_audit_logs(int, int, text[]) to authenticated;
-CREATE OR REPLACE FUNCTION public.get_flag_placeholder(p_flag TEXT)
-RETURNS TEXT
+$$ LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public, auth, extensions;
+GRANT EXECUTE ON FUNCTION get_info() TO authenticated;
+-- Single session active enforcement (1 device at a time, skip admins)
+CREATE OR REPLACE FUNCTION public.limit_user_sessions()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_is_admin BOOLEAN := FALSE;
+BEGIN
+  -- 1. Get admin status from public.users table
+  SELECT COALESCE(is_admin, FALSE) INTO v_is_admin
+  FROM public.users
+  WHERE id = NEW.user_id;
+  -- 2. If user is an admin, allow multiple sessions (bypass deletion)
+  IF v_is_admin THEN
+    RETURN NEW;
+  END IF;
+  -- 3. If not an admin, delete all other sessions
+  DELETE FROM auth.sessions
+  WHERE user_id = NEW.user_id AND id <> NEW.id;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = auth, public, extensions;
+-- Trigger to execute after a new session is inserted
+DROP TRIGGER IF EXISTS tr_limit_user_sessions ON auth.sessions;
+CREATE TRIGGER tr_limit_user_sessions
+AFTER INSERT ON auth.sessions
+FOR EACH ROW
+EXECUTE FUNCTION public.limit_user_sessions();
+-- RPC function to verify if caller's session is still active
+CREATE OR REPLACE FUNCTION public.is_current_session_active()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM auth.sessions WHERE id = (auth.jwt() ->> 'session_id')::uuid
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = auth, public, extensions;
+GRANT EXECUTE ON FUNCTION public.is_current_session_active() TO authenticated, anon;
+-- Helper to retrieve system setting value
+CREATE OR REPLACE FUNCTION public.get_system_setting(p_key VARCHAR)
+RETURNS VARCHAR
+SECURITY DEFINER
+SET search_path = public, auth, extensions
 LANGUAGE plpgsql
-IMMUTABLE
 AS $$
 DECLARE
-    v_result TEXT := '';
-    v_char TEXT;
-    i INT;
+  v_val VARCHAR;
 BEGIN
-    IF p_flag IS NULL THEN RETURN NULL; END IF;
-    FOR i IN 1..length(p_flag) LOOP
-        v_char := substr(p_flag, i, 1);
-        IF v_char ~ '[a-z]' THEN
-            v_result := v_result || 'x';
-        ELSIF v_char ~ '[A-Z]' THEN
-            v_result := v_result || 'X';
-        ELSIF v_char ~ '[0-9]' THEN
-            v_result := v_result || '0';
-        ELSIF v_char = '_' THEN
-            v_result := v_result || '_';
-        ELSIF v_char = '{' THEN
-            v_result := v_result || '{';
-        ELSIF v_char = '}' THEN
-            v_result := v_result || '}';
-        ELSE
-            v_result := v_result || '?';
-        END IF;
-    END LOOP;
-    RETURN v_result;
+  SELECT value INTO v_val FROM public.system_settings WHERE key = p_key;
+  RETURN COALESCE(v_val, 'false');
 END;
 $$;
-GRANT EXECUTE ON FUNCTION public.get_flag_placeholder(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_system_setting(VARCHAR) TO authenticated, anon;
+-- Admin function to update system settings
+CREATE OR REPLACE FUNCTION public.update_system_settings(p_settings JSONB)
+RETURNS BOOLEAN
+SECURITY DEFINER
+SET search_path = public, auth, extensions
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_key TEXT;
+  v_val TEXT;
+BEGIN
+  IF NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Only global admins can update system settings';
+  END IF;
+  FOR v_key, v_val IN SELECT * FROM jsonb_each_text(p_settings)
+  LOOP
+    INSERT INTO public.system_settings (key, value, updated_at)
+    VALUES (v_key, v_val, now())
+    ON CONFLICT (key) DO UPDATE
+    SET value = EXCLUDED.value, updated_at = now();
+  END LOOP;
+  RETURN TRUE;
+END;
+$$;
+GRANT EXECUTE ON FUNCTION public.update_system_settings(JSONB) TO authenticated;
+-- RLS/POLICY for system_settings
+ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow select for everyone" ON public.system_settings;
+CREATE POLICY "Allow select for everyone"
+  ON public.system_settings
+  FOR SELECT
+  USING (true);
+DROP POLICY IF EXISTS "Allow all for admin users only" ON public.system_settings;
+CREATE POLICY "Allow all for admin users only"
+  ON public.system_settings
+  FOR ALL
+  TO authenticated
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+GRANT SELECT ON public.system_settings TO authenticated, anon;
 
 -- <<< END: queries/system.sql
 
@@ -5125,10 +5127,11 @@ INSERT INTO public.system_settings (key, value, description)
 VALUES
   ('disable_create_team', 'false', 'Disable team creation for participants'),
   ('disable_join_team', 'false', 'Disable joining/leaving teams for participants'),
-  ('disable_edit_team', 'false', 'Disable editing team name/details'),
+  ('disable_edit_team', 'false', 'Disable editing team name'),
   ('disable_edit_username', 'false', 'Disable editing username')
 ON CONFLICT (key) DO NOTHING;
--- One-off cleanup call from original script
 SELECT cleanup_orphaned_users_and_solves();
+-- Sync challenges solve count
+SELECT public.sync_challenge_solves();
 
 -- <<< END: seed/bootstrap.sql

@@ -342,11 +342,7 @@ BEGIN
   SELECT
     u.username::TEXT,
     s.created_at AS solved_at,
-    COALESCE(
-      u.profile_picture_url,
-      au.raw_user_meta_data->>'picture',
-      au.raw_user_meta_data->>'avatar_url'
-    )::TEXT AS picture
+    public.resolve_profile_picture(u.profile_picture_url, au.raw_user_meta_data)::TEXT AS picture
   FROM public.solves s
   JOIN public.users u ON u.id = s.user_id
   LEFT JOIN auth.users au ON au.id = u.id
@@ -355,7 +351,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, auth;
+SET search_path = public, auth, extensions;
 
 GRANT EXECUTE ON FUNCTION get_challenge_solvers(UUID) TO authenticated, anon;
 
@@ -406,7 +402,7 @@ CREATE OR REPLACE FUNCTION get_solved_event_ids()
 RETURNS TABLE (event_id UUID)
 LANGUAGE sql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, auth, extensions
 AS $$
   SELECT DISTINCT c.event_id
   FROM public.solves s
@@ -425,3 +421,47 @@ CREATE POLICY "Solves can select all"
   ON public.solves
   FOR SELECT
   USING (true);
+
+-- RELOCATED FUNCTIONS
+
+CREATE OR REPLACE FUNCTION get_solve_info(
+  p_user_id UUID,
+  p_challenge_id UUID
+)
+RETURNS TABLE (
+  username TEXT,
+  challenge TEXT
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    u.username::TEXT,
+    c.title::TEXT
+  FROM public.users u
+  JOIN public.challenges c ON c.id = p_challenge_id
+  WHERE u.id = p_user_id;
+END;
+$$ LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public, auth, extensions;
+
+GRANT EXECUTE ON FUNCTION get_solve_info(UUID, UUID) TO authenticated;
+
+CREATE OR REPLACE FUNCTION get_user_first_bloods(p_user_id UUID)
+RETURNS TABLE(challenge_id UUID)
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT t.challenge_id
+  FROM (
+    SELECT
+      s.challenge_id,
+      s.user_id,
+      ROW_NUMBER() OVER (PARTITION BY s.challenge_id ORDER BY s.created_at ASC, s.id ASC) AS rn
+    FROM public.solves s
+  ) AS t
+  WHERE t.rn = 1 AND t.user_id = p_user_id;
+END;
+$$ LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public, auth, extensions;
+
+GRANT EXECUTE ON FUNCTION get_user_first_bloods(UUID) TO authenticated;

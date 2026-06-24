@@ -609,3 +609,46 @@ CREATE POLICY "Event participants self select"
   ON public.event_participants
   FOR SELECT
   USING (user_id = auth.uid()::uuid);
+
+-- RELOCATED FUNCTIONS
+
+CREATE OR REPLACE FUNCTION set_challenges_event(
+  p_event_id UUID,
+  p_challenge_ids UUID[]
+)
+RETURNS INTEGER AS $$
+DECLARE
+  v_count INTEGER;
+  v_before JSONB;
+BEGIN
+  IF NOT is_admin() THEN
+    RAISE EXCEPTION 'Only admin can update challenges event';
+  END IF;
+
+  SELECT jsonb_agg(jsonb_build_object('id', c.id, 'title', c.title, 'event_id', c.event_id))
+  INTO v_before
+  FROM public.challenges c
+  WHERE c.id = ANY(p_challenge_ids);
+
+  UPDATE public.challenges
+  SET event_id = p_event_id,
+      updated_at = now()
+  WHERE id = ANY(p_challenge_ids);
+
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+
+  PERFORM public.write_admin_audit_log(
+    'UPDATE',
+    'challenge',
+    p_event_id,
+    jsonb_build_object('challenges', COALESCE(v_before, '[]'::jsonb)),
+    jsonb_build_object('event_id', p_event_id, 'challenge_count', v_count),
+    jsonb_build_object('administrative_action', 'set_challenges_event')
+  );
+
+  RETURN v_count;
+END;
+$$ LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public, auth, extensions;
+
+GRANT EXECUTE ON FUNCTION set_challenges_event(UUID, UUID[]) TO authenticated;

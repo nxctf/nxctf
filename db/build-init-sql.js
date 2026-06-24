@@ -29,6 +29,7 @@ const orderedFiles = [
 
   // 3) Query/functions (core first)
   "queries/users.sql",
+  "queries/scoreboard.sql",
   "queries/admin_audit_logs.sql",
   "queries/event_admins.sql",
   "queries/event_membership.sql",

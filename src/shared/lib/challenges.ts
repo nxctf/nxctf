@@ -175,7 +175,6 @@ export async function getChallengesList(
         hint: null,
         attachments: [],
         flag: '',
-        flag_hash: '',
       }))
     } catch (err) {
       console.error('Error fetching challenges (list):', err)
@@ -210,7 +209,6 @@ export async function getChallengeDetail(challengeId: string): Promise<Challenge
     return {
       ...(data as any),
       flag: '',
-      flag_hash: '',
     } as any
   } catch (error) {
     console.error('Error fetching challenge detail:', error)

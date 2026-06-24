@@ -305,3 +305,74 @@ CREATE POLICY "Admin audit logs select global admin"
   ON public.admin_audit_logs
   FOR SELECT
   USING (public.is_admin());
+
+-- RELOCATED FUNCTIONS
+
+CREATE OR REPLACE FUNCTION public.get_auth_audit_logs(
+  p_limit int default 50,
+  p_offset int default 0,
+  p_action_filters text[] default null
+)
+RETURNS TABLE (
+  id uuid,
+  created_at timestamptz,
+  ip_address text,
+  payload jsonb,
+  user_id uuid,
+  username text,
+  email text
+)
+language plpgsql
+security definer
+set search_path = public, auth, extensions
+as $$
+BEGIN
+  IF NOT is_admin() THEN
+    RAISE EXCEPTION 'Only global admin can view audit logs';
+  END IF;
+
+  RETURN QUERY
+  WITH audit_rows AS (
+    SELECT
+      ale.id,
+      ale.created_at,
+      ale.ip_address::text AS ip_address,
+      ale.payload::jsonb AS payload,
+      NULLIF(COALESCE(
+        ale.payload->>'actor_id',
+        ale.payload->>'user_id',
+        ale.payload->'traits'->>'user_id'
+      ), '') AS payload_user_id,
+      NULLIF(COALESCE(
+        ale.payload->'traits'->>'user_email',
+        ale.payload->>'actor_username',
+        ale.payload->>'email'
+      ), '') AS payload_email
+    FROM auth.audit_log_entries ale
+    WHERE (p_action_filters IS NULL OR ale.payload->>'action' = ANY(p_action_filters))
+  )
+  SELECT
+    ar.id,
+    ar.created_at,
+    ar.ip_address,
+    ar.payload,
+    au.id,
+    u.username::text,
+    au.email::text
+  FROM audit_rows ar
+  LEFT JOIN auth.users au
+    ON (
+      ar.payload_user_id ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+      AND au.id = ar.payload_user_id::uuid
+    )
+    OR (
+      ar.payload_email IS NOT NULL
+      AND lower(au.email) = lower(ar.payload_email)
+    )
+  LEFT JOIN public.users u ON u.id = au.id
+  ORDER BY ar.created_at DESC
+  LIMIT p_limit OFFSET p_offset;
+END;
+$$;
+
+grant execute on function public.get_auth_audit_logs(int, int, text[]) to authenticated;

@@ -124,6 +124,7 @@ export default function ConfirmDialog({
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault()
+                    e.stopPropagation()
                     if (!loading && !confirmDisabled && (verificationText === undefined || verificationValue === verificationText)) {
                       handleConfirm()
                     }
@@ -138,6 +139,11 @@ export default function ConfirmDialog({
           <Button
             variant="ghost"
             onMouseDown={(e) => e.preventDefault()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.stopPropagation()
+              }
+            }}
             onClick={() => onOpenChange(false)}
             disabled={loading}
             className="text-xs font-medium"
@@ -147,6 +153,11 @@ export default function ConfirmDialog({
           <Button
             variant={confirmVariant}
             onMouseDown={(e) => e.preventDefault()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.stopPropagation()
+              }
+            }}
             onClick={handleConfirm}
             disabled={loading || confirmDisabled || (verificationText !== undefined && verificationValue !== verificationText)}
             className="text-xs font-medium"

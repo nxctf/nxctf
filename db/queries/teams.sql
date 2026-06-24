@@ -4,9 +4,6 @@
 -- ==============================================
 
 -- SELECT
-ALTER TABLE public.teams
-  ADD COLUMN IF NOT EXISTS picture_url VARCHAR(2048) DEFAULT NULL;
-
 CREATE OR REPLACE FUNCTION generate_team_invite_code()
 RETURNS TEXT AS $$
 BEGIN

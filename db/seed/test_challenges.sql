@@ -42,8 +42,8 @@ Flag for testing: `NXCTF{intro_test_1_9d89}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('a970c50b-1231-4a88-8aff-8ed24998716c', 'NXCTF{intro_test_1_9d89}', 'ec868e712fceeab885a34db491cc86f67726c1de8229a8f6478988141e3d1798');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('a970c50b-1231-4a88-8aff-8ed24998716c', 'NXCTF{intro_test_1_9d89}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -74,8 +74,8 @@ Flag for testing: `NXCTF{intro_test_2_f226}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('d58f52f9-1a3f-4f59-8db1-dcec9d171adb', 'NXCTF{intro_test_2_f226}', 'edad9b1a4f307243bbd5551f0031a5fc6e8a64961693b6b1159e2634d4d7a6a3');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('d58f52f9-1a3f-4f59-8db1-dcec9d171adb', 'NXCTF{intro_test_2_f226}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -106,8 +106,8 @@ Flag for testing: `NXCTF{intro_test_3_a45a}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('81150592-d82e-45db-8537-cf1d1526b463', 'NXCTF{intro_test_3_a45a}', 'aeda0d78051e21ac68cad520b530d36298e1e84fc74495c078bbd48a1a0ac9bf');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('81150592-d82e-45db-8537-cf1d1526b463', 'NXCTF{intro_test_3_a45a}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -138,8 +138,8 @@ Flag for testing: `NXCTF{intro_test_4_1f16}`',
     false,
     '[{"url":"https://example.com/file.zip","name":"challenge_files.zip","type":"file"},{"url":"http://s1.ariaf.my.id:8000","name":"Web Service","type":"link"}]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('aac71b10-6ddf-4c98-8b2b-29aeed5cd2db', 'NXCTF{intro_test_4_1f16}', '36be0bfd67253e43346daab76d7e9e145a67609548296c6bf04943c1ed874b07');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('aac71b10-6ddf-4c98-8b2b-29aeed5cd2db', 'NXCTF{intro_test_4_1f16}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -170,8 +170,8 @@ Flag for testing: `NXCTF{intro_test_5_f661}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('ba976995-9319-4045-8699-16b6b933e6c0', 'NXCTF{intro_test_5_f661}', '753e629927651cb959aa7fcb35c6b0a4f28c5ddf844d917eabb25356d391a155');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('ba976995-9319-4045-8699-16b6b933e6c0', 'NXCTF{intro_test_5_f661}');
 
 -- Category: Boot To Root
 INSERT INTO public.challenges (
@@ -203,8 +203,8 @@ Flag for testing: `NXCTF{boot_to_root_test_1_4190}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('eaeff961-c0c3-4186-a267-2cfe6c3383cc', 'NXCTF{boot_to_root_test_1_4190}', '6607db3d19a625ec80a346d9ae22076b67ea9ec046a8e71c3c57c36e7b8703b6');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('eaeff961-c0c3-4186-a267-2cfe6c3383cc', 'NXCTF{boot_to_root_test_1_4190}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -235,8 +235,8 @@ Flag for testing: `NXCTF{boot_to_root_test_2_92b8}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('4c5c970b-883e-4b76-a2b1-f7178674cd0f', 'NXCTF{boot_to_root_test_2_92b8}', '26ae0d0921d183d9f2c2c18005791a718ba62dd586d1a746823913c9f5ffae09');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('4c5c970b-883e-4b76-a2b1-f7178674cd0f', 'NXCTF{boot_to_root_test_2_92b8}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -267,8 +267,8 @@ Flag for testing: `NXCTF{boot_to_root_test_3_e96e}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('aa069355-3c9c-441f-a697-2823567eede5', 'NXCTF{boot_to_root_test_3_e96e}', '1d39ed7ed38fbc2e2830a9b3dfedda5774fe34ca8f67aeadc570e0ace7d04a77');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('aa069355-3c9c-441f-a697-2823567eede5', 'NXCTF{boot_to_root_test_3_e96e}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -299,8 +299,8 @@ Flag for testing: `NXCTF{boot_to_root_test_4_13e2}`',
     false,
     '[{"url":"https://example.com/file.zip","name":"challenge_files.zip","type":"file"},{"url":"http://s1.ariaf.my.id:8000","name":"Web Service","type":"link"}]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('d0a3a6e3-ab86-4d2f-a594-66726462db92', 'NXCTF{boot_to_root_test_4_13e2}', '365b9b774edd576fc214fbbabcbe7e9b484448608730d779817f07c4a22f2578');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('d0a3a6e3-ab86-4d2f-a594-66726462db92', 'NXCTF{boot_to_root_test_4_13e2}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -331,8 +331,8 @@ Flag for testing: `NXCTF{boot_to_root_test_5_ca26}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('aa8fa198-4a60-4788-a519-dfe237db6951', 'NXCTF{boot_to_root_test_5_ca26}', '541ba1cd1eb76e973152849f9e26c3d0cdaec3fe8d62c714e01c1f8a15e1188b');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('aa8fa198-4a60-4788-a519-dfe237db6951', 'NXCTF{boot_to_root_test_5_ca26}');
 
 -- Category: Web
 INSERT INTO public.challenges (
@@ -364,8 +364,8 @@ Flag for testing: `NXCTF{web_test_1_be2b}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('ba7719ee-ecf3-465d-b514-0b432f43bf45', 'NXCTF{web_test_1_be2b}', '6c2e1b534129881bd432e7f33ec4831a7cad3cad4314b794f6616cc800dd359d');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('ba7719ee-ecf3-465d-b514-0b432f43bf45', 'NXCTF{web_test_1_be2b}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -396,8 +396,8 @@ Flag for testing: `NXCTF{web_test_2_f2dd}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('87462950-3091-41c2-90ee-7cdad067eb01', 'NXCTF{web_test_2_f2dd}', '21997ad0f6ffb60b1e3d73933cf72d8b6313546fc6a6aa36aeccdc6c52d49e2c');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('87462950-3091-41c2-90ee-7cdad067eb01', 'NXCTF{web_test_2_f2dd}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -428,8 +428,8 @@ Flag for testing: `NXCTF{web_test_3_07a6}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('4e688ac5-686d-40fa-809a-fc73ca49c3a4', 'NXCTF{web_test_3_07a6}', '47af5a913b0b74b4cd6092e9301c0e2390e0a0811aee3f4d4e3e69e734fa8821');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('4e688ac5-686d-40fa-809a-fc73ca49c3a4', 'NXCTF{web_test_3_07a6}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -460,8 +460,8 @@ Flag for testing: `NXCTF{web_test_4_faf8}`',
     false,
     '[{"url":"https://example.com/file.zip","name":"challenge_files.zip","type":"file"},{"url":"http://s1.ariaf.my.id:8000","name":"Web Service","type":"link"}]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('5014cae2-cf7f-4eb6-8080-214bd467eff5', 'NXCTF{web_test_4_faf8}', '73c1dcc56ebe2094589dc4a0b1671b0faca4b4520167684654ab84ebb2dc11ed');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('5014cae2-cf7f-4eb6-8080-214bd467eff5', 'NXCTF{web_test_4_faf8}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -492,8 +492,8 @@ Flag for testing: `NXCTF{web_test_5_fb24}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('976ecf48-6de5-4e89-af85-be55a842bcb4', 'NXCTF{web_test_5_fb24}', '1b502f26b799df1b0b3c105502af3a7146dde00a272dad6cf1994f7e328f9f95');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('976ecf48-6de5-4e89-af85-be55a842bcb4', 'NXCTF{web_test_5_fb24}');
 
 -- Category: Forensics
 INSERT INTO public.challenges (
@@ -525,8 +525,8 @@ Flag for testing: `NXCTF{forensics_test_1_9df8}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('128fa7e8-1fe8-49b9-be50-57018987b8ff', 'NXCTF{forensics_test_1_9df8}', 'a018e1c670bc160b8593cbc3ef5a8b1f5ecec48c6de614a8911c5fdfcd19e774');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('128fa7e8-1fe8-49b9-be50-57018987b8ff', 'NXCTF{forensics_test_1_9df8}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -557,8 +557,8 @@ Flag for testing: `NXCTF{forensics_test_2_0485}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('f38bffea-0321-414e-b455-a7594eae4494', 'NXCTF{forensics_test_2_0485}', '2485cf8a5493a43388200a2a7e65078e594d71a59153371560139eb7c485c67e');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('f38bffea-0321-414e-b455-a7594eae4494', 'NXCTF{forensics_test_2_0485}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -589,8 +589,8 @@ Flag for testing: `NXCTF{forensics_test_3_b05b}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('955156f3-b608-403f-b7ac-666a315275ec', 'NXCTF{forensics_test_3_b05b}', 'e6b2336fb17aa32d1fd2b80d192d7bac0f32f06eb82e300488b1fb46e0c366fb');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('955156f3-b608-403f-b7ac-666a315275ec', 'NXCTF{forensics_test_3_b05b}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -621,8 +621,8 @@ Flag for testing: `NXCTF{forensics_test_4_0c5a}`',
     false,
     '[{"url":"https://example.com/file.zip","name":"challenge_files.zip","type":"file"},{"url":"http://s1.ariaf.my.id:8000","name":"Web Service","type":"link"}]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('86b4545a-9dc5-4d58-8555-d06304d2f963', 'NXCTF{forensics_test_4_0c5a}', 'ef98f9c1a8b0a1e1a8da18c0e9fb39d28ba9936907490244f4357c912c668b53');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('86b4545a-9dc5-4d58-8555-d06304d2f963', 'NXCTF{forensics_test_4_0c5a}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -653,8 +653,8 @@ Flag for testing: `NXCTF{forensics_test_5_f40b}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('65551a8e-714e-4d15-90c7-c6d6f7b7b982', 'NXCTF{forensics_test_5_f40b}', 'c8fb01cb5618f9679afee7807415086371fa2d9f879fc9a6e67683fc52b551ba');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('65551a8e-714e-4d15-90c7-c6d6f7b7b982', 'NXCTF{forensics_test_5_f40b}');
 
 -- Category: AI
 INSERT INTO public.challenges (
@@ -686,8 +686,8 @@ Flag for testing: `NXCTF{ai_test_1_c504}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('94a1979c-70dc-45a9-a0fd-2bb120b3c1f0', 'NXCTF{ai_test_1_c504}', '2aee5a1a6e69a5db2817faf3c100c12c17f983e6ffebb4416409b2ff56424e36');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('94a1979c-70dc-45a9-a0fd-2bb120b3c1f0', 'NXCTF{ai_test_1_c504}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -718,8 +718,8 @@ Flag for testing: `NXCTF{ai_test_2_0a53}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('e99e44cc-3061-4cc8-92f2-29fd3d12a971', 'NXCTF{ai_test_2_0a53}', '550762dd04da5c2e57d0ee046bed2d18e6568eb94eb9967e0567074186cf5df5');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('e99e44cc-3061-4cc8-92f2-29fd3d12a971', 'NXCTF{ai_test_2_0a53}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -750,8 +750,8 @@ Flag for testing: `NXCTF{ai_test_3_f82b}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('3e5a7dbf-c27f-4a31-a2e0-7a7f99c292c0', 'NXCTF{ai_test_3_f82b}', 'a7f65065f8d23eaf72c0bac666fbce4779d5197027e226c91d6e27323cc91ed8');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('3e5a7dbf-c27f-4a31-a2e0-7a7f99c292c0', 'NXCTF{ai_test_3_f82b}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -782,8 +782,8 @@ Flag for testing: `NXCTF{ai_test_4_1f87}`',
     false,
     '[{"url":"https://example.com/file.zip","name":"challenge_files.zip","type":"file"},{"url":"http://s1.ariaf.my.id:8000","name":"Web Service","type":"link"}]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('805a948d-0b29-47ab-bdf5-374f6329f9ce', 'NXCTF{ai_test_4_1f87}', '06d1eab947934bb22dfd901b622fb618516893eddc51baf0d87732ccbad191d3');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('805a948d-0b29-47ab-bdf5-374f6329f9ce', 'NXCTF{ai_test_4_1f87}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -814,8 +814,8 @@ Flag for testing: `NXCTF{ai_test_5_0e16}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('6de25660-b502-410a-9499-a5040e9e7792', 'NXCTF{ai_test_5_0e16}', 'd5c08b50770b4f17c5b01d3012a37549d94110cc9469357c0b6ad747d5625a48');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('6de25660-b502-410a-9499-a5040e9e7792', 'NXCTF{ai_test_5_0e16}');
 
 -- Category: Osint
 INSERT INTO public.challenges (
@@ -847,8 +847,8 @@ Flag for testing: `NXCTF{osint_test_1_1ac8}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('15b00a86-13de-46f0-9d2e-5c9cad029228', 'NXCTF{osint_test_1_1ac8}', '33a13282ba7b6fbac0125767abadca14e463d4de482bc56f8586739eec70bfad');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('15b00a86-13de-46f0-9d2e-5c9cad029228', 'NXCTF{osint_test_1_1ac8}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -879,8 +879,8 @@ Flag for testing: `NXCTF{osint_test_2_6e05}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('85aa4e0b-4816-42b1-9cd6-b86af789dd71', 'NXCTF{osint_test_2_6e05}', '5048674e0abde2e4b84b7d7bc8c25c04a91a1c3a860a2a7e13f935eab066d473');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('85aa4e0b-4816-42b1-9cd6-b86af789dd71', 'NXCTF{osint_test_2_6e05}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -911,8 +911,8 @@ Flag for testing: `NXCTF{osint_test_3_9267}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('c7ece9eb-70f4-43ed-b17c-a14eba4a18bc', 'NXCTF{osint_test_3_9267}', '4f6c2ae90cc67ad29d4f3139280e6652d231a3072571d2911ce34d1a88f2d755');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('c7ece9eb-70f4-43ed-b17c-a14eba4a18bc', 'NXCTF{osint_test_3_9267}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -943,8 +943,8 @@ Flag for testing: `NXCTF{osint_test_4_6341}`',
     false,
     '[{"url":"https://example.com/file.zip","name":"challenge_files.zip","type":"file"},{"url":"http://s1.ariaf.my.id:8000","name":"Web Service","type":"link"}]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('dd1424fb-03f9-4865-bae2-13959f38721e', 'NXCTF{osint_test_4_6341}', '81695bf4ef5d641d70c76e9d8b7631e7b890aa0643d71c9abcfd8b3c7dc46cd9');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('dd1424fb-03f9-4865-bae2-13959f38721e', 'NXCTF{osint_test_4_6341}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -975,8 +975,8 @@ Flag for testing: `NXCTF{osint_test_5_acb9}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('99017625-adb4-40a2-b064-00a338d9ade7', 'NXCTF{osint_test_5_acb9}', '6054908de7bec0e3ed253a64dd8448da7da35d6d79a6291d37fbcda807838310');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('99017625-adb4-40a2-b064-00a338d9ade7', 'NXCTF{osint_test_5_acb9}');
 
 -- Category: Crypto
 INSERT INTO public.challenges (
@@ -1008,8 +1008,8 @@ Flag for testing: `NXCTF{crypto_test_1_9a21}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('c1da4ede-fba3-40f4-a3bf-514007d62037', 'NXCTF{crypto_test_1_9a21}', '305dbb085bc1cdc7675e49afe3f3cce2544e14dc8a2f9c03cd10bad1ab961952');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('c1da4ede-fba3-40f4-a3bf-514007d62037', 'NXCTF{crypto_test_1_9a21}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1040,8 +1040,8 @@ Flag for testing: `NXCTF{crypto_test_2_3af7}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('26ad5089-0f5b-4a77-85c9-07702bd438a1', 'NXCTF{crypto_test_2_3af7}', '3c0549045b63fa391ed233b5ee8ffd7ca54f2db2dcf67e148399b84b1643f771');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('26ad5089-0f5b-4a77-85c9-07702bd438a1', 'NXCTF{crypto_test_2_3af7}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1072,8 +1072,8 @@ Flag for testing: `NXCTF{crypto_test_3_a324}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('38f4fc62-8cdd-4734-a5a3-7b152977e8c5', 'NXCTF{crypto_test_3_a324}', '9eb5fec137ca94812a5fb37aafd36a1ebf97b933a7775892b8092e25b9e016e0');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('38f4fc62-8cdd-4734-a5a3-7b152977e8c5', 'NXCTF{crypto_test_3_a324}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1104,8 +1104,8 @@ Flag for testing: `NXCTF{crypto_test_4_715c}`',
     false,
     '[{"url":"https://example.com/file.zip","name":"challenge_files.zip","type":"file"},{"url":"http://s1.ariaf.my.id:8000","name":"Web Service","type":"link"}]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('8a960384-07fc-4eb1-b39a-dbde582f2c71', 'NXCTF{crypto_test_4_715c}', 'a332da7c3ec86cd8f0f1e78e95b6b335bac7716004fe442e7b58113215395266');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('8a960384-07fc-4eb1-b39a-dbde582f2c71', 'NXCTF{crypto_test_4_715c}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1136,8 +1136,8 @@ Flag for testing: `NXCTF{crypto_test_5_4cff}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('7ab5676b-a973-41fd-8da1-7d25f0be763c', 'NXCTF{crypto_test_5_4cff}', '334ff499db649622325aa80bbf6dfc003a28e643b5d1f0f1af13d98af6512de3');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('7ab5676b-a973-41fd-8da1-7d25f0be763c', 'NXCTF{crypto_test_5_4cff}');
 
 -- Category: Reverse
 INSERT INTO public.challenges (
@@ -1169,8 +1169,8 @@ Flag for testing: `NXCTF{reverse_test_1_fbb2}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('24a407f0-4cce-44f2-a080-f2fae150cc4c', 'NXCTF{reverse_test_1_fbb2}', '1204b415b7a6259ca866a33645ff2a6577c581fe62853723b5286eecc459c237');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('24a407f0-4cce-44f2-a080-f2fae150cc4c', 'NXCTF{reverse_test_1_fbb2}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1201,8 +1201,8 @@ Flag for testing: `NXCTF{reverse_test_2_2a6b}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('a2500dea-ade1-478d-aa3d-12f2e0be950a', 'NXCTF{reverse_test_2_2a6b}', '008ee1dea92fe0bcaeba57fa8bd7cf914633f0019050a21ace17fad1af9f29c5');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('a2500dea-ade1-478d-aa3d-12f2e0be950a', 'NXCTF{reverse_test_2_2a6b}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1233,8 +1233,8 @@ Flag for testing: `NXCTF{reverse_test_3_5bf7}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('ce71e41e-3a25-4857-80f4-baaad44c1e0c', 'NXCTF{reverse_test_3_5bf7}', '41b2984a9b96dc183adb337252ce5940ef3d26f55ad625b73ca1a3da551dbe18');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('ce71e41e-3a25-4857-80f4-baaad44c1e0c', 'NXCTF{reverse_test_3_5bf7}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1265,8 +1265,8 @@ Flag for testing: `NXCTF{reverse_test_4_dfad}`',
     false,
     '[{"url":"https://example.com/file.zip","name":"challenge_files.zip","type":"file"},{"url":"http://s1.ariaf.my.id:8000","name":"Web Service","type":"link"}]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('307eba19-039d-451d-a61e-a0228ed2cdb8', 'NXCTF{reverse_test_4_dfad}', '85d6b82de362f00c62349560499c52d451dab257a4d9b035b64b53e31855d8d2');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('307eba19-039d-451d-a61e-a0228ed2cdb8', 'NXCTF{reverse_test_4_dfad}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1297,8 +1297,8 @@ Flag for testing: `NXCTF{reverse_test_5_f163}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('69e24446-f72f-43f8-bdcd-8d869f78f66f', 'NXCTF{reverse_test_5_f163}', 'b2c64b33c10a730ac728422db374f9ae94bd5964c1588fa571cda70f5ce42f67');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('69e24446-f72f-43f8-bdcd-8d869f78f66f', 'NXCTF{reverse_test_5_f163}');
 
 -- Category: Pwn
 INSERT INTO public.challenges (
@@ -1330,8 +1330,8 @@ Flag for testing: `NXCTF{pwn_test_1_96b9}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('48891000-e7b2-4f58-a11c-e09377b37b79', 'NXCTF{pwn_test_1_96b9}', 'aad242062f2d691707f0986d77c0767d6f131c66e36121fd6d8413b41be02926');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('48891000-e7b2-4f58-a11c-e09377b37b79', 'NXCTF{pwn_test_1_96b9}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1362,8 +1362,8 @@ Flag for testing: `NXCTF{pwn_test_2_b9bf}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('361ba7dc-5f5d-492f-80a5-2e5f48e68766', 'NXCTF{pwn_test_2_b9bf}', 'd849b205d0205dfe1b4c3745432a581a027a5bb3f1381ed34bcecd208f5dede6');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('361ba7dc-5f5d-492f-80a5-2e5f48e68766', 'NXCTF{pwn_test_2_b9bf}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1394,8 +1394,8 @@ Flag for testing: `NXCTF{pwn_test_3_b93c}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('108b6745-0a07-40c9-b6fe-741e13da5061', 'NXCTF{pwn_test_3_b93c}', 'd72bbb06e77425f643d99a9cdb972d74d0b77710bd0caee8228c21bfe3b36f0c');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('108b6745-0a07-40c9-b6fe-741e13da5061', 'NXCTF{pwn_test_3_b93c}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1426,8 +1426,8 @@ Flag for testing: `NXCTF{pwn_test_4_9dbd}`',
     false,
     '[{"url":"https://example.com/file.zip","name":"challenge_files.zip","type":"file"},{"url":"http://s1.ariaf.my.id:8000","name":"Web Service","type":"link"}]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('43667d5b-fa8f-45df-9a32-88e5eb21abc9', 'NXCTF{pwn_test_4_9dbd}', 'dfc9d9c5bdc42d4a3a70bea1ee5eb726f6b2871f0b887b5f61acfb491f7f4a2a');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('43667d5b-fa8f-45df-9a32-88e5eb21abc9', 'NXCTF{pwn_test_4_9dbd}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1458,8 +1458,8 @@ Flag for testing: `NXCTF{pwn_test_5_ef63}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('ca62c8c7-9097-40ba-8b87-a149d1fac227', 'NXCTF{pwn_test_5_ef63}', 'd56b5da71cf87c7de0c65167158e554f18d9e69d0f758c72b4b95e86d9b2b806');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('ca62c8c7-9097-40ba-8b87-a149d1fac227', 'NXCTF{pwn_test_5_ef63}');
 
 -- Category: Stegnography
 INSERT INTO public.challenges (
@@ -1491,8 +1491,8 @@ Flag for testing: `NXCTF{stegnography_test_1_b569}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('085f7eac-e8b9-42d8-9210-0ea9a09c690e', 'NXCTF{stegnography_test_1_b569}', '55cd650da6421ed854138a68a4e3dc05dbc7fb709e47818d110ac8126ea2c077');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('085f7eac-e8b9-42d8-9210-0ea9a09c690e', 'NXCTF{stegnography_test_1_b569}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1523,8 +1523,8 @@ Flag for testing: `NXCTF{stegnography_test_2_12a5}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('a800778a-a37d-4905-854b-c792e947bdbb', 'NXCTF{stegnography_test_2_12a5}', '549040f910e190e277e772b6e480d31da4712b908e91fb3a1d7bfc483e165750');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('a800778a-a37d-4905-854b-c792e947bdbb', 'NXCTF{stegnography_test_2_12a5}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1555,8 +1555,8 @@ Flag for testing: `NXCTF{stegnography_test_3_2aa9}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('993fa858-d112-425b-b1ea-d46093b26809', 'NXCTF{stegnography_test_3_2aa9}', 'ebad36419027257efb0dd0b8ce59f781ea63c0da0a59d1def55aa32b0c809974');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('993fa858-d112-425b-b1ea-d46093b26809', 'NXCTF{stegnography_test_3_2aa9}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1587,8 +1587,8 @@ Flag for testing: `NXCTF{stegnography_test_4_6a55}`',
     false,
     '[{"url":"https://example.com/file.zip","name":"challenge_files.zip","type":"file"},{"url":"http://s1.ariaf.my.id:8000","name":"Web Service","type":"link"}]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('909c2be8-cfb7-4d6f-a28b-6a8b210dd0ed', 'NXCTF{stegnography_test_4_6a55}', '5b5b9958008efd3fca65f40565a4fedb9a850252202a75bb4ed2aa66e3e4c48d');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('909c2be8-cfb7-4d6f-a28b-6a8b210dd0ed', 'NXCTF{stegnography_test_4_6a55}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1619,8 +1619,8 @@ Flag for testing: `NXCTF{stegnography_test_5_10a3}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('80ce9018-4b71-4e5d-bcd8-a37737f1ec83', 'NXCTF{stegnography_test_5_10a3}', 'baff40d1ce110a2bca5c72c9e961021f2db1fb4fb5d0f96be52b7bfc628deb42');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('80ce9018-4b71-4e5d-bcd8-a37737f1ec83', 'NXCTF{stegnography_test_5_10a3}');
 
 -- Category: Misc
 INSERT INTO public.challenges (
@@ -1652,8 +1652,8 @@ Flag for testing: `NXCTF{misc_test_1_d853}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('1fd2a792-c530-4957-ba8e-f973a19153d3', 'NXCTF{misc_test_1_d853}', 'aecf3f8e1c108de1098c6cf7a28c952d06021cf6cd0b9cc4ae018d33f41f78a1');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('1fd2a792-c530-4957-ba8e-f973a19153d3', 'NXCTF{misc_test_1_d853}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1684,8 +1684,8 @@ Flag for testing: `NXCTF{misc_test_2_cc43}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('4996b34b-7fb1-456c-8dfe-5fd0fb591153', 'NXCTF{misc_test_2_cc43}', '7ef1061a0475b01c1333328c65544719bd04d881dceb27e4a30f050448074d56');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('4996b34b-7fb1-456c-8dfe-5fd0fb591153', 'NXCTF{misc_test_2_cc43}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1716,8 +1716,8 @@ Flag for testing: `NXCTF{misc_test_3_ac87}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('0b7fccca-06ea-47b9-b659-4c0e077c71fe', 'NXCTF{misc_test_3_ac87}', 'f5cbcef4cedf7739cd463631006d6d9d1177b9e710b434d2d28707872e0878c1');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('0b7fccca-06ea-47b9-b659-4c0e077c71fe', 'NXCTF{misc_test_3_ac87}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1748,8 +1748,8 @@ Flag for testing: `NXCTF{misc_test_4_c2e3}`',
     false,
     '[{"url":"https://example.com/file.zip","name":"challenge_files.zip","type":"file"},{"url":"http://s1.ariaf.my.id:8000","name":"Web Service","type":"link"}]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('21550c12-34ba-4dbe-a4e9-fe25b4d3eee8', 'NXCTF{misc_test_4_c2e3}', '02e3a31ebcc2a479702c56b47eaa2f956f99cbfc3830d4fb58242479a482c78f');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('21550c12-34ba-4dbe-a4e9-fe25b4d3eee8', 'NXCTF{misc_test_4_c2e3}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1780,8 +1780,8 @@ Flag for testing: `NXCTF{misc_test_5_85c5}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('5d2d8948-598a-4c00-8fcd-7a0bf6a8c917', 'NXCTF{misc_test_5_85c5}', 'e9af66ea6d6f619759d368be6912b6caf5c63b89e32a870027ffd573aa4ed810');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('5d2d8948-598a-4c00-8fcd-7a0bf6a8c917', 'NXCTF{misc_test_5_85c5}');
 
 -- Category: Blockchain
 INSERT INTO public.challenges (
@@ -1813,8 +1813,8 @@ Flag for testing: `NXCTF{blockchain_test_1_abdd}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('def86c82-846c-40c6-9fad-ed5aaaf5c2bc', 'NXCTF{blockchain_test_1_abdd}', 'b3ea9569391e46ac462f3899965fbe2d601bb111601ba37d5285ec9dd5104797');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('def86c82-846c-40c6-9fad-ed5aaaf5c2bc', 'NXCTF{blockchain_test_1_abdd}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1845,8 +1845,8 @@ Flag for testing: `NXCTF{blockchain_test_2_6075}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('70c6d254-a7b4-46d1-b634-924ca7d25d83', 'NXCTF{blockchain_test_2_6075}', 'e43d2d696ce797ddc12554f593ac19d958d045f9fe8fa544c7ad61d4ad550600');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('70c6d254-a7b4-46d1-b634-924ca7d25d83', 'NXCTF{blockchain_test_2_6075}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1877,8 +1877,8 @@ Flag for testing: `NXCTF{blockchain_test_3_0a7a}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('1eb5ab27-0fe7-4ceb-aab1-6373f08387d0', 'NXCTF{blockchain_test_3_0a7a}', 'c844239d8b19c6992bf7cf63fef75e3328e8bc24d2573e34395796b41b0e2d23');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('1eb5ab27-0fe7-4ceb-aab1-6373f08387d0', 'NXCTF{blockchain_test_3_0a7a}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1909,8 +1909,8 @@ Flag for testing: `NXCTF{blockchain_test_4_1d3b}`',
     false,
     '[{"url":"https://example.com/file.zip","name":"challenge_files.zip","type":"file"},{"url":"http://s1.ariaf.my.id:8000","name":"Web Service","type":"link"}]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('883cee76-9c5e-48f3-a9f4-81768805a847', 'NXCTF{blockchain_test_4_1d3b}', '714207c21d295d2030b67d5db0290380faf3a3f4fc6fcfd03e9bd66a245a025e');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('883cee76-9c5e-48f3-a9f4-81768805a847', 'NXCTF{blockchain_test_4_1d3b}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -1941,8 +1941,8 @@ Flag for testing: `NXCTF{blockchain_test_5_9c99}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('c2a02732-7d3a-40dc-97ef-8332f9725d00', 'NXCTF{blockchain_test_5_9c99}', 'b2fc33aa24b247f9303088ec5537dba5314fd14f3f303a3dc340772ff6faa83e');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('c2a02732-7d3a-40dc-97ef-8332f9725d00', 'NXCTF{blockchain_test_5_9c99}');
 
 -- Category: Network
 INSERT INTO public.challenges (
@@ -1974,8 +1974,8 @@ Flag for testing: `NXCTF{network_test_1_9f89}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('8bb42130-4242-420b-a4ad-e8cb2b63e180', 'NXCTF{network_test_1_9f89}', '3cb92b9a39c40fad85cc7d4778ef2e34246cc688c583c1da724b8a6b8424bf5e');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('8bb42130-4242-420b-a4ad-e8cb2b63e180', 'NXCTF{network_test_1_9f89}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -2006,8 +2006,8 @@ Flag for testing: `NXCTF{network_test_2_2b07}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('ebc2e0b1-b09c-4d6b-bb9d-847d3e0ce5e2', 'NXCTF{network_test_2_2b07}', '50edef5899cba32988c0c280bbcd06a6034e324a3a81ccd382ec7ab58be44f34');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('ebc2e0b1-b09c-4d6b-bb9d-847d3e0ce5e2', 'NXCTF{network_test_2_2b07}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -2038,8 +2038,8 @@ Flag for testing: `NXCTF{network_test_3_a319}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('f1d5788b-25f4-4f4b-9fb0-4ba36955508c', 'NXCTF{network_test_3_a319}', '572ee01da08f50606ddddf7f74d34a67575029b58e1027f696bc0fb015cf0503');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('f1d5788b-25f4-4f4b-9fb0-4ba36955508c', 'NXCTF{network_test_3_a319}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -2070,8 +2070,8 @@ Flag for testing: `NXCTF{network_test_4_eedf}`',
     false,
     '[{"url":"https://example.com/file.zip","name":"challenge_files.zip","type":"file"},{"url":"http://s1.ariaf.my.id:8000","name":"Web Service","type":"link"}]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('19a44662-fb50-473b-ad43-087ee13be94a', 'NXCTF{network_test_4_eedf}', 'e409e44a1eae18e1a2f1c259b4469512ea004e4dd3d145fb873629356a8f26f1');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('19a44662-fb50-473b-ad43-087ee13be94a', 'NXCTF{network_test_4_eedf}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -2102,8 +2102,8 @@ Flag for testing: `NXCTF{network_test_5_4c12}`',
     true,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('668f2c6b-1149-4449-9d40-a430350944fc', 'NXCTF{network_test_5_4c12}', '6ccbe14cd0d11928d695bf926b3dda0f4196adcd4fe91cb413ca1688e0bdd02a');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('668f2c6b-1149-4449-9d40-a430350944fc', 'NXCTF{network_test_5_4c12}');
 
 -- Event: Service
 INSERT INTO public.events (id, name, description, join_mode, start_time, end_time, always_show_challenges)
@@ -2142,8 +2142,8 @@ Flag for testing: `NXCTF{service_fgte_corp}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('9583bdc9-cbe0-4706-bf33-c8342a7a0844', 'NXCTF{service_fgte_corp}', 'd242662f8db22b4715cc6b912186f20a28853e92c6707b52817d059f7ad0c7bf');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('9583bdc9-cbe0-4706-bf33-c8342a7a0844', 'NXCTF{service_fgte_corp}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -2170,8 +2170,8 @@ Flag for testing: `NXCTF{service_network_panel_aria}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('11363052-6686-4896-b2ec-f772155cf766', 'NXCTF{service_network_panel_aria}', '1631cb1181afd25b92f09a13a8734d7a0f84c8950cf4f5c48c07f5f4d8b2eaf4');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('11363052-6686-4896-b2ec-f772155cf766', 'NXCTF{service_network_panel_aria}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -2198,8 +2198,8 @@ Flag for testing: `NXCTF{service_secure_document}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('b6f04dad-d47b-4212-b4d9-ccfcd4e0607b', 'NXCTF{service_secure_document}', '9b7a5c9dbdd3e43856821f4d4e3d2813f737107d9cc950f048d29334b7902c96');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('b6f04dad-d47b-4212-b4d9-ccfcd4e0607b', 'NXCTF{service_secure_document}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -2226,8 +2226,8 @@ Flag for testing: `NXCTF{service_linux}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('c2e5f3b2-25d5-4077-8151-c136cb2be74b', 'NXCTF{service_linux}', '668602a7c9b9baa6a09b23f75385553e8a4b0ed0bb538d7f4b479000b0203d4a');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('c2e5f3b2-25d5-4077-8151-c136cb2be74b', 'NXCTF{service_linux}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -2254,8 +2254,8 @@ Flag for testing: `NXCTF{service_access}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('629a1cfe-8a79-46c5-98e3-852a6fcfa411', 'NXCTF{service_access}', 'cb377376bfe18cc46cdf4d0a92404b5e4801491d76c8987591829664ef2a5b26');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('629a1cfe-8a79-46c5-98e3-852a6fcfa411', 'NXCTF{service_access}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -2282,8 +2282,8 @@ Flag for testing: `NXCTF{service_baby_stack}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('ad5e6cc9-1835-491a-a26b-a08bf985a131', 'NXCTF{service_baby_stack}', '53ee133577b337f903723556dfbfa8fb13a02814abefc1fd513cd2ae37ab751b');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('ad5e6cc9-1835-491a-a26b-a08bf985a131', 'NXCTF{service_baby_stack}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -2310,8 +2310,8 @@ Flag for testing: `NXCTF{service_buffering_overflow}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('796081e8-0308-40d9-967a-746e4dba1acc', 'NXCTF{service_buffering_overflow}', 'b3d46172276b2510bced53c8d9940a53e1f64f55e8173a96d071d5504ac9262e');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('796081e8-0308-40d9-967a-746e4dba1acc', 'NXCTF{service_buffering_overflow}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -2338,8 +2338,8 @@ Flag for testing: `NXCTF{service_evil_php}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('75700617-a1a7-4488-9aa8-b1fd319eb160', 'NXCTF{service_evil_php}', 'ef4fbf53acb8b588e8b409f95d4ea90aa0b88480f0d6109d35681596a8165138');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('75700617-a1a7-4488-9aa8-b1fd319eb160', 'NXCTF{service_evil_php}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -2366,8 +2366,8 @@ Flag for testing: `NXCTF{service_ret2win}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('bbeddd37-c6d3-412d-b406-a99d4b555e47', 'NXCTF{service_ret2win}', 'b118c0e3a8053cbfac406e3d4e99cdd7658df5836a78cb4450c864fe56d94596');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('bbeddd37-c6d3-412d-b406-a99d4b555e47', 'NXCTF{service_ret2win}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -2394,8 +2394,8 @@ Flag for testing: `NXCTF{service_school}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('b66c1c83-5dc3-4551-bdb7-3bc525df0732', 'NXCTF{service_school}', 'c7ad302c0e27dfd88e03fc2114abbc0410548ae4d831427cfe3e7c94d4d0959d');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('b66c1c83-5dc3-4551-bdb7-3bc525df0732', 'NXCTF{service_school}');
 
 INSERT INTO public.challenges (
             id, event_id, title, description, category, points, difficulty,
@@ -2422,8 +2422,8 @@ Flag for testing: `NXCTF{service_simplee}`',
     false,
     '[]'::jsonb
 );
-INSERT INTO public.challenge_flags (challenge_id, flag, flag_hash)
-VALUES ('f8b4adb0-8dda-4139-9cc7-9eed21e425dc', 'NXCTF{service_simplee}', 'c1ea6ae4e7dccfe5bc196294b49f00aaaba2ff6203a85191b96990008fc7350c');
+INSERT INTO public.challenge_flags (challenge_id, flag)
+VALUES ('f8b4adb0-8dda-4139-9cc7-9eed21e425dc', 'NXCTF{service_simplee}');
 
 -- Service challenge multi-task questions
 INSERT INTO public.sub_challenges (challenge_id, question, answer, order_number, is_sequential)

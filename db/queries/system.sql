@@ -22,108 +22,145 @@ GRANT EXECUTE ON FUNCTION public.get_logs(INT, INT, UUID, TEXT) TO anon;
 GRANT SELECT ON public.challenges TO anon;
 GRANT SELECT ON public.events TO anon;
 
-CREATE OR REPLACE FUNCTION public.get_auth_audit_logs(
-  p_limit int default 50,
-  p_offset int default 0,
-  p_action_filters text[] default null
-)
-RETURNS TABLE (
-  id uuid,
-  created_at timestamptz,
-  ip_address text,
-  payload jsonb,
-  user_id uuid,
-  username text,
-  email text
-)
-language plpgsql
-security definer
-set search_path = public, auth
-as $$
+-- RELOCATED FUNCTIONS
+
+CREATE OR REPLACE FUNCTION get_info()
+RETURNS JSON AS $$
+DECLARE
+  v_total_users BIGINT;
+  v_total_admins BIGINT;
+  v_total_solves BIGINT;
+  v_unique_solvers BIGINT;
+  v_total_challenges BIGINT;
+  v_active_challenges BIGINT;
 BEGIN
-  IF NOT is_admin() THEN
-    RAISE EXCEPTION 'Only global admin can view audit logs';
+  SELECT COUNT(*)::BIGINT INTO v_total_users FROM public.users;
+  SELECT COUNT(*)::BIGINT INTO v_total_admins FROM public.users WHERE is_admin = TRUE;
+  SELECT COUNT(*)::BIGINT INTO v_total_solves FROM public.solves;
+  SELECT COUNT(DISTINCT user_id)::BIGINT INTO v_unique_solvers FROM public.solves;
+  SELECT COUNT(*)::BIGINT INTO v_total_challenges FROM public.challenges;
+  SELECT COUNT(*)::BIGINT INTO v_active_challenges FROM public.challenges WHERE is_active = TRUE;
+
+  RETURN json_build_object(
+    'total_users', v_total_users,
+    'total_admins', v_total_admins,
+    'total_solves', v_total_solves,
+    'unique_solvers', v_unique_solvers,
+    'total_challenges', v_total_challenges,
+    'active_challenges', v_active_challenges,
+    'success', true
+  );
+END;
+$$ LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public, auth, extensions;
+
+GRANT EXECUTE ON FUNCTION get_info() TO authenticated;
+
+-- Single session active enforcement (1 device at a time, skip admins)
+CREATE OR REPLACE FUNCTION public.limit_user_sessions()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_is_admin BOOLEAN := FALSE;
+BEGIN
+  -- 1. Get admin status from public.users table
+  SELECT COALESCE(is_admin, FALSE) INTO v_is_admin
+  FROM public.users
+  WHERE id = NEW.user_id;
+
+  -- 2. If user is an admin, allow multiple sessions (bypass deletion)
+  IF v_is_admin THEN
+    RETURN NEW;
   END IF;
 
-  RETURN QUERY
-  WITH audit_rows AS (
-    SELECT
-      ale.id,
-      ale.created_at,
-      ale.ip_address::text AS ip_address,
-      ale.payload::jsonb AS payload,
-      NULLIF(COALESCE(
-        ale.payload->>'actor_id',
-        ale.payload->>'user_id',
-        ale.payload->'traits'->>'user_id'
-      ), '') AS payload_user_id,
-      NULLIF(COALESCE(
-        ale.payload->'traits'->>'user_email',
-        ale.payload->>'actor_username',
-        ale.payload->>'email'
-      ), '') AS payload_email
-    FROM auth.audit_log_entries ale
-    WHERE (p_action_filters IS NULL OR ale.payload->>'action' = ANY(p_action_filters))
-  )
-  SELECT
-    ar.id,
-    ar.created_at,
-    ar.ip_address,
-    ar.payload,
-    au.id,
-    u.username::text,
-    au.email::text
-  FROM audit_rows ar
-  LEFT JOIN auth.users au
-    ON (
-      ar.payload_user_id ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-      AND au.id = ar.payload_user_id::uuid
-    )
-    OR (
-      ar.payload_email IS NOT NULL
-      AND lower(au.email) = lower(ar.payload_email)
-    )
-  LEFT JOIN public.users u ON u.id = au.id
-  ORDER BY ar.created_at DESC
-  LIMIT p_limit OFFSET p_offset;
+  -- 3. If not an admin, delete all other sessions
+  DELETE FROM auth.sessions
+  WHERE user_id = NEW.user_id AND id <> NEW.id;
+  RETURN NEW;
 END;
-$$;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = auth, public, extensions;
 
-grant execute on function public.get_auth_audit_logs(int, int, text[]) to authenticated;
+-- Trigger to execute after a new session is inserted
+DROP TRIGGER IF EXISTS tr_limit_user_sessions ON auth.sessions;
+CREATE TRIGGER tr_limit_user_sessions
+AFTER INSERT ON auth.sessions
+FOR EACH ROW
+EXECUTE FUNCTION public.limit_user_sessions();
 
-CREATE OR REPLACE FUNCTION public.get_flag_placeholder(p_flag TEXT)
-RETURNS TEXT
+-- RPC function to verify if caller's session is still active
+CREATE OR REPLACE FUNCTION public.is_current_session_active()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM auth.sessions WHERE id = (auth.jwt() ->> 'session_id')::uuid
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = auth, public, extensions;
+
+GRANT EXECUTE ON FUNCTION public.is_current_session_active() TO authenticated, anon;
+
+-- Helper to retrieve system setting value
+CREATE OR REPLACE FUNCTION public.get_system_setting(p_key VARCHAR)
+RETURNS VARCHAR
+SECURITY DEFINER
+SET search_path = public, auth, extensions
 LANGUAGE plpgsql
-IMMUTABLE
 AS $$
 DECLARE
-    v_result TEXT := '';
-    v_char TEXT;
-    i INT;
+  v_val VARCHAR;
 BEGIN
-    IF p_flag IS NULL THEN RETURN NULL; END IF;
-
-    FOR i IN 1..length(p_flag) LOOP
-        v_char := substr(p_flag, i, 1);
-        IF v_char ~ '[a-z]' THEN
-            v_result := v_result || 'x';
-        ELSIF v_char ~ '[A-Z]' THEN
-            v_result := v_result || 'X';
-        ELSIF v_char ~ '[0-9]' THEN
-            v_result := v_result || '0';
-        ELSIF v_char = '_' THEN
-            v_result := v_result || '_';
-        ELSIF v_char = '{' THEN
-            v_result := v_result || '{';
-        ELSIF v_char = '}' THEN
-            v_result := v_result || '}';
-        ELSE
-            v_result := v_result || '?';
-        END IF;
-    END LOOP;
-
-    RETURN v_result;
+  SELECT value INTO v_val FROM public.system_settings WHERE key = p_key;
+  RETURN COALESCE(v_val, 'false');
 END;
 $$;
 
-GRANT EXECUTE ON FUNCTION public.get_flag_placeholder(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_system_setting(VARCHAR) TO authenticated, anon;
+
+-- Admin function to update system settings
+CREATE OR REPLACE FUNCTION public.update_system_settings(p_settings JSONB)
+RETURNS BOOLEAN
+SECURITY DEFINER
+SET search_path = public, auth, extensions
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_key TEXT;
+  v_val TEXT;
+BEGIN
+  IF NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Only global admins can update system settings';
+  END IF;
+
+  FOR v_key, v_val IN SELECT * FROM jsonb_each_text(p_settings)
+  LOOP
+    INSERT INTO public.system_settings (key, value, updated_at)
+    VALUES (v_key, v_val, now())
+    ON CONFLICT (key) DO UPDATE
+    SET value = EXCLUDED.value, updated_at = now();
+  END LOOP;
+
+  RETURN TRUE;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.update_system_settings(JSONB) TO authenticated;
+
+-- RLS/POLICY for system_settings
+ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow select for everyone" ON public.system_settings;
+CREATE POLICY "Allow select for everyone"
+  ON public.system_settings
+  FOR SELECT
+  USING (true);
+
+DROP POLICY IF EXISTS "Allow all for admin users only" ON public.system_settings;
+CREATE POLICY "Allow all for admin users only"
+  ON public.system_settings
+  FOR ALL
+  TO authenticated
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+GRANT SELECT ON public.system_settings TO authenticated, anon;
+
+

@@ -4,6 +4,30 @@
 -- ==============================================
 
 -- SELECT
+CREATE OR REPLACE FUNCTION has_admin_access()
+RETURNS BOOLEAN AS $$
+DECLARE
+  v_user_id UUID := auth.uid()::uuid;
+BEGIN
+  IF v_user_id IS NULL THEN
+    RETURN FALSE;
+  END IF;
+
+  IF is_admin() THEN
+    RETURN TRUE;
+  END IF;
+
+  RETURN EXISTS (
+    SELECT 1
+    FROM public.event_admins ea
+    WHERE ea.user_id = v_user_id
+  );
+END;
+$$ LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public, auth, extensions;
+
+GRANT EXECUTE ON FUNCTION has_admin_access() TO authenticated;
+
 CREATE OR REPLACE FUNCTION can_manage_event(p_event_id UUID)
 RETURNS BOOLEAN AS $$
 DECLARE

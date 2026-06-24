@@ -13,7 +13,7 @@ RETURNS BOOLEAN
 LANGUAGE sql
 IMMUTABLE
 AS $$
-  SELECT 
+  SELECT
     p_event_mode = 'any'
     OR (p_event_mode IN ('main', 'is_null') AND c_event_id IS NULL)
     OR (p_event_id IS NOT NULL AND c_event_id = p_event_id AND p_event_mode IN ('event', 'equals'));
@@ -170,24 +170,7 @@ SECURITY DEFINER SET search_path = public, auth, extensions;
 
 GRANT EXECUTE ON FUNCTION get_difficulty_totals(UUID, TEXT) TO authenticated;
 
-CREATE OR REPLACE FUNCTION get_user_first_bloods(p_user_id UUID)
-RETURNS TABLE(challenge_id UUID)
-AS $$
-BEGIN
-  RETURN QUERY
-  SELECT t.challenge_id
-  FROM (
-    SELECT
-      s.challenge_id,
-      s.user_id,
-      ROW_NUMBER() OVER (PARTITION BY s.challenge_id ORDER BY s.created_at ASC, s.id ASC) AS rn
-    FROM public.solves s
-  ) AS t
-  WHERE t.rn = 1 AND t.user_id = p_user_id;
-END;
-$$ LANGUAGE plpgsql;
 
-GRANT EXECUTE ON FUNCTION get_user_first_bloods(UUID) TO authenticated;
 
 -- INSERT
 CREATE OR REPLACE FUNCTION add_challenge(
@@ -262,7 +245,7 @@ CREATE OR REPLACE FUNCTION submit_flag(
 RETURNS json AS $$
 DECLARE
   v_user_id uuid := auth.uid()::uuid;
-  v_flag_hash TEXT;
+  v_flag TEXT;
   v_points INTEGER;
   v_max_points INTEGER;
   v_is_dynamic BOOLEAN;
@@ -274,19 +257,22 @@ DECLARE
   v_existing INT;
   v_is_correct BOOLEAN;
   v_access JSON;
+  v_is_admin_override BOOLEAN := FALSE;
 BEGIN
   v_access := public.validate_challenge_access(p_challenge_id, v_user_id);
   IF NOT (v_access->>'success')::BOOLEAN THEN
     RETURN v_access;
   END IF;
 
-  SELECT cf.flag_hash, c.points, c.max_points, c.is_dynamic, c.min_points, c.decay_per_solve, c.event_id
-  INTO v_flag_hash, v_points, v_max_points, v_is_dynamic, v_min_points, v_decay_per_solve, v_event_id
+  v_is_admin_override := public.is_admin() OR public.can_manage_challenge(p_challenge_id);
+
+  SELECT cf.flag, c.points, c.max_points, c.is_dynamic, c.min_points, c.decay_per_solve, c.event_id
+  INTO v_flag, v_points, v_max_points, v_is_dynamic, v_min_points, v_decay_per_solve, v_event_id
   FROM public.challenge_flags cf
   JOIN public.challenges c ON c.id = cf.challenge_id
   WHERE cf.challenge_id = p_challenge_id;
 
-  v_is_correct := encode(digest(p_flag, 'sha256'), 'hex') = v_flag_hash;
+  v_is_correct := p_flag = v_flag;
 
   IF NOT v_is_correct THEN
     RETURN json_build_object('success', false, 'message', 'Incorrect flag');
@@ -323,11 +309,20 @@ SECURITY DEFINER SET search_path = public, auth, extensions;
 
 GRANT EXECUTE ON FUNCTION submit_flag(uuid, text) TO authenticated;
 
--- UPDATE
-UPDATE challenges
-SET total_solves = (
-  SELECT COUNT(*) FROM solves WHERE challenge_id = challenges.id
-);
+CREATE OR REPLACE FUNCTION public.sync_challenge_solves()
+RETURNS void AS $$
+BEGIN
+  UPDATE public.challenges c
+  SET total_solves = (
+    SELECT COUNT(*)::integer FROM public.solves s WHERE s.challenge_id = c.id
+  );
+END;
+$$ LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = public, auth, extensions;
+
+GRANT EXECUTE ON FUNCTION public.sync_challenge_solves() TO authenticated;
+
+
 
 CREATE OR REPLACE FUNCTION update_challenge(
   p_challenge_id UUID,
@@ -628,30 +623,7 @@ AFTER UPDATE OF is_active ON public.challenges
 FOR EACH ROW
 EXECUTE FUNCTION handle_challenge_activation();
 
-CREATE OR REPLACE FUNCTION public.get_challenge_placeholder(p_challenge_id UUID)
-RETURNS TEXT
-LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = public, auth, extensions
-AS $$
-DECLARE
-    v_flag TEXT;
-    v_show_placeholder BOOLEAN;
-BEGIN
-    SELECT c.flag_placeholder, cf.flag
-    INTO v_show_placeholder, v_flag
-    FROM public.challenges c
-    JOIN public.challenge_flags cf ON cf.challenge_id = c.id
-    WHERE c.id = p_challenge_id;
 
-    IF v_show_placeholder THEN
-        RETURN public.get_flag_placeholder(v_flag);
-    ELSE
-        RETURN NULL;
-    END IF;
-END;
-$$;
-
-GRANT EXECUTE ON FUNCTION public.get_challenge_placeholder(UUID) TO authenticated;
 
 -- DELETE
 CREATE OR REPLACE FUNCTION delete_challenge(
