@@ -8,7 +8,7 @@ import type { ChallengeWithSolve } from '@/shared/types'
 import type { GeoCoordinates } from '../../types'
 import { getGeoChallengeTarget } from '@/shared/lib'
 import { BaseMap, guessIcon, targetIcon } from '@/shared/components/BaseMap'
-import { Copy, Eye, Key, Minus, Plus, Search, X } from 'lucide-react'
+import { Copy, Eye, EyeOff, Minus, Plus, Search, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 type GeoMapProps = {
@@ -224,7 +224,7 @@ export default function GeoMap({
               <Marker position={[targetCoords.lat, targetCoords.lng]} icon={targetIcon}>
                 <Popup>
                   <div className="text-gray-900 font-sans text-xs">
-                    <strong className="text-green-600">Target Location</strong><br />
+                    <strong className="text-green-600">Answer Location</strong><br />
                     Lat: {targetCoords.lat.toFixed(6)}<br />
                     Lng: {targetCoords.lng.toFixed(6)}<br />
                     Radius: {targetCoords.radius_km} km
@@ -313,8 +313,8 @@ export default function GeoMap({
             onClick={() => setRevealCardOpen(!revealCardOpen)}
             className="absolute top-2 right-2 z-20 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-white/70 dark:bg-black/70 backdrop-blur-md border border-emerald-500/25 shadow-lg hover:bg-emerald-50/80 dark:hover:bg-emerald-900/25 transition-all active:scale-95 cursor-pointer select-none"
           >
-            {revealCardOpen ? <Eye size={12} /> : <Key size={12} />}
-            <span>{revealCardOpen ? 'Hide Target' : 'Show Target'}</span>
+            {revealCardOpen ? <EyeOff size={12} /> : <Eye size={12} />}
+            <span>{revealCardOpen ? 'Hide Answer' : 'Reveal Answer'}</span>
           </button>
         ) : isSolved && !isRevealed ? (
           <button
@@ -322,7 +322,7 @@ export default function GeoMap({
             className="absolute top-2 right-2 z-20 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-white/70 dark:bg-black/70 backdrop-blur-md border border-emerald-500/25 shadow-lg hover:bg-emerald-50/80 dark:hover:bg-emerald-900/25 transition-all active:scale-95 cursor-pointer select-none"
           >
             <Eye size={12} />
-            <span>Reveal Target</span>
+            <span>Reveal Answer</span>
           </button>
         ) : null}
 
@@ -348,7 +348,7 @@ export default function GeoMap({
           {showInfoCard && (
             <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-green-500 inline-block shrink-0"></span>
-              <span className="text-gray-700 dark:text-gray-200">Green = Target</span>
+              <span className="text-gray-700 dark:text-gray-200">Green = Answer</span>
             </div>
           )}
         </div>

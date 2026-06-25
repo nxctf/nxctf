@@ -58,7 +58,7 @@ export const GeoFooter: React.FC<GeoFooterProps> = ({
           <button
             onClick={onSubmit}
             disabled={!currentGuess || submitting || geoCooldownSeconds > 0 || (isRevealed && isRevealCardOpen)}
-            className={`flex h-[38px] px-5 select-none items-center justify-center rounded-xl text-xs font-black uppercase tracking-widest text-white shadow-lg transition-all active:scale-95 disabled:opacity-30
+            className={`flex h-[38px] min-w-[96px] px-5 select-none items-center justify-center rounded-xl text-xs font-black uppercase tracking-widest text-white shadow-lg transition-all active:scale-95 disabled:opacity-30
               ${geoCooldownSeconds > 0
                 ? 'bg-red-600 hover:bg-red-600 cursor-not-allowed shadow-red-500/10'
                 : 'bg-blue-600 shadow-blue-500/20 hover:bg-blue-500 hover:shadow-blue-500/30'}

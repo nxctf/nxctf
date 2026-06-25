@@ -67,17 +67,25 @@ blockquote {
   background-color: rgba(0, 0, 0, 0);
 }
 
-/* code */
+/* code - inline only */
 code {
-  background: #2d2a3a !important;
-  /* warna gelap */
-  color: #ffb8d1 !important;
-  /* warna pink/ungu, sesuaikan tema */
+  background: rgba(31, 41, 55, 0.6);
+  color: #f3f4f6;
   border-radius: 4px;
-  padding: 2px 6px;
+  padding: 2px 4px;
   font-family: 'Fira Mono', 'Consolas', monospace;
-  font-size: 0.95em;
+  font-size: 0.9em;
 }
+
+/* code inside pre (code blocks) - reset inline styles */
+pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
 
 @layer utilities {
   .text-balance {

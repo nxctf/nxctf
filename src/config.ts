@@ -23,6 +23,14 @@ export const APP = {
     "Network"
   ],
 
+  // Sub-category ordering hints used in challenge sorting and admin form suggestions.
+  challengeSubCategories: [
+    "fundamentals",
+    "intro",
+    "user",
+    "root"
+  ],
+
   // Base URL (ambil dari env kalau ada). Prefer changing NEXT_PUBLIC_SITE_URL in .env.local.
   baseUrl: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   image_icon: "favicon.ico",

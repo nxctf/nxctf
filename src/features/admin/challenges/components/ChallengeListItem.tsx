@@ -1,7 +1,7 @@
 import React from 'react'
 import DifficultyBadge from '@/features/challenges/components/DifficultyBadge'
 import { Badge, Button } from '@/shared/ui'
-import { Pencil, Trash2, Flag, CheckCircle2, CircleOff, Wrench, ServerCog, ListChecks, MapPin } from 'lucide-react'
+import { Pencil, Trash2, Flag, Variable, CheckCircle2, CircleOff, Wrench, ServerCog, ListChecks, MapPin } from 'lucide-react'
 import { Challenge } from '../types'
 
 interface ChallengeListItemProps {
@@ -65,7 +65,7 @@ const ChallengeListItem: React.FC<ChallengeListItemProps> = ({
               )}
               {challenge.flag_placeholder && (
                 <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 rounded text-[10px] font-semibold border border-emerald-200/50 dark:border-emerald-800/30 shrink-0 select-none cursor-help" title="Flag placeholder is enabled">
-                  <Flag size={11} />
+                  <Variable size={11} />
                   <span>Placeholder</span>
                 </span>
               )}

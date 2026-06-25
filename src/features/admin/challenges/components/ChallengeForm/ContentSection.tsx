@@ -1,5 +1,8 @@
 import React from 'react'
+import APP from '@/config'
+import { CHALLENGE_DESC_TEMPLATE } from '@/const'
 import { Label, Input, Textarea, Button } from '@/shared/ui'
+import ConfirmDialog from '@/shared/components/ConfirmDialog'
 import { MarkdownRenderer } from '@/shared/markdown/MarkdownRenderer'
 import { Flag as FlagIcon, Loader2, Zap, Type, MapPin } from 'lucide-react'
 import { ChallengeFormData } from '../../types'
@@ -38,6 +41,12 @@ export const ContentSection: React.FC<ContentSectionProps> = ({
   const geoDetails = parseGeoFlagClient(formData.flag || '')
   const [isGeoMapOpen, setIsGeoMapOpen] = React.useState(false)
   const [isFetchingGeoFlag, setIsFetchingGeoFlag] = React.useState(false)
+  const [isConfirmOpen, setIsConfirmOpen] = React.useState(false)
+
+  const resolvedTemplate = CHALLENGE_DESC_TEMPLATE.replace(
+    '{{FLAG_FORMAT}}',
+    APP.flagFormat || 'NXCTF{your_flag_here}'
+  )
 
   const handleGeoMapClick = async () => {
     let currentFlag = formData.flag || ''
@@ -63,7 +72,28 @@ export const ContentSection: React.FC<ContentSectionProps> = ({
       <div className={ADMIN_FORM_FIELD_CLASS}>
         <div className="flex items-center justify-between">
           <Label>Deskripsi</Label>
-          <Button type="button" variant="ghost" size="sm" onClick={() => setShowPreview(!showPreview)}>{showPreview ? 'Edit' : 'Preview'}</Button>
+          <div className="flex items-center gap-1.5">
+            {!showPreview && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  if (!formData.description) {
+                    onChange({ ...formData, description: resolvedTemplate })
+                  } else {
+                    setIsConfirmOpen(true)
+                  }
+                }}
+                className="h-8 px-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-500/10"
+              >
+                Gunakan Template
+              </Button>
+            )}
+            <Button type="button" variant="ghost" size="sm" className="h-8 px-2" onClick={() => setShowPreview(!showPreview)}>
+              {showPreview ? 'Edit' : 'Preview'}
+            </Button>
+          </div>
         </div>
         {showPreview ? (
           <div className="border rounded p-3 bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
@@ -143,6 +173,17 @@ export const ContentSection: React.FC<ContentSectionProps> = ({
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={isConfirmOpen}
+        onOpenChange={setIsConfirmOpen}
+        title="Gunakan Template"
+        description="Apakah Anda ingin menimpa deskripsi saat ini dengan template?"
+        confirmLabel="Ya, Timpa"
+        cancelLabel="Batal"
+        onConfirm={() => {
+          onChange({ ...formData, description: resolvedTemplate })
+        }}
+      />
       <GeoMapSelectorDialog
         open={isGeoMapOpen}
         onOpenChange={setIsGeoMapOpen}

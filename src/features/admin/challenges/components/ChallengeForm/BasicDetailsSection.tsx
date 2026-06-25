@@ -79,18 +79,20 @@ export const BasicDetailsSection: React.FC<BasicDetailsSectionProps> = ({
     fetchSubCategories()
   }, [])
 
+  // combinedSubCategories: config subs first (as the ordering hint),
+  // then any DB subs not already covered by config.
   const combinedSubCategories = React.useMemo(() => {
-    const list = [...dbSubCategories]
-    const localSubs = (categories || [])
-      .filter(c => c.includes('/'))
-      .map(c => c.split('/')[1])
-    for (const sub of localSubs) {
-      if (sub && !list.includes(sub)) {
-        list.push(sub)
+    const configSubs = APP.challengeSubCategories || []
+    const seen = new Set(configSubs.map(s => s.toLowerCase()))
+    const extras: string[] = []
+    for (const sub of dbSubCategories) {
+      if (sub && !seen.has(sub.toLowerCase())) {
+        seen.add(sub.toLowerCase())
+        extras.push(sub)
       }
     }
-    return list.filter(Boolean)
-  }, [dbSubCategories, categories])
+    return [...configSubs, ...extras].filter(Boolean)
+  }, [dbSubCategories])
 
   const handleMainCatChange = (newMain: string) => {
     onChange({ ...formData, category: newMain })
@@ -148,11 +150,10 @@ export const BasicDetailsSection: React.FC<BasicDetailsSectionProps> = ({
             type="button"
             variant="ghost"
             onClick={handleToggleAdvanced}
-            className={`h-7 px-2 text-xs flex items-center gap-1.5 rounded-lg border transition ${
-              advancedMode
+            className={`h-7 px-2 text-xs flex items-center gap-1.5 rounded-lg border transition ${advancedMode
                 ? 'border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20'
                 : 'border-gray-800 text-gray-400 hover:text-gray-300 hover:bg-gray-800'
-            }`}
+              }`}
           >
             <Settings size={13} />
             <span>Advanced Settings</span>

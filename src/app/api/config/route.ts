@@ -15,6 +15,7 @@ type SetupConfig = {
   description: string
   flagFormat: string
   challengeCategories: string[]
+  challengeSubCategories: string[]
   notifSolves: boolean
   teamsEnabled: boolean
   hideScoreboardIndividual: boolean
@@ -161,23 +162,23 @@ function readBoolean(source: string, pattern: RegExp, fallback = false) {
   return match[1].trim() === 'true'
 }
 
-function readCategories(source: string) {
-  const match = source.match(/challengeCategories:\s*\[([\s\S]*?)\n\s*\],/)
+function readCategories(source: string, key: string) {
+  const pattern = new RegExp(`${key}:\\s*\\[([\\s\\S]*?)\\n\\s*\\],`)
+  const match = source.match(pattern)
   if (!match) return []
-
-  return Array.from(match[1].matchAll(/['"]([^'"]+)['"]/g)).map((item) => item[1])
+  return Array.from(match[1].matchAll(/['"]((?:[^'"\\]|\\.)*)['"](?:\s*,)?/g)).map((item) => item[1])
 }
 
 function readConfig(source: string): SetupConfig {
   const teamsBlock = source.match(/teams:\s*\{([\s\S]*?)\n\s*\},/)
-  const maintenanceBlock = source.match(/maintenance:\s*\{([\s\S]*?)\n\s*\},/)
 
   return {
     shortName: readString(source, /shortName:\s*['"]([^'"]*)['"]/),
     fullName: readString(source, /fullName:\s*['"]([^'"]*)['"]/),
     description: readString(source, /description:\s*['"]([^'"]*)['"]/),
     flagFormat: readString(source, /flagFormat:\s*['"]([^'"]*)['"]/),
-    challengeCategories: readCategories(source),
+    challengeCategories: readCategories(source, 'challengeCategories'),
+    challengeSubCategories: readCategories(source, 'challengeSubCategories'),
     notifSolves: readBoolean(source, /notifSolves:\s*(true|false)/),
     teamsEnabled: readBoolean(teamsBlock?.[1] || '', /enabled:\s*(true|false)/),
     hideScoreboardIndividual: readBoolean(teamsBlock?.[1] || '', /hideScoreboardIndividual:\s*(true|false)/),
@@ -211,16 +212,20 @@ function updateConfig(source: string, config: SetupConfig) {
   updated = replaceFirst(updated, /flagFormat:\s*['"][^'"]*['"]/, `flagFormat: ${toJsonString(config.flagFormat)}`)
   // baseUrl is env-backed (NEXT_PUBLIC_SITE_URL); do not change literal fallback here.
 
-  const categoriesBlock = config.challengeCategories.length
-    ? `challengeCategories: [\n${config.challengeCategories
-        .map((category) => `    ${toJsonString(category)}`)
-        .join(',\n')}\n  ],`
-    : 'challengeCategories: [],'
+  const categoriesBlock = (items: string[], key: string) => items.length
+    ? `${key}: [\n${items.map((c) => `    ${toJsonString(c)}`).join(',\n')}\n  ],`
+    : `${key}: [],`
 
   updated = replaceFirst(
     updated,
     /challengeCategories:\s*\[([\s\S]*?)\n\s*\],/,
-    categoriesBlock
+    categoriesBlock(config.challengeCategories, 'challengeCategories')
+  )
+
+  updated = replaceFirst(
+    updated,
+    /challengeSubCategories:\s*\[([\s\S]*?)\n\s*\],/,
+    categoriesBlock(config.challengeSubCategories, 'challengeSubCategories')
   )
 
   updated = replaceFirst(updated, /notifSolves:\s*(true|false)/, `notifSolves: ${config.notifSolves}`)
@@ -280,6 +285,9 @@ function normalizeConfig(input: Partial<SetupConfig>): SetupConfig {
     flagFormat: input.flagFormat?.trim() || '',
     challengeCategories: Array.isArray(input.challengeCategories)
       ? input.challengeCategories.map((item) => item.trim()).filter(Boolean)
+      : [],
+    challengeSubCategories: Array.isArray(input.challengeSubCategories)
+      ? input.challengeSubCategories.map((item) => item.trim()).filter(Boolean)
       : [],
     notifSolves: Boolean(input.notifSolves),
     teamsEnabled: Boolean(input.teamsEnabled),
@@ -363,6 +371,7 @@ export async function PUT(request: Request) {
       'description',
       'flagFormat',
       'challengeCategories',
+      'challengeSubCategories',
       'notifSolves',
       'teamsEnabled',
       'hideScoreboardIndividual',

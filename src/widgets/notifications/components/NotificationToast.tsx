@@ -28,10 +28,21 @@ export default function NotificationToast({
   onDismissSolve,
   onDismissToast,
 }: NotificationToastProps) {
+  // Limit total visible toasts to 3
+  const MAX_VISIBLE_TOASTS = 3
+  const totalToasts = solveToasts.length + notifToasts.length
+  const hasOverflow = totalToasts > MAX_VISIBLE_TOASTS
+
+  // Prioritize showing newest toasts: solve toasts first, then notif toasts
+  let remaining = MAX_VISIBLE_TOASTS
+  const visibleSolveToasts = solveToasts.slice(0, remaining)
+  remaining -= visibleSolveToasts.length
+  const visibleNotifToasts = notifToasts.slice(0, Math.max(0, remaining))
+
   return (
     <div className="fixed top-4 right-4 z-[5000] flex flex-col gap-3 pointer-events-none" style={{ width: '100%', maxWidth: 380 }}>
       {/* Solve notifications */}
-      {solveToasts.map((toast) => (
+      {visibleSolveToasts.map((toast) => (
         toast.isFirstBlood ? (
           <div
             key={toast.id}
@@ -44,7 +55,7 @@ export default function NotificationToast({
               </div>
               <span className="shrink-0 bg-red-500/10 border border-red-500/20 text-red-400 font-bold px-1.5 py-0.5 rounded text-[9px] tracking-wider font-mono">FIRST BLOOD</span>
               <span className="truncate text-[13px] text-gray-100 font-semibold">{toast.username}</span>
-              
+
               <button
                 onClick={() => onDismissSolve(toast.id)}
                 className="ml-auto shrink-0 rounded p-1 text-gray-500 transition-all hover:bg-white/5 hover:text-gray-300"
@@ -58,7 +69,7 @@ export default function NotificationToast({
             <div className="text-[12px] text-gray-400 relative z-10">
               secured first blood on <span className="font-semibold text-red-400">{toast.challenge}</span>
             </div>
-            
+
             {/* Animated progress bar */}
             <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-red-950/40">
               <div className="h-full bg-gradient-to-r from-red-500 to-rose-600 animate-toast-progress-12s" />
@@ -75,7 +86,7 @@ export default function NotificationToast({
                 <Bell size={14} className="text-blue-400" />
               </div>
               <span className="truncate text-[13px] font-bold text-gray-100">{toast.username}</span>
-              
+
               <button
                 onClick={() => onDismissSolve(toast.id)}
                 className="ml-auto shrink-0 rounded p-1 text-gray-400 transition-all hover:bg-white/10 hover:text-gray-300"
@@ -99,7 +110,7 @@ export default function NotificationToast({
       ))}
 
       {/* Stacked notification toasts */}
-      {notifToasts.map((toast) => {
+      {visibleNotifToasts.map((toast) => {
         const { Icon, bg, ring, text, progressColor } = getToastIcon(toast.level)
         return (
           <div
@@ -112,7 +123,7 @@ export default function NotificationToast({
                 <Icon size={14} className={text} />
               </div>
               <span className="truncate text-[13px] font-bold text-gray-100">{toast.title}</span>
-              
+
               <button
                 onClick={() => onDismissToast(toast.id)}
                 className="ml-auto shrink-0 rounded p-1 text-gray-400 transition-all hover:bg-white/10 hover:text-gray-300"
@@ -122,9 +133,9 @@ export default function NotificationToast({
               </button>
             </div>
 
-            {/* Bottom Row: Description (Left Aligned) */}
+            {/* Bottom Row: Description - max 3 lines */}
             {toast.message && (
-              <div className="text-[11px] leading-normal text-gray-400 line-clamp-3 break-words relative z-10">
+              <div className="text-[11px] leading-normal text-gray-400 line-clamp-3 whitespace-pre-line break-words relative z-10">
                 {toast.message}
               </div>
             )}
@@ -136,6 +147,13 @@ export default function NotificationToast({
           </div>
         )
       })}
+
+      {/* Overflow indicator */}
+      {hasOverflow && (
+        <div className="pointer-events-none text-center text-[10px] text-gray-500 font-medium tracking-wide">
+          +{totalToasts - MAX_VISIBLE_TOASTS} more
+        </div>
+      )}
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import type { ChallengeWithSolve } from '@/shared/types'
 import type { ChallengeSortMode } from '../../types'
-import { SUB_CATEGORY_ORDER } from '@/const'
+import APP from '@/config'
 import {
   buildFuzzyOrderedList,
   groupChallengesByCategory,
@@ -26,7 +26,7 @@ export function sortAndGroupChallenges({
       ? sortChallengesByNewest(challenges)
       : sortChallengesByDisplayPriority(challenges, difficultyOrder)
   const grouped = groupChallengesByCategory(sortedFilteredChallenges, splitSubCategories)
-  const orderedKeys = buildFuzzyOrderedList(preferredCategoryOrder, Object.keys(grouped), SUB_CATEGORY_ORDER)
+  const orderedKeys = buildFuzzyOrderedList(preferredCategoryOrder, Object.keys(grouped), APP.challengeSubCategories)
 
   return {
     sortedFilteredChallenges,

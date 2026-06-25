@@ -96,7 +96,7 @@ interface ChallengeDetailDialogProps {
   geoSubmitting?: KeyedBooleanMap
   geoSubmissionsRemaining?: number
   geoCooldownSeconds?: number
-  handleGeoSubmit?: (challengeId: string, coords: GeoCoordinates, prefix: string) => void
+  handleGeoSubmit?: (challengeId: string, coords: GeoCoordinates, prefix: string) => Promise<boolean>
   handleGeoGuessChange?: (challengeId: string, coords: GeoCoordinates | null) => void
 }
 
@@ -142,7 +142,7 @@ const ChallengeDetailDialog: React.FC<ChallengeDetailDialogProps> = ({
   geoSubmitting = {},
   geoSubmissionsRemaining = 10,
   geoCooldownSeconds = 0,
-  handleGeoSubmit = () => { },
+  handleGeoSubmit = async () => false,
   handleGeoGuessChange = () => { },
 }) => {
   const [solvesSortOrder, setSolvesSortOrder] = useState<'newest' | 'oldest'>('oldest')
@@ -459,10 +459,15 @@ const ChallengeDetailDialog: React.FC<ChallengeDetailDialogProps> = ({
             isRevealed={!!geoRevealed[challenge.id]}
             isRevealCardOpen={!!geoRevealCardOpen[challenge.id]}
             target={geoTargets[challenge.id] || null}
-            onSubmit={() => {
+            onSubmit={async () => {
               const currentGuess = geoGuesses[challenge.id]
               if (currentGuess) {
-                handleGeoSubmit(challenge.id, currentGuess, challenge.geo_prefix || '')
+                const success = await handleGeoSubmit(challenge.id, currentGuess, challenge.geo_prefix || '')
+                if (success) {
+                  // Auto-reveal answer on correct submission
+                  setGeoRevealed(prev => ({ ...prev, [challenge.id]: true }))
+                  setGeoRevealCardOpen(prev => ({ ...prev, [challenge.id]: true }))
+                }
               }
             }}
           />

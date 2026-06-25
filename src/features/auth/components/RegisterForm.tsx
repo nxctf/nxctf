@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react'
 import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react'
+import APP from '@/config'
 import { useRegister } from '../hooks'
 import { isValidUsername } from '../lib/auth-utils'
 import { THEME_PRIMARY_RING_CLASS } from '@/shared/styles'
@@ -43,7 +44,7 @@ export default function RegisterForm() {
     <AuthCard>
       <AuthHeader
         badge="Create Account"
-        title="Join NXCTF"
+        title={`Join ${APP.fullName}`}
         subtitle="Start solving challenges today"
       />
 

@@ -20,13 +20,6 @@ export const LINKS = {
 
 export const YEAR = new Date().getFullYear()
 
-export const SUB_CATEGORY_ORDER: string[] = [
-  "fundamentals",
-  "intro",
-  "user",
-  "root",
-]
-
 export const DIFFICULTY_STYLES: Record<string, string> = {
   Baby: 'cyan',
   Easy: 'green',
@@ -42,5 +35,22 @@ export const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KE
 // Maintenance mode
 export const MAINTENANCE_MODE = process.env.NEXT_PUBLIC_MAINTENANCE_MODE || 'no'
 
-const APP_CONSTANTS = { LINKS, YEAR, DIFFICULTY_STYLES, SUPABASE_URL, SUPABASE_ANON_KEY, MAINTENANCE_MODE }
+export const CHALLENGE_DESC_TEMPLATE = `> Author: nama
+
+Desc chall aaaaaaaaaaaaaaaaaaaaaaaa
+aaaaaaaaaaaaaaaaaa
+
+bbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+![gambar](https://raw.githubusercontent.com/nxctf/assets/refs/heads/main/event/active_nxctf.png)
+
+if ur want use link [link](https://nxctf.my.id)
+
+\`\`\`python
+print('a')
+\`\`\`
+
+> Format: {{FLAG_FORMAT}}`
+
+const APP_CONSTANTS = { LINKS, YEAR, DIFFICULTY_STYLES, SUPABASE_URL, SUPABASE_ANON_KEY, MAINTENANCE_MODE, CHALLENGE_DESC_TEMPLATE }
 export default APP_CONSTANTS

@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
+import APP from '@/config'
 import { useLogin } from '../hooks'
 import { THEME_PRIMARY_RING_CLASS, THEME_PRIMARY_TEXT_CLASS } from '@/shared/styles'
 import GoogleLoginButton from './GoogleLoginButton'
@@ -35,7 +36,7 @@ export default function LoginForm() {
     <AuthCard>
       <AuthHeader
         badge="Welcome Back"
-        title="Sign in to NXCTF"
+        title={`Sign in to ${APP.fullName}`}
         subtitle="Continue your CTF journey"
       />
 
@@ -105,7 +106,7 @@ export default function LoginForm() {
         <GoogleLoginButton />
       </form>
 
-      <AuthFooter text="New to NXCTF?" href="/register" linkText="Create an account" />
+      <AuthFooter text={`New to ${APP.shortName}?`} href="/register" linkText="Create an account" />
     </AuthCard>
   )
 }

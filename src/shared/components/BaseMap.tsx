@@ -73,6 +73,7 @@ export function BaseMap({ center, zoom, children, style, className }: BaseMapPro
       maxBoundsViscosity={1.0}
       style={style || { width: '100%', height: '100%' }}
       className={className}
+      attributionControl={false}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'

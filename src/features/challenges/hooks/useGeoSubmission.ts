@@ -85,8 +85,8 @@ export function useGeoSubmission({
     return () => clearInterval(timer)
   }, [cooldownSeconds, selectedChallengeId, fetchStats])
 
-  const handleGeoSubmit = useCallback(async (challengeId: string, coordinates: GeoCoordinates, prefix: string) => {
-    if (!user || !coordinates) return
+  const handleGeoSubmit = useCallback(async (challengeId: string, coordinates: GeoCoordinates, prefix: string): Promise<boolean> => {
+    if (!user || !coordinates) return false
 
     setSubmitting((prev) => ({ ...prev, [challengeId]: true }))
     setGeoFeedback((prev) => ({ ...prev, [challengeId]: null }))
@@ -139,10 +139,12 @@ export function useGeoSubmission({
           }
           frame()
         })
+        return true
       } else {
         const audio = new Audio('/sounds/incorect.mp3')
         audio.volume = 0.3
         audio.play().catch(() => {})
+        return false
       }
     } catch (error) {
       console.error('Error submitting geo location:', error)
@@ -156,6 +158,7 @@ export function useGeoSubmission({
       feedbackTimeoutsRef.current[challengeId] = setTimeout(() => {
         setGeoFeedback((prev) => ({ ...prev, [challengeId]: null }))
       }, 5000)
+      return false
     } finally {
       setSubmitting((prev) => ({ ...prev, [challengeId]: false }))
     }

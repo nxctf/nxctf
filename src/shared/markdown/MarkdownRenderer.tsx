@@ -233,16 +233,16 @@ export function MarkdownRenderer({ content, className = '', onCommentsExtracted,
 
   if (variant === 'compact') {
     return (
-      <div className={`max-w-none text-gray-300 text-xs leading-relaxed ${className}`.trim()}>
+      <div className={`max-w-none text-gray-300 text-[11px] sm:text-xs leading-relaxed ${className}`.trim()}>
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkBreaks]}
           components={{
-            h1: ({ ...props }) => <h1 className="text-lg font-bold text-blue-400 border-b border-gray-800 pb-1 mb-4" {...props} />,
-            h2: ({ ...props }) => <h2 className="text-base font-semibold text-blue-300 mb-4" {...props} />,
-            h3: ({ ...props }) => <h3 className="text-sm font-semibold text-blue-200 mb-4" {...props} />,
-            p: ({ ...props }) => <div className="mb-5 leading-relaxed" {...props} />,
-            ul: ({ ...props }) => <ul className="mb-5 list-disc list-inside space-y-1 ml-2" {...props} />,
-            ol: ({ ...props }) => <ol className="mb-5 list-decimal list-inside space-y-1 ml-2" {...props} />,
+            h1: ({ ...props }) => <h1 className="text-sm font-bold text-blue-400 border-b border-gray-800 pb-0.5 mb-1.5" {...props} />,
+            h2: ({ ...props }) => <h2 className="text-xs font-semibold text-blue-300 mb-1.5" {...props} />,
+            h3: ({ ...props }) => <h3 className="text-[11px] font-semibold text-blue-200 mb-1.5" {...props} />,
+            p: ({ ...props }) => <div className="mb-1.5 leading-relaxed" {...props} />,
+            ul: ({ ...props }) => <ul className="mb-1.5 list-disc list-inside space-y-0.5 ml-1.5" {...props} />,
+            ol: ({ ...props }) => <ol className="mb-1.5 list-decimal list-inside space-y-0.5 ml-1.5" {...props} />,
             li: ({ ...props }) => <li className="list-item" {...props} />,
             strong: ({ ...props }) => <strong className="font-bold text-blue-300/90" {...props} />,
             em: ({ ...props }) => <em className="italic opacity-80" {...props} />,
@@ -257,14 +257,14 @@ export function MarkdownRenderer({ content, className = '', onCommentsExtracted,
             code: ({ inline, children, ...props }: any) =>
               inline ? (
                 <code
-                  className="bg-gray-800 text-blue-300 px-1.5 py-0.5 rounded text-[13px] font-mono font-medium"
+                  className="bg-gray-800 text-blue-300 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium"
                   {...props}
                 >
                   {children}
                 </code>
               ) : (
                 <CodeBlockWrapper isDark={false}>
-                  <pre className="bg-gray-900 p-2 rounded-lg text-[13px] leading-snug font-mono max-w-full border border-gray-800 overflow-x-auto mb-3">
+                  <pre className="bg-gray-900 p-2 rounded-lg text-[11px] leading-snug font-mono max-w-full border border-gray-800 overflow-x-auto mb-1.5">
                     <code className="text-gray-200" {...props}>
                       {children}
                     </code>
@@ -273,7 +273,7 @@ export function MarkdownRenderer({ content, className = '', onCommentsExtracted,
               ),
             blockquote: ({ ...props }) => (
               <blockquote
-                className="border-l-4 border-blue-500/50 bg-blue-500/5 pl-3 py-1.5 text-sm opacity-90 mb-4 rounded-r-sm"
+                className="border-l-2 border-blue-500/50 bg-blue-500/5 pl-2.5 pr-1.5 py-0.5 text-[11px] opacity-90 mb-1.5 rounded-r-sm [&>p]:mb-0 [&>div]:mb-0"
                 {...props}
               />
             ),
@@ -286,27 +286,27 @@ export function MarkdownRenderer({ content, className = '', onCommentsExtracted,
   }
 
   return (
-    <div className={`max-w-none text-gray-300 text-base leading-relaxed ${className}`}>
+    <div className={`max-w-none text-gray-300 text-sm leading-relaxed ${className}`}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkBreaks]}
         components={{
           h1: ({ ...props }) => (
-            <h1 className="text-2xl font-bold mb-4 text-blue-400 border-b border-gray-800 pb-2 tracking-tight" {...props} />
+            <h1 className="text-lg font-bold mb-2 text-blue-400 border-b border-gray-800 pb-1 tracking-tight" {...props} />
           ),
-          h2: ({ ...props }) => <h2 className="text-xl font-semibold mb-4 text-blue-300 tracking-tight" {...props} />,
-          h3: ({ ...props }) => <h3 className="text-lg font-semibold mb-4 text-blue-200" {...props} />,
+          h2: ({ ...props }) => <h2 className="text-base font-semibold mb-2 text-blue-300 tracking-tight" {...props} />,
+          h3: ({ ...props }) => <h3 className="text-sm font-semibold mb-2 text-blue-200" {...props} />,
           p: ({ ...props }) => <div className="mb-2 leading-relaxed text-gray-300" {...props} />,
-          ul: ({ ...props }) => <ul className="mb-5 space-y-1.5 list-disc list-inside ml-1" {...props} />,
-          ol: ({ ...props }) => <ol className="mb-5 space-y-1.5 list-decimal list-inside ml-1" {...props} />,
-          li: ({ ...props }) => <li className="ml-4 mb-2 list-item" {...props} />,
+          ul: ({ ...props }) => <ul className="mb-3 space-y-1 list-disc list-inside ml-1" {...props} />,
+          ol: ({ ...props }) => <ol className="mb-3 space-y-1 list-decimal list-inside ml-1" {...props} />,
+          li: ({ ...props }) => <li className="ml-4 mb-1 list-item" {...props} />,
           code: ({ inline, children, ...props }: any) =>
             inline ? (
-              <code className="bg-gray-800 px-2 py-1 rounded text-sm font-mono text-blue-300 font-medium" {...props}>
+              <code className="bg-gray-800 px-2 py-0.5 rounded text-xs font-mono text-blue-300 font-medium" {...props}>
                 {children}
               </code>
             ) : (
               <CodeBlockWrapper isDark>
-                <pre className="bg-gray-900 p-2 rounded-xl text-sm font-mono max-w-full border border-gray-800 shadow-sm">
+                <pre className="bg-gray-900 p-2 rounded-lg text-xs font-mono max-w-full border border-gray-800 shadow-sm mb-2">
                   <code className="max-w-full text-gray-200 leading-relaxed" {...props}>{children}</code>
                 </pre>
               </CodeBlockWrapper>
@@ -324,12 +324,12 @@ export function MarkdownRenderer({ content, className = '', onCommentsExtracted,
           blockquote: ({ ...props }) => (
             <BlockquoteWrapper isDark>
               <blockquote
-                className="border-l-4 border-blue-400 bg-blue-500/5 pl-2 pr-1 py-1 text-gray-300 rounded-md italic leading-relaxed"
+                className="border-l-4 border-blue-400 bg-blue-500/5 pl-2.5 pr-1 py-1 text-gray-300 rounded-md italic leading-relaxed [&>p]:mb-0 [&>div]:mb-0"
                 {...props}
               />
             </BlockquoteWrapper>
           ),
-          hr: () => <hr className="mb-3 border-gray-800" />,
+          hr: () => <hr className="mb-2 border-gray-800" />,
         }}
       >
         {sanitizedContent}

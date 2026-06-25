@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -32,6 +32,7 @@ type SetupConfig = {
   description: string
   flagFormat: string
   challengeCategories: string[]
+  challengeSubCategories: string[]
   notifSolves: boolean
   teamsEnabled: boolean
   hideScoreboardIndividual: boolean
@@ -76,6 +77,7 @@ const emptyConfig: SetupConfig = {
   description: '',
   flagFormat: '',
   challengeCategories: [],
+  challengeSubCategories: [],
   notifSolves: false,
   teamsEnabled: false,
   hideScoreboardIndividual: false,
@@ -115,6 +117,7 @@ export default function DevConfigDialog({ open, onOpenChange }: DevConfigDialogP
   const [message, setMessage] = useState<string>('')
   const [error, setError] = useState<string>('')
   const [categoryDraft, setCategoryDraft] = useState('')
+  const [subCategoryDraft, setSubCategoryDraft] = useState('')
   const [uploadingType, setUploadingType] = useState<string | null>(null)
 
   const sensors = useSensors(
@@ -214,6 +217,35 @@ export default function DevConfigDialog({ open, onOpenChange }: DevConfigDialogP
     })
   }
 
+  const addSubCategory = () => {
+    const value = subCategoryDraft.trim()
+    if (!value) return
+    setConfig((current) => {
+      const existing = current.challengeSubCategories || []
+      if (existing.some(c => c.toLowerCase() === value.toLowerCase())) return current
+      return { ...current, challengeSubCategories: [...existing, value] }
+    })
+    setSubCategoryDraft('')
+  }
+
+  const removeSubCategory = (value: string) => {
+    setConfig((current) => ({
+      ...current,
+      challengeSubCategories: (current.challengeSubCategories || []).filter(c => c !== value),
+    }))
+  }
+
+  const handleSubCategoryDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    setConfig((current) => {
+      const existing = current.challengeSubCategories || []
+      const oldIndex = existing.indexOf(String(active.id))
+      const newIndex = existing.indexOf(String(over.id))
+      return { ...current, challengeSubCategories: arrayMove(existing, oldIndex, newIndex) }
+    })
+  }
+
   const handleFileUpload = async (file: File, type: string) => {
     setUploadingType(type)
     setError('')
@@ -303,58 +335,58 @@ export default function DevConfigDialog({ open, onOpenChange }: DevConfigDialogP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(DIALOG_CONTENT_CLASS_3XL, "flex max-h-[85vh] flex-col overflow-hidden border border-gray-200/80 p-0 dark:border-gray-800/80")}>
         <div className="shrink-0">
-        <div className="border-b border-gray-200/70 px-4 py-3.5 dark:border-gray-800/80 sm:px-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-500/20 bg-blue-500/10">
-                <Settings2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div className="min-w-0">
-                <DialogTitle className="truncate text-lg font-semibold text-gray-900 dark:text-white">
-                  Platform Setup
-                </DialogTitle>
-                <div className="mt-1 flex flex-wrap items-center gap-2">
-                  <Badge variant="outline" className="border-blue-500/20 bg-blue-500/10 px-2 py-0 text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-                    Dev Only
-                  </Badge>
-                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                    Runtime configuration
-                  </span>
+          <div className="border-b border-gray-200/70 px-4 py-3.5 dark:border-gray-800/80 sm:px-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-500/20 bg-blue-500/10">
+                  <Settings2 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className="min-w-0">
+                  <DialogTitle className="truncate text-lg font-semibold text-gray-900 dark:text-white">
+                    Platform Setup
+                  </DialogTitle>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <Badge variant="outline" className="border-blue-500/20 bg-blue-500/10 px-2 py-0 text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                      Dev Only
+                    </Badge>
+                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                      Runtime configuration
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <Button
-              onClick={saveConfig}
-              disabled={saving || loading}
-              size="lg"
-              className="h-10 w-full px-5 sm:w-auto"
-            >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              {saving ? "Saving..." : "Save Changes"}
-            </Button>
-          </div>
-        </div>
-
-        <div className="border-b border-gray-200/70 px-4 py-3.5 dark:border-gray-800/80 sm:px-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <SegmentedTabs
-              items={[
-                { value: 'config', label: 'Application', icon: FileJson },
-                { value: 'secret', label: 'Infrastructure', icon: Key },
-              ]}
-              value={activeTab}
-              onChange={setActiveTab}
-              variant="panel"
-              className="w-full sm:w-fit"
-              stretch
-            />
-            <div className="flex items-center gap-1.5 text-xs font-mono text-gray-500 dark:text-gray-400">
-              <Info className="h-3.5 w-3.5 text-blue-500" />
-              {activeTab === 'config' ? 'src/config.ts' : '.env.local'}
+              <Button
+                onClick={saveConfig}
+                disabled={saving || loading}
+                size="lg"
+                className="h-10 w-full px-5 sm:w-auto"
+              >
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                {saving ? "Saving..." : "Save Changes"}
+              </Button>
             </div>
           </div>
-        </div>
+
+          <div className="border-b border-gray-200/70 px-4 py-3.5 dark:border-gray-800/80 sm:px-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <SegmentedTabs
+                items={[
+                  { value: 'config', label: 'Application', icon: FileJson },
+                  { value: 'secret', label: 'Infrastructure', icon: Key },
+                ]}
+                value={activeTab}
+                onChange={setActiveTab}
+                variant="panel"
+                className="w-full sm:w-fit"
+                stretch
+              />
+              <div className="flex items-center gap-1.5 text-xs font-mono text-gray-500 dark:text-gray-400">
+                <Info className="h-3.5 w-3.5 text-blue-500" />
+                {activeTab === 'config' ? 'src/config.ts' : '.env.local'}
+              </div>
+            </div>
+          </div>
 
         </div>
         <div className="flex-1 space-y-4 overflow-y-auto p-4 scroll-hidden sm:p-5">
@@ -436,6 +468,37 @@ export default function DevConfigDialog({ open, onOpenChange }: DevConfigDialogP
                         {config.challengeCategories.length === 0 && (
                           <div className="px-4 py-6 text-center text-sm font-medium text-gray-500 dark:text-gray-400">
                             No categories configured.
+                          </div>
+                        )}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                </div>
+              </Section>
+
+              <Section title="Challenge Sub-Categories" description="Manage default sub-category suggestion chips.">
+                <div className="space-y-4">
+                  <div className="flex gap-2">
+                    <Input
+                      value={subCategoryDraft}
+                      onChange={(e) => setSubCategoryDraft(e.target.value)}
+                      placeholder="Add new sub-category..."
+                      className={INPUT_CLASS}
+                      onKeyDown={(e) => e.key === 'Enter' && addSubCategory()}
+                    />
+                    <Button onClick={addSubCategory} size="icon" className="h-10 w-10 shrink-0">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <DndContext collisionDetection={closestCenter} sensors={sensors} onDragEnd={handleSubCategoryDragEnd}>
+                    <SortableContext items={config.challengeSubCategories || []} strategy={verticalListSortingStrategy}>
+                      <div className="overflow-hidden rounded-xl border border-gray-200/80 dark:border-gray-800/80">
+                        {(config.challengeSubCategories || []).map((subCat) => (
+                          <SortableCategoryItem key={subCat} id={subCat} label={subCat} onRemove={() => removeSubCategory(subCat)} />
+                        ))}
+                        {(config.challengeSubCategories || []).length === 0 && (
+                          <div className="px-4 py-6 text-center text-sm font-medium text-gray-500 dark:text-gray-400">
+                            No sub-categories configured.
                           </div>
                         )}
                       </div>

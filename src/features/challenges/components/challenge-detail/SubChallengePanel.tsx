@@ -1,7 +1,7 @@
 'use client'
 
 import { memo, useCallback, useLayoutEffect, useRef, useState } from 'react'
-import { Check, Copy } from 'lucide-react'
+import { Check, Copy, ChevronDown, ChevronUp, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { MarkdownRenderer } from '@/shared/markdown/MarkdownRenderer'
 import {
@@ -39,7 +39,40 @@ function normalizeQuestionMarkdown(value: string) {
 }
 
 const QuestionMarkdown = memo(function QuestionMarkdown({ content }: { content: string }) {
-  return <MarkdownRenderer content={content} className="max-w-full break-words" />
+  const [isExpanded, setIsExpanded] = useState(false)
+  const isLong = content.split('\n').length > 3 || content.length > 120
+
+  if (!isLong) {
+    return <MarkdownRenderer content={content} variant="compact" className="max-w-full break-words" />
+  }
+
+  return (
+    <div className="relative">
+      <div
+        className={`max-w-full select-text break-words transition-all duration-300 relative ${isExpanded ? 'max-h-[none]' : 'max-h-[70px] overflow-hidden'
+          }`}
+      >
+        <MarkdownRenderer content={content} variant="compact" className="max-w-full break-words" />
+      </div>
+      <div className="flex justify-start mt-1">
+        <button
+          type="button"
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="text-[10px] font-bold tracking-wide uppercase text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 py-0.5"
+        >
+          {isExpanded ? (
+            <>
+              Show less <ChevronUp className="h-3.5 w-3.5" />
+            </>
+          ) : (
+            <>
+              Read more <ChevronDown className="h-3.5 w-3.5" />
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  )
 })
 
 type ScrollAnchorSnapshot = {
@@ -147,6 +180,7 @@ function QuestionCard({
   onSubmitScrollAnchorCapture,
   onSubmitScrollAnchorClear,
 }: QuestionCardProps) {
+  const [isChanged, setIsChanged] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
   const submitScrollAnchorRef = useRef<ScrollAnchorSnapshot | null>(null)
   const questionContent = normalizeQuestionMarkdown(question.question)
@@ -167,6 +201,7 @@ function QuestionCard({
         restoreScrollAnchor(scrollAnchor)
       }
     }
+    setIsChanged(false)
     const result = onSubmit()
     const clearAnchor = () => onSubmitScrollAnchorClear?.(scrollAnchor)
 
@@ -187,19 +222,22 @@ function QuestionCard({
     <div ref={cardRef} data-sub-question-card-id={cardAnchorId} className={cardClassName}>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <div className="flex select-none items-center gap-2">
+          <div className="flex select-none items-center justify-between gap-2 h-[20px]">
             <p className={`text-[10px] uppercase tracking-[0.18em] ${completed ? 'text-gray-500' : 'text-blue-400/80'}`}>
               Question #{question.order_number}
             </p>
-            {completed && (
-              <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded border bg-green-900/50 text-green-400 border-green-800">
-                Completed
+            {completed ? (
+              <span className="shrink-0 flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border bg-green-900/50 text-green-400 border-green-800/80 font-semibold">
+                <Check className="h-3 w-3" />
+                Solved
               </span>
-            )}
-            {!completed && !current && (
-              <span className="shrink-0 rounded border border-blue-500/20 bg-blue-500/10 px-1.5 py-0.5 text-[10px] text-blue-300">
-                Pending
-              </span>
+            ) : (
+              !completed && typeof result === 'boolean' && result === false && answer?.trim() && !isChanged && (
+                <span className="shrink-0 flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border bg-red-950/50 text-red-400 border-red-900/60 font-semibold animate-pulse-once">
+                  <X className="h-3 w-3" />
+                  Incorrect
+                </span>
+              )
             )}
           </div>
           <div className={`mt-1 max-w-full select-text overflow-x-auto break-words text-sm font-semibold ${completed ? 'text-gray-200' : 'text-white'}`}>
@@ -218,6 +256,7 @@ function QuestionCard({
               ? undefined
               : (event) => {
                 onAnswerChange(event.target.value)
+                setIsChanged(true)
               }
           }
           placeholder={completed ? 'Answer saved' : 'Type your answer...'}
@@ -247,16 +286,12 @@ function QuestionCard({
             onTouchStart={prepareSubmitScrollRestore}
             onClick={submitWithoutScrollJump}
             disabled={submitting || !answer?.trim()}
-            className="select-none rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-sm shadow-blue-500/20 transition hover:bg-blue-500 disabled:opacity-50"
+            className="select-none rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm shadow-blue-500/20 transition hover:bg-blue-500 disabled:opacity-50 min-w-[60px] flex items-center justify-center"
           >
             {submitting ? '...' : 'Check'}
           </button>
         )}
       </div>
-
-      {!completed && typeof result === 'boolean' && result === false && answer?.trim() && (
-        <p className="select-none text-xs font-semibold text-red-300">x Incorrect</p>
-      )}
     </div>
   )
 }
@@ -454,7 +489,7 @@ export default function SubChallengePanel({
           }}
           onTouchStart={prepareSubmitAllScrollRestore}
           onClick={submitAllWithoutScrollJump}
-          className="select-none rounded-xl border border-blue-500/30 bg-blue-600/90 px-5 py-2 font-bold text-white shadow-sm shadow-blue-500/20 transition hover:bg-blue-500 disabled:opacity-50"
+          className="select-none rounded-lg border border-blue-500/30 bg-blue-600/90 px-4 py-1.5 text-xs font-bold text-white shadow-sm shadow-blue-500/20 transition hover:bg-blue-500 disabled:opacity-50 min-w-[135px] flex items-center justify-center"
         >
           {submitting ? '...' : 'Submit All Answers'}
         </button>
