@@ -83,6 +83,10 @@ BEGIN
     IF NOT COALESCE(v_is_active, TRUE) THEN
       RETURN json_build_object('success', false, 'message', 'Challenge is not active');
     END IF;
+
+    IF v_event_id IS NULL AND public.get_system_setting('disable_default_challenges') = 'true' THEN
+      RETURN json_build_object('success', false, 'message', 'Default challenges are disabled');
+    END IF;
   END IF;
 
   IF v_event_id IS NOT NULL AND NOT COALESCE(v_event_exists, false) THEN
@@ -130,9 +134,9 @@ BEGIN
   LEFT JOIN public.events e ON e.id = c.event_id
   WHERE c.is_active = true
     AND (
-      c.event_id IS NULL
+      (c.event_id IS NULL AND public.get_system_setting('disable_default_challenges') <> 'true')
       OR (
-        (e.start_time IS NULL OR now() >= e.start_time)
+        c.event_id IS NOT NULL AND (e.start_time IS NULL OR now() >= e.start_time)
       )
     )
     AND public.match_event_mode(p_event_mode, p_event_id, c.event_id)
@@ -156,9 +160,9 @@ BEGIN
   LEFT JOIN public.events e ON e.id = c.event_id
   WHERE c.is_active = true
     AND (
-      c.event_id IS NULL
+      (c.event_id IS NULL AND public.get_system_setting('disable_default_challenges') <> 'true')
       OR (
-        (e.start_time IS NULL OR now() >= e.start_time)
+        c.event_id IS NOT NULL AND (e.start_time IS NULL OR now() >= e.start_time)
       )
     )
     AND public.match_event_mode(p_event_mode, p_event_id, c.event_id)
@@ -792,7 +796,7 @@ USING (
   NOT public.is_current_user_banned()
   AND is_active = true
   AND (
-    event_id IS NULL
+    (event_id IS NULL AND COALESCE((SELECT value FROM public.system_settings WHERE key = 'disable_default_challenges'), 'false') <> 'true')
     OR EXISTS (
       SELECT 1
       FROM public.events e

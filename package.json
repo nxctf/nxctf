@@ -6,7 +6,7 @@
     "predev": "node src/lib/scripts/gen-version.js",
     "prebuild": "node src/lib/scripts/gen-version.js",
     "prestart": "node src/lib/scripts/gen-version.js",
-    "setup": "node db/build-init-sql.js",
+    "setup": "node src/lib/scripts/setup-env.js && node db/build-init-sql.js",
     "update": "node db/update_queries.js",
     "update-types": "node src/lib/scripts/update-types.js",
     "update-types:local": "supabase gen types typescript --local --schema public > src/lib/supabase/database.types.ts",

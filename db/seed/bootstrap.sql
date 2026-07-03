@@ -13,6 +13,7 @@ VALUES
   ('disable_edit_team', 'false', 'Disable editing team name'),
   ('disable_edit_username', 'false', 'Disable editing username'),
   ('disable_signup', 'false', 'Disable new user registrations'),
+  ('disable_default_challenges', 'false', 'Disable default/main challenges (not bound to any event)'),
   ('max_team_members', '5', 'Maximum number of members allowed per team')
 ON CONFLICT (key) DO NOTHING;
 

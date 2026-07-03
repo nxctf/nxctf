@@ -54,6 +54,12 @@ const CONFIG_KEYS: ConfigKey[] = [
     type: 'boolean',
   },
   {
+    key: 'disable_default_challenges',
+    label: 'Disable Default/Main Challenges',
+    description: 'Hide and disable access to all default/main challenges (not bound to any event). This prevents viewing, listing, and flag submissions.',
+    type: 'boolean',
+  },
+  {
     key: 'max_team_members',
     label: 'Maximum Members Per Team',
     description: 'The maximum number of members allowed in a single team. Changes do not affect existing teams.',

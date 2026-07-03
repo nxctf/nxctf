@@ -24,17 +24,25 @@ BEGIN
     u.username::TEXT,
     COALESCE(
       SUM(
-        CASE WHEN public.match_event_mode(p_event_mode, p_event_id, c.event_id) THEN c.points ELSE 0 END
+        CASE WHEN public.match_event_mode(p_event_mode, p_event_id, c.event_id)
+          AND NOT (c.event_id IS NULL AND public.get_system_setting('disable_default_challenges') = 'true')
+          THEN c.points ELSE 0 END
       ), 0
     ) AS score,
     MAX(
-      CASE WHEN public.match_event_mode(p_event_mode, p_event_id, c.event_id) THEN s.created_at ELSE NULL END
+      CASE WHEN public.match_event_mode(p_event_mode, p_event_id, c.event_id)
+        AND NOT (c.event_id IS NULL AND public.get_system_setting('disable_default_challenges') = 'true')
+        THEN s.created_at ELSE NULL END
     ) AS last_solve,
     ROW_NUMBER() OVER (
       ORDER BY COALESCE(
-        SUM(CASE WHEN public.match_event_mode(p_event_mode, p_event_id, c.event_id) THEN c.points ELSE 0 END), 0
+        SUM(CASE WHEN public.match_event_mode(p_event_mode, p_event_id, c.event_id)
+          AND NOT (c.event_id IS NULL AND public.get_system_setting('disable_default_challenges') = 'true')
+          THEN c.points ELSE 0 END), 0
       ) DESC,
-      MAX(CASE WHEN public.match_event_mode(p_event_mode, p_event_id, c.event_id) THEN s.created_at ELSE NULL END) ASC
+      MAX(CASE WHEN public.match_event_mode(p_event_mode, p_event_id, c.event_id)
+        AND NOT (c.event_id IS NULL AND public.get_system_setting('disable_default_challenges') = 'true')
+        THEN s.created_at ELSE NULL END) ASC
     ) AS rank,
     public.resolve_profile_picture(u.profile_picture_url, au.raw_user_meta_data)::TEXT AS picture
   FROM public.users u
@@ -44,7 +52,9 @@ BEGIN
   GROUP BY u.id, u.username, au.raw_user_meta_data, u.profile_picture_url
   HAVING COALESCE(
     SUM(
-      CASE WHEN public.match_event_mode(p_event_mode, p_event_id, c.event_id) THEN c.points ELSE 0 END
+      CASE WHEN public.match_event_mode(p_event_mode, p_event_id, c.event_id)
+        AND NOT (c.event_id IS NULL AND public.get_system_setting('disable_default_challenges') = 'true')
+        THEN c.points ELSE 0 END
     ), 0
   ) > 0
   ORDER BY score DESC, last_solve ASC
@@ -81,6 +91,7 @@ BEGIN
   JOIN public.users u ON u.id = s.user_id
   WHERE s.user_id = ANY(p_user_ids)
     AND public.match_event_mode(p_event_mode, p_event_id, c.event_id)
+    AND NOT (c.event_id IS NULL AND public.get_system_setting('disable_default_challenges') = 'true')
   ORDER BY s.created_at ASC
   LIMIT p_limit OFFSET p_offset;
 END;

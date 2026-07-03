@@ -42,6 +42,7 @@ BEGIN
     LEFT JOIN public.events e ON e.id = c.event_id
     WHERE c.is_active = true
       AND public.match_event_mode(p_event_mode, p_event_id, c.event_id)
+      AND NOT (c.event_id IS NULL AND public.get_system_setting('disable_default_challenges') = 'true')
       AND (
         c.event_id IS NULL
         OR (
@@ -70,6 +71,7 @@ BEGIN
     JOIN public.users u ON u.id = s.user_id
     WHERE c.is_active = true
       AND public.match_event_mode(p_event_mode, p_event_id, c.event_id)
+      AND NOT (c.event_id IS NULL AND public.get_system_setting('disable_default_challenges') = 'true')
       AND (
         c.event_id IS NULL
         OR (
@@ -115,6 +117,7 @@ BEGIN
   JOIN public.challenges c ON c.id = s.challenge_id
   LEFT JOIN public.events e ON e.id = c.event_id
   WHERE public.match_event_mode(p_event_mode, p_event_id, c.event_id)
+  AND NOT (c.event_id IS NULL AND public.get_system_setting('disable_default_challenges') = 'true')
   AND (
     c.event_id IS NULL
     OR (
