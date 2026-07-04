@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import APP from '@/config'
+import { useSystemSettings } from '@/shared/contexts/SystemSettingsContext'
 
 export function useTeamEvents(startedEvents: any[], solvedEventIds: string[], hasMainSolved: boolean, selectedEvent: string | number) {
   const solvedEventSet = useMemo(
@@ -12,7 +12,8 @@ export function useTeamEvents(startedEvents: any[], solvedEventIds: string[], ha
     [startedEvents, solvedEventSet]
   )
 
-  const showMainOption = hasMainSolved && !APP.hideEventMain
+  const { settings } = useSystemSettings()
+  const showMainOption = hasMainSolved && !settings.disable_default_challenges
 
   const effectiveSelectedEvent = useMemo(() => {
     const allowed = new Set<string>(['all'])

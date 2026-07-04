@@ -9,6 +9,7 @@ import {
   User,
   ShieldCheck,
   Settings,
+  FolderOpen,
 } from 'lucide-react'
 
 export type AdminNavItem = {
@@ -40,6 +41,11 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
     href: '/admin/challenges',
     label: 'Challenges',
     icon: Flag,
+  },
+  {
+    href: '/admin/categories',
+    label: 'Categories',
+    icon: FolderOpen,
   },
   {
     href: '/admin/services',

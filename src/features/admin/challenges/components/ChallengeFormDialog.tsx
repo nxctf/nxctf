@@ -135,7 +135,11 @@ const ChallengeFormDialog: React.FC<ChallengeFormDialogProps> = (props) => {
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className={cn(DIALOG_FORM_CONTENT_CLASS, "overflow-hidden flex flex-col h-[85vh] max-h-[85vh] max-w-3xl p-5 md:p-6")}
+          className={cn(DIALOG_FORM_CONTENT_CLASS, "flex flex-col h-[85vh] max-h-[85vh] max-w-3xl p-5 md:p-6")}
+          aria-describedby={undefined}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault()
+          }}
         >
           <DialogHeader className="pb-3 border-b dark:border-gray-800 shrink-0">
             <DialogTitle className="text-base font-semibold text-gray-900 dark:text-gray-100">{editing ? 'Edit Challenge' : 'Add New Challenge'}</DialogTitle>
@@ -160,6 +164,7 @@ const ChallengeFormDialog: React.FC<ChallengeFormDialogProps> = (props) => {
                   events={sortedEvents}
                   categories={categories}
                   hideMainEventOption={hideMainEventOption}
+                  isEdit={!!editing}
                 />
 
                 <ScoringSection

@@ -1,8 +1,8 @@
 import { MetadataRoute } from 'next'
-import APP from '@/config'
+import { BASE_URL } from '@/_vars/const'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = APP.baseUrl
+  const baseUrl = BASE_URL
 
   return [
     {

@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase/client'
 import { User } from '@/shared/types'
 import { AuthResponse, AuthIdentity } from '../types'
 import { mergeProfilePicture } from '../lib/auth-utils'
-import { SUPABASE_URL } from '@/const'
+import { SUPABASE_URL } from '@/_vars/const'
 
 /**
  * Authentication Service

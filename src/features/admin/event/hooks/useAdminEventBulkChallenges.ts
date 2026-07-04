@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import APP from '@/config'
+import { useCategories } from '@/shared/contexts/CategoriesContext'
 import { getCategoryParent, isCategoryMatch } from '@/features/challenges/lib/challenge-utils'
 import {
   DEFAULT_EVENT_FILTERS,
@@ -12,6 +13,7 @@ import {
 import type { ChallengeLite, FilterState } from '../types'
 
 export function useAdminEventBulkChallenges() {
+  const { categories: dbCategories } = useCategories()
   const [challenges, setChallenges] = useState<ChallengeLite[]>([])
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [bulkEventId, setBulkEventId] = useState('')
@@ -61,7 +63,7 @@ export function useAdminEventBulkChallenges() {
     [challenges],
   )
   const categories = useMemo(() => {
-    const preferredOrder = APP.challengeCategories || []
+    const preferredOrder = dbCategories.map((c) => c.name)
     const matchedCategorySet = new Set<string>()
     return [
       ...preferredOrder.flatMap((p) => {
@@ -75,7 +77,7 @@ export function useAdminEventBulkChallenges() {
       }),
       ...allCategories.filter((c) => !matchedCategorySet.has(c)).sort(),
     ]
-  }, [allCategories])
+  }, [allCategories, dbCategories])
   const difficulties = useMemo(
     () => Array.from(new Set(challenges.map((c) => c.difficulty))).filter((d): d is string => Boolean(d)).sort(),
     [challenges],

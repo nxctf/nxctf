@@ -4,7 +4,7 @@ import { RulesMarkdownRenderer } from '@/shared/markdown/MarkdownRenderer'
 import Loader from '@/shared/components/Loader'
 import PageBackground from '@/shared/components/PageBackground'
 import Footer from "@/_layouts/Footer";
-import { rulesConfig } from "@/rules";
+import { rulesConfig } from "@/_vars/rules";
 import { useAuth } from '@/shared/contexts/AuthContext'
 import {
   SURFACE_GLASS_CARD_COMPACT_CLASS,

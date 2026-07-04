@@ -10,16 +10,19 @@ import Navbar from '@/_layouts/Navbar'
 import ScrollToggle from '@/_layouts/components/ScrollToggle'
 import { AuthProvider } from '@/shared/contexts/AuthContext'
 import { ThemeProvider } from '@/shared/contexts/ThemeContext'
+import { CategoriesProvider } from '@/shared/contexts/CategoriesContext'
+import { SystemSettingsProvider } from '@/shared/contexts/SystemSettingsContext'
 import { getPageMinHeightStyle, PAGE_BG_BASE_CLASS } from '@/shared/styles/page-background'
 import { THEME_PRIMARY_SELECTION_CLASS } from '@/shared/styles/theme-colors'
 import APP from '@/config'
+import { BASE_URL } from '@/_vars/const'
 
 export const metadata: Metadata = {
-  metadataBase: new URL(APP.baseUrl),
+  metadataBase: new URL(BASE_URL),
   title: `${APP.shortName} - ${APP.fullName}`,
   description: APP.description,
   keywords: ['CTF', 'Capture The Flag', 'Cybersecurity', 'Hacking Challenge', 'CSCV', 'InfoSec', 'ctftime', 'ctftime.org', 'CTF Platform', 'Cybersecurity Competition', 'Ethical Hacking', 'Vulnerability Assessment', 'Penetration Testing', 'Digital Forensics', 'Malware Analysis', 'Network Security', 'Web Application Security', 'Cryptography', 'Reverse Engineering', 'Security Training', 'Cyber Defense', 'Bug Bounty', 'Red Teaming', 'Blue Teaming', 'Cybersecurity Community', 'CTF Events', 'CTF Challenges', 'Cybersecurity Education', 'CTF Teams', 'Cybersecurity Awareness', 'Capture The Flag Events', 'CTF Challenges Platform', 'Cybersecurity Skills', 'CTF Competitions', 'Cybersecurity Learning', 'CTF Resources', 'Cybersecurity Tools', 'CTF Tutorials', 'Cybersecurity Labs', 'CTF Write-ups', 'Cybersecurity News', 'CTF Strategies', 'Cybersecurity Research', 'CTF Techniques', 'Cybersecurity Conferences', 'CTF Workshops', 'Cybersecurity Careers', 'CTF Training', 'Cybersecurity Certifications', 'CTF Platforms', 'Cybersecurity Innovations', 'CTF Community', 'Cybersecurity Trends', 'CTF Development', 'Cybersecurity Solutions'],
-  authors: [{ name: 'ariafatah', url: APP.baseUrl }],
+  authors: [{ name: 'ariafatah', url: BASE_URL }],
   creator: 'ariafatah',
   publisher: APP.fullName,
   applicationName: APP.fullName,
@@ -32,11 +35,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: `${APP.shortName} - ${APP.fullName}`,
     description: APP.description,
-    url: APP.baseUrl,
+    url: BASE_URL,
     siteName: APP.fullName,
     images: [
       {
-        url: `${APP.baseUrl}/${APP.image_preview}`,
+        url: `${BASE_URL}/${APP.image_preview}`,
         width: 1200,
         height: 630,
         alt: `${APP.shortName} - ${APP.fullName}`,
@@ -50,24 +53,24 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: `${APP.shortName} - ${APP.fullName}`,
     description: APP.description,
-    images: [`${APP.baseUrl}/${APP.image_icon}`],
+    images: [`${BASE_URL}/${APP.image_icon}`],
   },
   alternates: {
-    canonical: APP.baseUrl,
+    canonical: BASE_URL,
   },
   other: {
     // Structured data biar Google bisa detect
     'application/ld+json': JSON.stringify({
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "url": APP.baseUrl,
+      "url": BASE_URL,
       "name": `${APP.shortName} - ${APP.fullName}`,
       "description": APP.description,
-      "image": `${APP.baseUrl}/${APP.image_icon}`,
+      "image": `${BASE_URL}/${APP.image_icon}`,
       "publisher": {
         "@type": "Organization",
         "name": APP.fullName,
-        "logo": `${APP.baseUrl}/${APP.image_icon}`
+        "logo": `${BASE_URL}/${APP.image_icon}`
       }
     })
   }
@@ -111,12 +114,16 @@ export default async function RootLayout({
           // Normal mode: with navbar and providers
           <div className={PAGE_BG_BASE_CLASS} style={getPageMinHeightStyle()}>
             <ThemeProvider>
-              <AuthProvider>
-                <Navbar />
-                <div className="pt-14">{children}</div>
-                <Toaster position="top-right" reverseOrder={false} />
-                <ScrollToggle />
-              </AuthProvider>
+              <SystemSettingsProvider>
+                <AuthProvider>
+                  <CategoriesProvider>
+                    <Navbar />
+                    <div className="pt-14">{children}</div>
+                    <Toaster position="top-right" reverseOrder={false} />
+                    <ScrollToggle />
+                  </CategoriesProvider>
+                </AuthProvider>
+              </SystemSettingsProvider>
             </ThemeProvider>
           </div>
         )}

@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { Flag, Check, CheckCircle2, ListChecks, Server, Key, MapPin, ClipboardCopy } from 'lucide-react'
 import toast from 'react-hot-toast'
 import APP from '@/config'
+import { useSystemSettings } from '@/shared/contexts/SystemSettingsContext'
 import { Dialog, DialogContent, DialogTitle } from '@/shared/ui'
 import { MarkdownRenderer } from '@/shared/markdown/MarkdownRenderer'
 import { DIALOG_CONTENT_CLASS_2XL } from '@/shared/styles'
@@ -267,6 +268,8 @@ ${links || '- (No links)'}
     contentScrollRef.current?.scrollTo({ top: 0, behavior: 'auto' })
   }, [challenge?.id, challengeTab])
 
+  const { settings } = useSystemSettings()
+
   if (!challenge) return null
 
   const isSolved = !!challenge.is_solved;
@@ -278,7 +281,7 @@ ${links || '- (No links)'}
   const colorName = (APP as any).difficultyStyles?.[normalizedDiff];
   const { badgeClass: diffBadgeColor, textClass: diffTextColor } = getDifficultyStyle(colorName);
   const { color: categoryIconColor, borderColor: categoryBorderColor, badgeColor: categoryBadgeColor } = getCategoryDetails(challenge.category);
-  const eventName = events.find(e => e.id === challenge.event_id)?.name || String(APP.eventMainLabel || 'main');
+  const eventName = events.find(e => e.id === challenge.event_id)?.name || String(settings.event_main_label || 'main');
   const dialogTitle = getChallengeDialogTitle(challenge.title);
   const featureType = getChallengeFeatureType(challenge);
 

@@ -1,6 +1,7 @@
 'use client'
 
 import APP from '@/config'
+import { useSystemSettings } from '@/shared/contexts/SystemSettingsContext'
 import type { useChallengesPageData } from '../../hooks/useChallengesPageData'
 import { useChallengeStats } from '../../hooks/useChallengeStats'
 import ChallengeFilterBar from '../ChallengeFilterBar'
@@ -17,6 +18,7 @@ type ChallengesTabPanelProps = {
 export default function ChallengesTabPanel({
   data,
 }: ChallengesTabPanelProps) {
+  const { settings } = useSystemSettings()
   const myStats = useChallengeStats(data.user, data.challenges, data.eventId)
 
   return (
@@ -48,7 +50,7 @@ export default function ChallengesTabPanel({
           onEventChange={data.attemptEventSelect}
           sortMode={data.sortMode}
           onSortModeChange={() => data.setSortMode((prev) => prev === 'default' ? 'newest' : 'default')}
-          hideMainEventOption={APP.hideEventMain}
+          hideMainEventOption={settings.disable_default_challenges}
           showSearch={true}
           settings={data.filterSettings}
           categories={data.categories}

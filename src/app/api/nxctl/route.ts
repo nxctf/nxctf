@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { NXCTL_API_ADMIN_SECRET, NXCTL_API_TOKEN, NXCTL_API_URL } from '@/secret'
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@/const'
+import { NXCTL_API_ADMIN_SECRET, NXCTL_API_TOKEN, NXCTL_API_URL } from '@/_vars/secret'
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@/_vars/const'
 
 const apiUrl = NXCTL_API_URL.replace(/\/$/, '')
 const CHALLENGE_KEY_HEADER = 'X-NXCTL-Challenge-Key'

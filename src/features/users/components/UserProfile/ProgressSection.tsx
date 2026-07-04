@@ -59,7 +59,7 @@ export default function ProgressSection({
     .map(({ difficulty, total_challenges }) => {
       const rawDiff = difficulty.toString().trim()
       const normalizedDiff = rawDiff === 'imposible' ? 'Impossible' : rawDiff.charAt(0).toUpperCase() + rawDiff.slice(1).toLowerCase()
-      const colorBase = APP.difficultyStyles[normalizedDiff] || 'gray'
+      const colorBase = (APP.difficultyStyles as Record<string, string>)[normalizedDiff] || 'gray'
 
       // Color mapping
       const bgMap: Record<string, string> = {

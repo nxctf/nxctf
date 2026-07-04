@@ -1,5 +1,6 @@
 import React from 'react'
 import APP from '@/config'
+import { NXCTF } from '@/_vars/const'
 import { THEME_PRIMARY_PILL_CLASS } from '@/shared/styles'
 
 interface AuthHeaderProps {
@@ -9,7 +10,7 @@ interface AuthHeaderProps {
 }
 
 export function AuthHeader({ badge, title, subtitle }: AuthHeaderProps) {
-  const logoUrl = APP.nxctf?.nxctf_logo || APP.image_logo
+  const logoUrl = NXCTF.nxctf_logo || APP.image_logo
 
   return (
     <div className="mb-5 flex flex-col items-start text-left w-full">

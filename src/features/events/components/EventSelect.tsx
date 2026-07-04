@@ -1,8 +1,6 @@
-'use client'
-
 import React from 'react'
-import APP from '@/config'
 import { FilterSelect } from '@/shared/ui'
+import { useSystemSettings } from '@/shared/contexts/SystemSettingsContext'
 
 export type EventSelectItem = {
   id: string
@@ -47,14 +45,18 @@ export default function EventSelect({
   onClear,
   sortMode = 'challenge-filter-bar',
   referenceTimeMs,
-  showMain = !APP.hideEventMain,
+  showMain: propShowMain,
   mainValue = 'main',
-  mainLabel = String(APP.eventMainLabel || 'Main'),
+  mainLabel: propMainLabel,
   showAll = true,
   allValue = 'all',
   allLabel = 'All Events',
   getEventLabel = (evt) => String(evt.name ?? evt.title ?? 'Untitled'),
 }: Props) {
+  const { settings } = useSystemSettings()
+  const showMain = propShowMain ?? !settings.disable_default_challenges
+  const mainLabel = propMainLabel ?? String(settings.event_main_label || 'Main')
+
   const nowMs = referenceTimeMs ?? Date.now()
   const resolvedDefaultValue = defaultValue ?? allValue
   const isActive = active ?? value !== resolvedDefaultValue

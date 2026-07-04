@@ -1,6 +1,7 @@
 'use client'
 
 import APP from '@/config'
+import { useSystemSettings } from '@/shared/contexts/SystemSettingsContext'
 import { getEventSections, normalizeEventImageUrl } from '../lib'
 import type { EnrichedChallengeEvent } from '../types'
 import AllEventsButton from './events-tab/AllEventsButton'
@@ -22,10 +23,11 @@ export default function EventsTab({
   showAllEventsButton = true,
   showMain: showMainProp,
 }: Props) {
-  const mainLabel = String(APP.eventMainLabel || 'Main')
-  const fallbackImageUrl = normalizeEventImageUrl((APP as any).eventFallbackImageUrl)
-  const mainImageUrl = normalizeEventImageUrl((APP as any).eventMainImageUrl) || fallbackImageUrl
-  const showMain = showMainProp !== undefined ? showMainProp : !APP.hideEventMain
+  const { settings } = useSystemSettings()
+  const mainLabel = String(settings.event_main_label || 'Main')
+  const fallbackImageUrl = normalizeEventImageUrl(settings.event_fallback_image_url)
+  const mainImageUrl = normalizeEventImageUrl(settings.event_main_image_url) || fallbackImageUrl
+  const showMain = showMainProp !== undefined ? showMainProp : true
 
   const now = new Date()
   const { availableEvents, upcomingList, endedEvents } = getEventSections(events, now)
@@ -55,7 +57,8 @@ export default function EventsTab({
               label: mainLabel,
               imageUrl: mainImageUrl,
               selected: selectedEventId === null,
-              onSelect: () => onEventSelect(null)
+              onSelect: () => onEventSelect(null),
+              disabled: settings.disable_default_challenges
             } : undefined}
           />
         )}

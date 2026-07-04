@@ -2,6 +2,7 @@
 
 import React from 'react'
 import APP from '@/config'
+import { useSystemSettings } from '@/shared/contexts/SystemSettingsContext'
 import DifficultyBadge from '@/features/challenges/components/DifficultyBadge'
 import { CustomBadge } from '@/shared/ui'
 import type { ChallengeWithSolve } from '@/shared/types'
@@ -12,8 +13,9 @@ type ChallengeMetadataProps = {
 }
 
 export default function ChallengeMetadata({ challenge, events }: ChallengeMetadataProps) {
+  const { settings } = useSystemSettings()
   const getEventName = (eventId?: string | null) => {
-    if (!eventId) return String(APP.eventMainLabel || 'Main')
+    if (!eventId) return String(settings.event_main_label || 'Main')
     const event = events.find((candidate) => candidate.id === eventId)
     return event?.name || 'Unknown Event'
   }

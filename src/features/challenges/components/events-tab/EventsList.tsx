@@ -9,6 +9,7 @@ type MainEventOption = {
   imageUrl: string | null
   selected: boolean
   onSelect: () => void
+  disabled?: boolean
 }
 
 type EventsListProps = {
@@ -49,6 +50,7 @@ export default function EventsList({
             selected={mainEvent.selected}
             delay={0}
             onSelect={mainEvent.onSelect}
+            disabled={mainEvent.disabled}
           />
         )}
 

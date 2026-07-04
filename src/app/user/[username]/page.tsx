@@ -8,6 +8,7 @@ import { useAuth } from '@/shared/contexts/AuthContext'
 import UserProfile from '@/features/users/components/UserProfile'
 import { UserEmptyState } from '@/features/users/components/ui/UserEmptyState'
 import APP from '@/config'
+import { NXCTF } from '@/_vars/const'
 import PageBackground from '@/shared/components/PageBackground'
 
 export default function UserProfilePage() {
@@ -99,11 +100,11 @@ export default function UserProfilePage() {
         className="relative min-h-[calc(100vh-3.5rem)] overflow-hidden"
         selectionClassName="selection:bg-blue-500/30"
       >
-        {(APP.nxctf?.nxctf_logo || APP.image_logo) && (
+        {(NXCTF.nxctf_logo || APP.image_logo) && (
           <div className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center opacity-[0.015] dark:opacity-[0.01]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={APP.nxctf?.nxctf_logo || APP.image_logo}
+              src={NXCTF.nxctf_logo || APP.image_logo}
               alt=""
               aria-hidden="true"
               className="h-auto w-[min(56vw,520px)] select-none object-contain"

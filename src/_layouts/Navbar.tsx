@@ -9,6 +9,7 @@ import { useEffect, useState, useRef } from 'react'
 
 // Shared Imports
 import APP from '@/config'
+import { NXCTF } from '@/_vars/const'
 import ImageWithFallback from '@/shared/components/ImageWithFallback'
 import { useAuth } from '@/shared/contexts/AuthContext'
 import { useTheme } from '@/shared/contexts/ThemeContext'
@@ -289,7 +290,7 @@ export default function Navbar() {
                         </span>
                       </Link>
                       <Link
-                        href={APP.nxctf.nxctf_docs}
+                        href={NXCTF.nxctf_docs}
                         target="_blank"
                         onClick={() => setDocsOpen(false)}
                         className={SURFACE_NAV_DROPDOWN_ITEM_CLASS}

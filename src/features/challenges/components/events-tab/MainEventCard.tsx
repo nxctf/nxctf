@@ -1,5 +1,7 @@
 'use client'
 
+'use client'
+
 import type { CSSProperties } from 'react'
 import { Calendar } from 'lucide-react'
 import Image from 'next/image'
@@ -12,6 +14,7 @@ type MainEventCardProps = {
   selected: boolean
   delay: number
   onSelect: () => void
+  disabled?: boolean
 }
 
 export default function MainEventCard({
@@ -20,22 +23,29 @@ export default function MainEventCard({
   selected,
   delay,
   onSelect,
+  disabled,
 }: MainEventCardProps) {
   return (
     <div
       key="__main__"
       style={{ '--card-reveal-delay': `${delay}s` } as CSSProperties}
-      className="event-card-reveal relative group cursor-pointer h-full transition-transform duration-200 hover:-translate-y-1 active:scale-[0.98]"
-      onClick={onSelect}
+      className={cn(
+        "event-card-reveal relative group h-full transition-all duration-200",
+        disabled ? "cursor-not-allowed opacity-50 filter grayscale" : "cursor-pointer hover:-translate-y-1 active:scale-[0.98]"
+      )}
+      onClick={disabled ? undefined : onSelect}
     >
       {/* Glow Effect on Hover */}
-      <div className="absolute inset-0 bg-blue-500/0 group-hover:bg-blue-500/[0.03] rounded-2xl transition-colors duration-300 pointer-events-none" />
+      {!disabled && (
+        <div className="absolute inset-0 bg-blue-500/0 group-hover:bg-blue-500/[0.03] rounded-2xl transition-colors duration-300 pointer-events-none" />
+      )}
 
       <SurfaceCard
         variant="glass"
         className={cn(
-          'relative flex h-full flex-col overflow-hidden transition-all duration-300 group-hover:border-blue-500/50 hover:shadow-md',
-          selected && 'border-blue-500/50 bg-blue-500/[0.03]'
+          'relative flex h-full flex-col overflow-hidden transition-all duration-300',
+          !disabled && 'group-hover:border-blue-500/50 hover:shadow-md',
+          selected && !disabled && 'border-blue-500/50 bg-blue-500/[0.03]'
         )}
       >
         {/* Image Section */}
@@ -45,7 +55,7 @@ export default function MainEventCard({
               src={imageUrl}
               alt={label}
               fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              className={cn("object-cover transition-transform duration-500", !disabled && "group-hover:scale-105")}
               unoptimized
             />
           ) : (
@@ -59,12 +69,21 @@ export default function MainEventCard({
         <div className="flex-1 p-4 md:p-5 flex flex-col justify-between gap-4">
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <div className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md w-fit bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400">
-                Main
-              </div>
+              {disabled ? (
+                <div className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md w-fit bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400">
+                  Disabled
+                </div>
+              ) : (
+                <div className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md w-fit bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400">
+                  Main
+                </div>
+              )}
             </div>
 
-            <h4 className="text-sm md:text-base font-bold text-gray-900 dark:text-gray-100 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
+            <h4 className={cn(
+              "text-sm md:text-base font-bold leading-tight transition-colors line-clamp-1",
+              disabled ? "text-gray-400 dark:text-gray-500" : "text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400"
+            )}>
               {label}
             </h4>
           </div>
@@ -73,7 +92,7 @@ export default function MainEventCard({
           <div className="flex items-center justify-between mt-auto">
             <div className="flex items-center gap-1.5 text-[10px] font-medium text-gray-500 dark:text-gray-400">
               <Calendar size={12} className="text-blue-500/50" />
-              <span>Platform Default</span>
+              <span>{disabled ? 'Currently Unavailable' : 'Platform Default'}</span>
             </div>
           </div>
         </div>

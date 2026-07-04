@@ -11,6 +11,7 @@ import {
 } from '@/shared/components'
 import { Button } from '@/shared/ui'
 import APP from '@/config'
+import { useCategories } from '@/shared/contexts/CategoriesContext'
 import { formatRelativeDate } from '@/shared/lib'
 import type { ChallengeWithSolve } from '@/shared/types'
 import { UserEmptyState } from '../ui'
@@ -36,6 +37,7 @@ export default function ProfileChallengesModal({
   onSwitchMode,
 }: ProfileChallengesModalProps) {
   const isSolvedMode = mode === 'solved'
+  const { categories: dbCategories } = useCategories()
   const groupedChallenges = useMemo(() => {
     if (isSolvedMode) return {}
 
@@ -49,7 +51,7 @@ export default function ProfileChallengesModal({
   const orderedCategories = useMemo(() => {
     if (isSolvedMode) return []
 
-    const preferredOrder = (typeof APP !== 'undefined' && APP.challengeCategories) ? APP.challengeCategories : []
+    const preferredOrder = dbCategories.map((c) => c.name)
     const categories = Object.keys(groupedChallenges)
     const matchedCategorySet = new Set<string>()
 
@@ -68,7 +70,7 @@ export default function ProfileChallengesModal({
       }),
       ...categories.filter((category) => !matchedCategorySet.has(category)).sort(),
     ]
-  }, [groupedChallenges, isSolvedMode])
+  }, [groupedChallenges, isSolvedMode, dbCategories])
 
   const title = isSolvedMode ? 'All Solved Challenges' : 'Unsolved Challenges'
   const switchLabel = isSolvedMode ? 'Show Unsolved' : 'Show All Solved'

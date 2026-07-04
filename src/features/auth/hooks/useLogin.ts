@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AuthService } from '../services/auth.service'
 import { useAuth } from '@/shared/contexts/AuthContext'
-import Config from '@/config'
+import { CAPTCHA_ENABLED, CAPTCHA_SITE_KEY } from '@/_vars/const'
 
 export function useLogin() {
   const router = useRouter()
@@ -19,7 +19,7 @@ export function useLogin() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (Config.captchaEnabled && !captchaToken) {
+    if (CAPTCHA_ENABLED && !captchaToken) {
       setError('Please complete the CAPTCHA')
       return
     }
@@ -67,7 +67,7 @@ export function useLogin() {
     error,
     setCaptchaToken,
     turnstileKey,
-    captchaEnabled: Config.captchaEnabled,
-    captchaSiteKey: Config.captchaSiteKey
+    captchaEnabled: CAPTCHA_ENABLED,
+    captchaSiteKey: CAPTCHA_SITE_KEY
   }
 }

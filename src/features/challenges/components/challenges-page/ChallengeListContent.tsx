@@ -2,6 +2,7 @@
 
 import { Lock } from 'lucide-react'
 import APP from '@/config'
+import { useSystemSettings } from '@/shared/contexts/SystemSettingsContext'
 import { EmptyState, PageLoader } from '@/shared/components'
 import type { ChallengeWithSolve } from '@/shared/types'
 import type { ChallengeFilterSettings, EventSelectorValue } from '../../types'
@@ -52,6 +53,7 @@ export default function ChallengeListContent({
   formatRemaining,
   onOpenChallenge,
 }: ChallengeListContentProps) {
+  const { settings } = useSystemSettings()
 
   if (initialLoading) {
     return <PageLoader />
@@ -143,7 +145,7 @@ export default function ChallengeListContent({
               <div className="w-1.5 h-6 bg-blue-600 dark:bg-blue-500 rounded-full" />
               <h2 className="text-lg md:text-xl font-black uppercase tracking-tight text-gray-900 dark:text-white">
                 {eventId === 'all' && String(category).toLowerCase() === 'intro'
-                  ? `Intro (${String(APP.eventMainLabel || 'Main')})`
+                  ? `Intro (${String(settings.event_main_label || 'Main')})`
                   : category}
               </h2>
             </div>

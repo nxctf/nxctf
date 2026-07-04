@@ -1,6 +1,7 @@
 'use client'
 
 import { useDeferredValue, useMemo } from 'react'
+import { useCategories } from '@/shared/contexts/CategoriesContext'
 import APP from '@/config'
 import type { ChallengeWithSolve } from '@/shared/types'
 import {
@@ -34,10 +35,12 @@ export function useFilteredChallenges({
   filterSettings,
   sortMode,
 }: UseFilteredChallengesOptions) {
+  const { categories: dbCategories, subCategories: dbSubCategories } = useCategories()
   const deferredFilters = useDeferredValue(filters)
   const deferredFilterSettings = useDeferredValue(filterSettings)
-  const difficultyOrder = useMemo(() => getDifficultyOrder((APP as any).difficultyStyles), [])
-  const preferredOrder = useMemo(() => APP.challengeCategories || [], [])
+  const difficultyOrder = useMemo(() => getDifficultyOrder(APP.difficultyStyles), [])
+  const preferredOrder = useMemo(() => dbCategories.map(c => c.name), [dbCategories])
+  const preferredSubOrder = useMemo(() => dbSubCategories.map(s => s.name), [dbSubCategories])
 
   const filteredChallenges = useMemo(() => {
     return filterChallengesByState({
@@ -93,9 +96,10 @@ export function useFilteredChallenges({
       sortMode,
       difficultyOrder,
       preferredCategoryOrder: preferredOrder,
+      preferredSubCategoryOrder: preferredSubOrder,
       splitSubCategories: deferredFilterSettings.splitSubCategories,
     })
-  }, [difficultyOrder, filteredChallenges, preferredOrder, sortMode, deferredFilterSettings.splitSubCategories])
+  }, [difficultyOrder, filteredChallenges, preferredOrder, preferredSubOrder, sortMode, deferredFilterSettings.splitSubCategories])
 
   return {
     filteredChallenges,

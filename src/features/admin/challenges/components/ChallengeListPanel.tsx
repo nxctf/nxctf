@@ -7,6 +7,7 @@ import AdminChallengesToolbar from './AdminChallengesToolbar'
 import ChallengeListItem from './ChallengeListItem'
 import type { AdminChallengeEventId, AdminChallengeFilterState, Challenge, Event } from '../types'
 import APP from '@/config'
+import { useCategories } from '@/shared/contexts/CategoriesContext'
 import { buildFuzzyOrderedList } from '@/features/challenges/lib/challenge-utils'
 
 interface ChallengeListPanelProps {
@@ -55,12 +56,13 @@ const ChallengeListPanel: React.FC<ChallengeListPanelProps> = ({
     </p>
   ) : null
 
+  const { categories: dbCategories } = useCategories()
   const rawCategories = Array.from(new Set(challenges.map(c => (c.category || '').split('/')[0]))).filter(Boolean)
-  const categoryOrder = APP.challengeCategories || []
+  const categoryOrder = dbCategories.map(c => c.name)
   const sortedCategories = buildFuzzyOrderedList(categoryOrder, rawCategories)
 
   const rawDifficulties = Array.from(new Set(challenges.map(c => c.difficulty))).filter(Boolean)
-  const difficultyOrder = Object.keys(APP.difficultyStyles || {})
+  const difficultyOrder = Object.keys(APP.difficultyStyles)
   const normalizedDiffOrder = difficultyOrder.map(d => d.toLowerCase())
   const sortedDifficulties = [...rawDifficulties].sort((a, b) => {
     const normA = a.trim().toLowerCase()

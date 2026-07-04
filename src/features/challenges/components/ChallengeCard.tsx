@@ -1,9 +1,11 @@
 // React Imports
 import React, { memo } from "react";
-import { Flame, Sparkles, AlertTriangle, Flag, CheckCircle2, ListChecks, Server, Variable, MapPin } from 'lucide-react';
+import { Flame, Sparkles, AlertTriangle, Flag, CheckCircle2, ListChecks, Server, Variable, MapPin, Shield } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 
 // Shared Imports
 import APP from '@/config';
+import { useCategories } from '@/shared/contexts/CategoriesContext';
 import { ChallengeWithSolve } from '@/shared/types'
 import { getCategoryDetails, getCategoryIcon, getDifficultyStyle, getChallengeFeatureType, getCategoryCardHoverStyles } from '../lib'
 
@@ -38,8 +40,14 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge, highlightTeamS
   const { dotClass, textClass: diffTextColor } = getDifficultyStyle(colorName);
 
   // Icon lookup for background decoration (UI-layer only)
-  const { color: categoryIconColor, borderColor: categoryBorderColor, badgeColor: categoryBadgeColor } = getCategoryDetails(challenge.category);
-  const CategoryIcon = getCategoryIcon(challenge.category);
+  const { categories: dbCategories } = useCategories();
+  const parentCategory = challenge.category ? challenge.category.split('/')[0] : '';
+  const dbCat = dbCategories.find(c => c.name.toLowerCase() === parentCategory.toLowerCase());
+
+  const categoryIconColor = dbCat ? `text-${dbCat.color}-500` : getCategoryDetails(challenge.category).color;
+  const categoryBorderColor = dbCat ? `border-${dbCat.color}-500/30` : getCategoryDetails(challenge.category).borderColor;
+  const categoryBadgeColor = dbCat ? `bg-${dbCat.color}-500/15 text-${dbCat.color}-500` : getCategoryDetails(challenge.category).badgeColor;
+  const CategoryIcon = dbCat ? ((LucideIcons as any)[dbCat.icon] || Shield) : getCategoryIcon(challenge.category);
   const cardHover = getCategoryCardHoverStyles(categoryIconColor);
 
   const handleOpen = () => {

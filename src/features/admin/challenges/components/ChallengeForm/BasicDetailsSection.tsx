@@ -1,9 +1,11 @@
 import React from 'react'
-import { Label, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Button } from '@/shared/ui'
-import { CheckCircle2, Wrench, Settings, FolderOpen } from 'lucide-react'
+import { Label, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui'
+import { CheckCircle2, Wrench } from 'lucide-react'
 import { ChallengeFormData, Event } from '../../types'
-import { supabase } from '@/lib/supabase/client'
+import { useCategories } from '@/shared/contexts/CategoriesContext'
 import APP from '@/config'
+import { useSystemSettings } from '@/shared/contexts/SystemSettingsContext'
+import { cn } from '@/shared/lib/utils'
 import {
   ADMIN_FORM_FIELD_CLASS,
   ADMIN_FORM_GRID_CLASS,
@@ -19,6 +21,7 @@ interface BasicDetailsSectionProps {
   events?: Event[]
   categories: string[]
   hideMainEventOption?: boolean
+  isEdit?: boolean
 }
 
 export const BasicDetailsSection: React.FC<BasicDetailsSectionProps> = ({
@@ -26,8 +29,12 @@ export const BasicDetailsSection: React.FC<BasicDetailsSectionProps> = ({
   onChange,
   events,
   categories,
-  hideMainEventOption
+  hideMainEventOption,
+  isEdit = false
 }) => {
+  const { settings } = useSystemSettings()
+  const { subCategories: globalSubCategories } = useCategories()
+
   const [mainCat, subCat] = React.useMemo(() => {
     const category = formData.category || ''
     const idx = category.indexOf('/')
@@ -35,97 +42,42 @@ export const BasicDetailsSection: React.FC<BasicDetailsSectionProps> = ({
     return [category.slice(0, idx), category.slice(idx + 1)]
   }, [formData.category])
 
-  const [advancedMode, setAdvancedMode] = React.useState(false)
-
-  React.useEffect(() => {
-    if (formData.category) {
-      const hasSub = formData.category.includes('/')
-      const parent = formData.category.split('/')[0]
-      const defaultParents = (categories || []).map(c => c.split('/')[0])
-      const isCustomParent = parent && !defaultParents.includes(parent)
-      if (hasSub || isCustomParent) {
-        setAdvancedMode(true)
-      }
-    }
-  }, [formData.category, categories])
-
-  const parentCategories = React.useMemo(() => {
-    const parents = (categories || []).map(c => c.split('/')[0])
-    if (mainCat && !parents.includes(mainCat)) {
-      parents.push(mainCat)
-    }
-    return Array.from(new Set(parents)).filter(Boolean)
-  }, [categories, mainCat])
-
-  const [dbSubCategories, setDbSubCategories] = React.useState<string[]>([])
-
-  React.useEffect(() => {
-    async function fetchSubCategories() {
-      try {
-        const { data, error } = await supabase
-          .from('challenges')
-          .select('category')
-        if (data) {
-          const subs = data
-            .map(row => row.category)
-            .filter((c): c is string => typeof c === 'string' && c.includes('/'))
-            .map(c => c.split('/')[1])
-          setDbSubCategories(Array.from(new Set(subs)).filter(Boolean))
-        }
-      } catch (err) {
-        console.error('Failed to fetch categories:', err)
-      }
-    }
-    fetchSubCategories()
-  }, [])
-
-  // combinedSubCategories: config subs first (as the ordering hint),
-  // then any DB subs not already covered by config.
   const combinedSubCategories = React.useMemo(() => {
-    const configSubs = APP.challengeSubCategories || []
-    const seen = new Set(configSubs.map(s => s.toLowerCase()))
-    const extras: string[] = []
-    for (const sub of dbSubCategories) {
-      if (sub && !seen.has(sub.toLowerCase())) {
-        seen.add(sub.toLowerCase())
-        extras.push(sub)
-      }
-    }
-    return [...configSubs, ...extras].filter(Boolean)
-  }, [dbSubCategories])
+    return globalSubCategories.map(s => s.name)
+  }, [globalSubCategories])
 
   const handleMainCatChange = (newMain: string) => {
-    onChange({ ...formData, category: newMain })
-  }
-
-  const handleParentCatTextChange = (newMain: string) => {
+    if (newMain === '__none__') return
     const nextCategory = subCat ? `${newMain}/${subCat}` : newMain
     onChange({ ...formData, category: nextCategory })
   }
 
   const handleSubCatChange = (newSub: string) => {
-    const sanitizedSub = newSub.replace(/\//g, '')
-    const nextCategory = sanitizedSub ? `${mainCat}/${sanitizedSub}` : mainCat
+    const nextCategory = newSub && newSub !== 'none' ? `${mainCat}/${newSub}` : mainCat
     onChange({ ...formData, category: nextCategory })
   }
 
-  const handleToggleAdvanced = () => {
-    setAdvancedMode(!advancedMode)
-  }
+  const hasNoCategory = !isEdit && !mainCat
+  const hasNoEvent = !isEdit && formData.event_id === ''
+  const hasNoDifficulty = !isEdit && !formData.difficulty
+
+  const eventValue = formData.event_id === null ? '__main__' : (formData.event_id || '__none__')
+  const difficultyValue = formData.difficulty || '__none__'
 
   return (
     <div className={ADMIN_FORM_GRID_CLASS}>
-      {/* Top row: Switches */}
-      <div className="md:col-span-2 flex flex-wrap items-center gap-4">
+      
+      {/* Toggles */}
+      <div className="md:col-span-2 grid grid-cols-2 gap-4">
         <ChallengeFormToggle
-          checked={formData.is_active !== false}
+          checked={formData.is_active}
           label="Active"
           icon={CheckCircle2}
           activeClassName="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:border-emerald-400/30 dark:bg-emerald-500/15 dark:text-emerald-300"
           onChange={v => onChange({ ...formData, is_active: v })}
         />
         <ChallengeFormToggle
-          checked={!!formData.is_maintenance}
+          checked={formData.is_maintenance}
           label="Maintenance"
           icon={Wrench}
           activeClassName="border-amber-500/30 bg-amber-500/10 text-amber-700 dark:border-amber-400/30 dark:bg-amber-500/15 dark:text-amber-300"
@@ -133,8 +85,8 @@ export const BasicDetailsSection: React.FC<BasicDetailsSectionProps> = ({
         />
       </div>
 
-      {/* Row 1: Title & Category */}
-      <div className={ADMIN_FORM_FIELD_CLASS}>
+      {/* Row 1: Title (Full Width) */}
+      <div className={`${ADMIN_FORM_FIELD_CLASS} md:col-span-2`}>
         <Label>Title</Label>
         <Input
           required
@@ -143,102 +95,67 @@ export const BasicDetailsSection: React.FC<BasicDetailsSectionProps> = ({
           className={ADMIN_INPUT_CLASS}
         />
       </div>
+
+      {/* Row 2: Category */}
       <div className={ADMIN_FORM_FIELD_CLASS}>
-        <div className="flex items-center justify-between mb-2">
-          <Label className="mb-0">Category</Label>
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={handleToggleAdvanced}
-            className={`h-7 px-2 text-xs flex items-center gap-1.5 rounded-lg border transition ${advancedMode
-                ? 'border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20'
-                : 'border-gray-800 text-gray-400 hover:text-gray-300 hover:bg-gray-800'
-              }`}
-          >
-            <Settings size={13} />
-            <span>Advanced Settings</span>
-          </Button>
-        </div>
+        <Label className={cn(hasNoCategory && "text-amber-500 font-bold")}>Category</Label>
         <Select
-          value={mainCat}
+          value={mainCat || '__none__'}
           onValueChange={handleMainCatChange}
-          disabled={advancedMode}
         >
-          <SelectTrigger className={`${ADMIN_SELECT_TRIGGER_CLASS} ${advancedMode ? 'opacity-60 cursor-not-allowed bg-gray-900/50' : ''}`}>
-            <SelectValue />
+          <SelectTrigger className={cn(
+            ADMIN_SELECT_TRIGGER_CLASS,
+            hasNoCategory && "border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400 focus:ring-amber-500/30"
+          )}>
+            <SelectValue placeholder="Select parent category" />
           </SelectTrigger>
           <SelectContent className={ADMIN_SELECT_CONTENT_CLASS}>
-            {parentCategories.map(cat => (
+            <SelectItem value="__none__" disabled className="text-gray-400 dark:text-gray-500">Select parent category...</SelectItem>
+            {categories.map(cat => (
               <SelectItem key={cat} value={cat}>{cat}</SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
-      {advancedMode && (
-        <>
-          <div className={ADMIN_FORM_FIELD_CLASS}>
-            <Label>Parent Category</Label>
-            <Input
-              value={mainCat}
-              onChange={e => handleParentCatTextChange(e.target.value)}
-              placeholder="Parent Category (e.g. Linux)"
-              className={ADMIN_INPUT_CLASS}
-            />
-          </div>
-          <div className={ADMIN_FORM_FIELD_CLASS}>
-            <Label>Sub-category</Label>
-            <div className="flex items-center gap-2">
-              <div className="flex-1">
-                <Input
-                  value={subCat}
-                  onChange={e => handleSubCatChange(e.target.value)}
-                  placeholder="Sub-category (e.g. Fundamentals)"
-                  className={ADMIN_INPUT_CLASS}
-                />
-              </div>
-              <Select onValueChange={handleSubCatChange}>
-                <SelectTrigger className="h-10 px-3 flex items-center gap-1.5 border-gray-700 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800 shrink-0 w-auto min-w-[100px]" title="Choose from existing sub-categories">
-                  <FolderOpen size={15} className="shrink-0" />
-                  <span className="text-xs font-semibold">Import</span>
-                </SelectTrigger>
-                <SelectContent className={ADMIN_SELECT_CONTENT_CLASS}>
-                  {combinedSubCategories.length === 0 ? (
-                    <div className="p-2 text-xs text-gray-500 text-center">No existing sub-categories</div>
-                  ) : (
-                    combinedSubCategories.map(sub => (
-                      <SelectItem key={sub} value={sub}>{sub}</SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-              <Button
-                type="button"
-                variant="ghost"
-                disabled={!subCat}
-                onClick={() => handleSubCatChange('')}
-                className="h-10 w-10 p-0 text-red-500 hover:text-red-400 hover:bg-red-500/10 disabled:opacity-20 disabled:pointer-events-none shrink-0"
-                title="Clear sub-category"
-              >
-                ✕
-              </Button>
-            </div>
-          </div>
-        </>
-      )}
+      {/* Row 2: Subcategory (Optional) */}
+      <div className={ADMIN_FORM_FIELD_CLASS}>
+        <Label>Subcategory (Optional)</Label>
+        <Select
+          value={subCat || 'none'}
+          onValueChange={handleSubCatChange}
+          disabled={hasNoCategory}
+        >
+          <SelectTrigger className={ADMIN_SELECT_TRIGGER_CLASS}>
+            <SelectValue placeholder="None" />
+          </SelectTrigger>
+          <SelectContent className={ADMIN_SELECT_CONTENT_CLASS}>
+            <SelectItem value="none">None</SelectItem>
+            {combinedSubCategories.map(sub => (
+              <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-      {/* Row 2: Event & Difficulty */}
+      {/* Row 3: Event & Difficulty */}
       {events && (
         <div className={ADMIN_FORM_FIELD_CLASS}>
-          <Label>Event</Label>
+          <Label className={cn(hasNoEvent && "text-amber-500 font-bold")}>Event</Label>
           <Select
-            value={formData.event_id ?? '__main__'}
-            onValueChange={v => onChange({ ...formData, event_id: v === '__main__' ? null : v })}
+            value={eventValue}
+            onValueChange={v => onChange({ ...formData, event_id: v === '__none__' ? '' : (v === '__main__' ? null : v) })}
           >
-            <SelectTrigger className={ADMIN_SELECT_TRIGGER_CLASS}><SelectValue /></SelectTrigger>
+            <SelectTrigger className={cn(
+              ADMIN_SELECT_TRIGGER_CLASS,
+              hasNoEvent && "border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400 focus:ring-amber-500/30"
+            )}>
+              <SelectValue placeholder="Select event" />
+            </SelectTrigger>
             <SelectContent className={ADMIN_SELECT_CONTENT_CLASS}>
+              <SelectItem value="__none__" disabled className="text-gray-400 dark:text-gray-500">Select event...</SelectItem>
               {!hideMainEventOption && (
-                <SelectItem value="__main__">{String(APP.eventMainLabel || 'Main')}</SelectItem>
+                <SelectItem value="__main__">{String(settings.event_main_label || 'Main (Global Event)')}</SelectItem>
               )}
               {events.map((evt: Event) => (
                 <SelectItem key={evt.id} value={evt.id}>{String(evt?.name ?? 'Untitled')}</SelectItem>
@@ -248,11 +165,20 @@ export const BasicDetailsSection: React.FC<BasicDetailsSectionProps> = ({
         </div>
       )}
       <div className={ADMIN_FORM_FIELD_CLASS}>
-        <Label>Difficulty</Label>
-        <Select value={formData.difficulty} onValueChange={v => onChange({ ...formData, difficulty: v })}>
-          <SelectTrigger className={ADMIN_SELECT_TRIGGER_CLASS}><SelectValue /></SelectTrigger>
+        <Label className={cn(hasNoDifficulty && "text-amber-500 font-bold")}>Difficulty</Label>
+        <Select
+          value={difficultyValue}
+          onValueChange={v => onChange({ ...formData, difficulty: v === '__none__' ? '' : v })}
+        >
+          <SelectTrigger className={cn(
+            ADMIN_SELECT_TRIGGER_CLASS,
+            hasNoDifficulty && "border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400 focus:ring-amber-500/30"
+          )}>
+            <SelectValue placeholder="Select difficulty" />
+          </SelectTrigger>
           <SelectContent className={ADMIN_SELECT_CONTENT_CLASS}>
-            {Object.keys(APP.difficultyStyles || {}).map(key => {
+            <SelectItem value="__none__" disabled className="text-gray-400 dark:text-gray-500">Select difficulty...</SelectItem>
+            {Object.keys(APP.difficultyStyles).map(key => {
               const label = key.charAt(0).toUpperCase() + key.slice(1)
               return <SelectItem key={key} value={label}>{label}</SelectItem>
             })}

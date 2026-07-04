@@ -1,6 +1,6 @@
 {
   "name": "nxctf",
-  "version": "0.5.3",
+  "version": "0.6.0",
   "private": true,
   "scripts": {
     "predev": "node src/lib/scripts/gen-version.js",

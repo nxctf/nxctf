@@ -9,10 +9,9 @@ const orderedFiles = [
   // 1) Reset first
   "schema/_reset_function.sql",
 
-  // 1.5) New tables / indexes required by updated functions
-
   // 2) Query/functions (core first)
   "queries/users.sql",
+  "queries/categories.sql",
   "queries/admin_batch_create_users.sql",
   "queries/scoreboard.sql",
   "queries/admin_audit_logs.sql",
@@ -77,7 +76,9 @@ try {
   console.log("Next step (Supabase):");
   console.log("1) Open Supabase Dashboard -> SQL Editor.");
   console.log("2) Open db/update_queries.sql from this project.");
-  console.log("3) Copy all SQL from db/update_queries.sql, paste to SQL Editor, then Run.");
+  console.log(
+    "3) Copy all SQL from db/update_queries.sql, paste to SQL Editor, then Run.",
+  );
 } catch (err) {
   console.error("Failed to build update_queries.sql");
   console.error(err.message);

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import toast from 'react-hot-toast'
 
 import { useAuth } from '@/shared/contexts/AuthContext'
+import { useCategories } from '@/shared/contexts/CategoriesContext'
 import APP from '@/config'
 import ConfirmDialog from '@/shared/components/ConfirmDialog'
 
@@ -27,6 +28,7 @@ export default function AdminChallengesPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, loading: authLoading } = useAuth()
+  const { categories: dbCategories } = useCategories()
 
   const {
     challenges,
@@ -95,7 +97,7 @@ export default function AdminChallengesPage() {
       if (urlAdd) {
         const addEventId = canUseUrlEvent && resolvedUrlEvent && resolvedUrlEvent !== 'all'
           ? resolvedUrlEvent
-          : defaultManagedEventId
+          : (resolvedUrlEvent === 'all' ? '' : defaultManagedEventId)
         resetForm({ event_id: addEventId })
         setOpenForm(true)
       }
@@ -106,9 +108,7 @@ export default function AdminChallengesPage() {
 
   // Handlers
   const handleOpenAdd = () => {
-    const defaultEventId = isGlobalAdmin
-      ? (typeof eventId === 'string' && eventId !== 'all' ? eventId : null)
-      : (typeof eventId === 'string' && eventId !== 'all' ? eventId : getDefaultManagedEventId(adminScope, events))
+    const defaultEventId = eventId === 'all' ? '' : eventId
     resetForm({ event_id: defaultEventId })
     setOpenForm(true)
   }
@@ -140,9 +140,9 @@ export default function AdminChallengesPage() {
       isGlobalAdmin,
       eventId,
       filters,
-      categoryOrder: APP.challengeCategories || [],
+      categoryOrder: dbCategories.map(c => c.name),
     })
-  }, [challenges, adminScope, isGlobalAdmin, eventId, filters])
+  }, [challenges, adminScope, isGlobalAdmin, eventId, filters, dbCategories])
 
   if (authLoading || (dataLoading && !adminScope)) return <AdminContentLoading variant="challenges" />
   if (!user) return null
@@ -183,7 +183,7 @@ export default function AdminChallengesPage() {
         open={openForm}
         onOpenChange={setOpenForm}
         challengeForm={challengeForm}
-        categories={APP.challengeCategories || []}
+        categories={dbCategories.map(c => c.name)}
         events={events}
         hideMainEventOption={!isGlobalAdmin}
         onSubmitSuccess={() => { initAdminData(true) }}

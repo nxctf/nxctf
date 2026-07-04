@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { AuthService } from '../services/auth.service'
-import Config from '@/config'
+import { CAPTCHA_ENABLED, CAPTCHA_SITE_KEY } from '@/_vars/const'
 
 export function useForgotPassword() {
   const [email, setEmail] = useState('')
@@ -13,7 +13,7 @@ export function useForgotPassword() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (Config.captchaEnabled && !captchaToken) {
+    if (CAPTCHA_ENABLED && !captchaToken) {
       setError('Please complete the CAPTCHA')
       return
     }
@@ -47,7 +47,7 @@ export function useForgotPassword() {
     success,
     setCaptchaToken,
     turnstileKey,
-    captchaEnabled: Config.captchaEnabled,
-    captchaSiteKey: Config.captchaSiteKey
+    captchaEnabled: CAPTCHA_ENABLED,
+    captchaSiteKey: CAPTCHA_SITE_KEY
   }
 }

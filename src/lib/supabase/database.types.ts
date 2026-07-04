@@ -76,6 +76,30 @@ export type Database = {
           },
         ]
       }
+      categories: {
+        Row: {
+          color: string | null
+          description: string | null
+          icon: string | null
+          name: string
+          sort_order: number | null
+        }
+        Insert: {
+          color?: string | null
+          description?: string | null
+          icon?: string | null
+          name: string
+          sort_order?: number | null
+        }
+        Update: {
+          color?: string | null
+          description?: string | null
+          icon?: string | null
+          name?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
       challenge_flags: {
         Row: {
           challenge_id: string
@@ -504,6 +528,24 @@ export type Database = {
         }
         Relationships: []
       }
+      sub_categories: {
+        Row: {
+          description: string | null
+          name: string
+          sort_order: number | null
+        }
+        Insert: {
+          description?: string | null
+          name: string
+          sort_order?: number | null
+        }
+        Update: {
+          description?: string | null
+          name?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
       sub_challenges: {
         Row: {
           answer: string
@@ -675,6 +717,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_category: {
+        Args: {
+          p_color?: string
+          p_description?: string
+          p_icon?: string
+          p_name: string
+          p_sort_order?: number
+        }
+        Returns: boolean
+      }
       add_challenge: {
         Args: {
           p_attachments?: Json
@@ -716,6 +768,10 @@ export type Database = {
           p_question: string
         }
         Returns: string
+      }
+      add_subcategory: {
+        Args: { p_description?: string; p_name: string; p_sort_order?: number }
+        Returns: boolean
       }
       admin_add_event_member: {
         Args: { p_event_id: string; p_user_id: string }
@@ -764,11 +820,13 @@ export type Database = {
         Returns: undefined
       }
       create_team: { Args: { p_name: string }; Returns: string }
+      delete_category: { Args: { p_name: string }; Returns: boolean }
       delete_challenge: { Args: { p_challenge_id: string }; Returns: boolean }
       delete_event: { Args: { p_event_id: string }; Returns: boolean }
       delete_notification: { Args: { p_id: string }; Returns: boolean }
       delete_solver: { Args: { p_solve_id: string }; Returns: boolean }
       delete_sub_challenge: { Args: { p_id: string }; Returns: boolean }
+      delete_subcategory: { Args: { p_name: string }; Returns: boolean }
       delete_team: { Args: { p_team_id: string }; Returns: boolean }
       detail_user: {
         Args: { p_event_id?: string; p_event_mode?: string; p_id: string }
@@ -1356,6 +1414,14 @@ export type Database = {
         Args: { p_new_name: string; p_team_id: string }
         Returns: boolean
       }
+      reorder_categories: {
+        Args: { p_ordered_names: string[] }
+        Returns: boolean
+      }
+      reorder_subcategories: {
+        Args: { p_ordered_names: string[] }
+        Returns: boolean
+      }
       resolve_profile_picture: {
         Args: { p_profile_picture_url: string; p_raw_user_meta_data: Json }
         Returns: string
@@ -1406,6 +1472,16 @@ export type Database = {
         Returns: boolean
       }
       update_bio: { Args: { p_bio: string; p_id: string }; Returns: Json }
+      update_category: {
+        Args: {
+          p_color: string
+          p_description: string
+          p_icon: string
+          p_name: string
+          p_sort_order: number
+        }
+        Returns: boolean
+      }
       update_challenge: {
         Args: {
           p_attachments?: Json
@@ -1454,6 +1530,10 @@ export type Database = {
           p_order_number: number
           p_question: string
         }
+        Returns: boolean
+      }
+      update_subcategory: {
+        Args: { p_description: string; p_name: string; p_sort_order: number }
         Returns: boolean
       }
       update_system_settings: { Args: { p_settings: Json }; Returns: boolean }

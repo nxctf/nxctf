@@ -18,15 +18,8 @@ export const LINKS = {
   vercel: 'https://vercel.com/',
 }
 
+// APP
 export const YEAR = new Date().getFullYear()
-
-export const DIFFICULTY_STYLES: Record<string, string> = {
-  Baby: 'cyan',
-  Easy: 'green',
-  Medium: 'yellow',
-  Hard: 'red',
-  Insane: 'purple',
-}
 
 // Supabase configuration
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
@@ -34,6 +27,13 @@ export const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KE
 
 // Maintenance mode
 export const MAINTENANCE_MODE = process.env.NEXT_PUBLIC_MAINTENANCE_MODE || 'no'
+
+// Env-backed site configuration
+export const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+
+// Turnstile captcha configuration
+export const CAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || ''
+export const CAPTCHA_ENABLED = Boolean(CAPTCHA_SITE_KEY)
 
 export const CHALLENGE_DESC_TEMPLATE = `> Author: nama
 
@@ -52,5 +52,5 @@ print('a')
 
 > Format: {{FLAG_FORMAT}}`
 
-const APP_CONSTANTS = { LINKS, YEAR, DIFFICULTY_STYLES, SUPABASE_URL, SUPABASE_ANON_KEY, MAINTENANCE_MODE, CHALLENGE_DESC_TEMPLATE }
+const APP_CONSTANTS = { LINKS, YEAR, SUPABASE_URL, SUPABASE_ANON_KEY, MAINTENANCE_MODE, BASE_URL, CAPTCHA_SITE_KEY, CAPTCHA_ENABLED, CHALLENGE_DESC_TEMPLATE }
 export default APP_CONSTANTS

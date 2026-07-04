@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { SUPABASE_URL, SUPABASE_ANON_KEY, MAINTENANCE_MODE } from './const'
+import { SUPABASE_URL, SUPABASE_ANON_KEY, MAINTENANCE_MODE } from './_vars/const'
 
 // Cache untuk menyimpan status maintenance
 let maintenanceCache: {

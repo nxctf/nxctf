@@ -26,9 +26,3 @@ CREATE TABLE public.challenges (
 );
 
 CREATE INDEX IF NOT EXISTS idx_challenges_event_id ON public.challenges(event_id);
-
--- ALTER TABLE public.challenges
--- ADD COLUMN flag_placeholder BOOLEAN DEFAULT false;
-
--- ALTER TABLE public.challenges
--- ADD COLUMN services TEXT[] DEFAULT ARRAY[]::TEXT[];

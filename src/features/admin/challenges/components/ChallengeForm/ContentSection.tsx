@@ -1,6 +1,7 @@
 import React from 'react'
 import APP from '@/config'
-import { CHALLENGE_DESC_TEMPLATE } from '@/const'
+import { CHALLENGE_DESC_TEMPLATE } from '@/_vars/const'
+import { useSystemSettings } from '@/shared/contexts/SystemSettingsContext'
 import { Label, Input, Textarea, Button } from '@/shared/ui'
 import ConfirmDialog from '@/shared/components/ConfirmDialog'
 import { MarkdownRenderer } from '@/shared/markdown/MarkdownRenderer'
@@ -38,6 +39,7 @@ export const ContentSection: React.FC<ContentSectionProps> = ({
   editing,
   challengeId,
 }) => {
+  const { settings } = useSystemSettings()
   const geoDetails = parseGeoFlagClient(formData.flag || '')
   const [isGeoMapOpen, setIsGeoMapOpen] = React.useState(false)
   const [isFetchingGeoFlag, setIsFetchingGeoFlag] = React.useState(false)
@@ -45,7 +47,7 @@ export const ContentSection: React.FC<ContentSectionProps> = ({
 
   const resolvedTemplate = CHALLENGE_DESC_TEMPLATE.replace(
     '{{FLAG_FORMAT}}',
-    APP.flagFormat || 'NXCTF{your_flag_here}'
+    settings.flag_format || 'NXCTF{your_flag_here}'
   )
 
   const handleGeoMapClick = async () => {

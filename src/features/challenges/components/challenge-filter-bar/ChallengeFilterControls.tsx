@@ -1,6 +1,7 @@
 'use client'
 
 import APP from '@/config'
+import { useCategories } from '@/shared/contexts/CategoriesContext'
 import {
   SURFACE_FILTER_ITEM_CLASS,
   SURFACE_FILTER_ITEM_ACTIVE_CLASS,
@@ -65,8 +66,9 @@ export default function ChallengeFilterControls({
     hideSolvedIntro: settings?.hideSolvedIntro ?? true,
     splitSubCategories: settings?.splitSubCategories ?? true,
   }
-  const categoryOrder = APP.challengeCategories || []
-  const difficultyOrder = Object.keys(APP.difficultyStyles || {})
+  const { categories: dbCategories } = useCategories()
+  const categoryOrder = dbCategories.map((c) => c.name)
+  const difficultyOrder = Object.keys(APP.difficultyStyles)
   const { sortedCategories, sortedDifficulties } = getSortedFilterValues({
     categories,
     difficulties,

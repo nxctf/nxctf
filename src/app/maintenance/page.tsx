@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Database, Settings, ShieldAlert, MessageCircle, RefreshCw, Key, Wifi, WifiOff, Loader2 } from 'lucide-react'
 import { Button } from '@/shared/ui'
-import { SUPABASE_URL, SUPABASE_ANON_KEY, MAINTENANCE_MODE, LINKS } from '@/const'
+import { SUPABASE_URL, SUPABASE_ANON_KEY, MAINTENANCE_MODE, LINKS } from '@/_vars/const'
 import { APP } from '@/config'
+import { supabase } from '@/lib/supabase/client'
 import { cn } from '@/shared/lib/utils'
 import dynamic from 'next/dynamic'
 
@@ -25,6 +26,7 @@ export default function MaintenancePage() {
   const [devConfigOpen, setDevConfigOpen] = useState(false)
   const [cookieError, setCookieError] = useState('')
   const [healthStatus, setHealthStatus] = useState<'checking' | 'online' | 'offline' | 'idle'>('idle')
+  const [discordLink, setDiscordLink] = useState('https://discord.gg/5etKks6aQQ')
   const isDev = process.env.NODE_ENV === 'development'
 
   useEffect(() => {
@@ -38,6 +40,20 @@ export default function MaintenancePage() {
       } catch {
         setCookieError(rawError)
       }
+    }
+
+    const fetchDiscordLink = async () => {
+      try {
+        const { data } = await supabase.from('system_settings').select('value').eq('key', 'discord_link').single()
+        if (data?.value) {
+          setDiscordLink(data.value)
+        }
+      } catch (err) {
+        // Fallback
+      }
+    }
+    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+      fetchDiscordLink()
     }
   }, [])
 
@@ -189,7 +205,7 @@ export default function MaintenancePage() {
                 size="sm"
                 className="text-gray-500 hover:text-white font-black h-10 px-3 rounded-xl transition-all"
               >
-                <a href={APP.links.discord} target="_blank" rel="noopener noreferrer">
+                <a href={discordLink} target="_blank" rel="noopener noreferrer">
                   <MessageCircle size={16} />
                 </a>
               </Button>

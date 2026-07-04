@@ -1,10 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { CheckCircle2, EyeOff, Flag, Gauge, Layers, LayoutGrid, ListChecks, ListFilter, MapPin, Search, ServerCog, X } from 'lucide-react'
+import { CheckCircle2, EyeOff, Flag, Gauge, Layers, LayoutGrid, ListChecks, ListFilter, MapPin, Search, ServerCog, X, Shield } from 'lucide-react'
+import * as LucideIcons from 'lucide-react'
 import { createPortal } from 'react-dom'
 import type { ElementType } from 'react'
 import APP from '@/config'
+import { useCategories } from '@/shared/contexts/CategoriesContext'
 import { cn } from '@/shared/lib/utils'
 import { FilterSelect } from '@/shared/ui'
 import {
@@ -39,8 +41,9 @@ export default function DesktopChallengeFilterSidebar({
   useEffect(() => {
     setMounted(true)
   }, [])
-  const categoryOrder = APP.challengeCategories || []
-  const difficultyOrder = Object.keys(APP.difficultyStyles || {})
+  const { categories: dbCategories } = useCategories()
+  const categoryOrder = dbCategories.map((c) => c.name)
+  const difficultyOrder = Object.keys(APP.difficultyStyles)
   const selectedCategory = filters.category || 'all'
   const selectedDifficulty = filters.difficulty || 'all'
   const difficultyActive = selectedDifficulty !== 'all'
@@ -242,8 +245,9 @@ export default function DesktopChallengeFilterSidebar({
             />
 
             {sortedCategories.map((category) => {
-              const CategoryIcon = getCategoryIcon(category)
-              const { color } = getCategoryDetails(category)
+              const dbCat = dbCategories.find((c) => c.name === category)
+              const CategoryIcon = dbCat ? ((LucideIcons as any)[dbCat.icon] || Shield) : getCategoryIcon(category)
+              const color = dbCat ? `text-${dbCat.color}-500` : getCategoryDetails(category).color
 
               return (
                 <CategoryButton

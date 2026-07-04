@@ -30,21 +30,13 @@ type SetupConfig = {
   shortName: string
   fullName: string
   description: string
-  flagFormat: string
-  challengeCategories: string[]
-  challengeSubCategories: string[]
   notifSolves: boolean
   teamsEnabled: boolean
   hideScoreboardIndividual: boolean
   hideScoreboardTotal: boolean
-  hideEventMain: boolean
-  eventMainLabel: string
-  eventMainImageUrl: string
-  eventFallbackImageUrl: string
   image_icon: string
   image_logo: string
   image_preview: string
-  discord: string
 }
 
 type SecretConfig = {
@@ -75,21 +67,13 @@ const emptyConfig: SetupConfig = {
   shortName: '',
   fullName: '',
   description: '',
-  flagFormat: '',
-  challengeCategories: [],
-  challengeSubCategories: [],
   notifSolves: false,
   teamsEnabled: false,
   hideScoreboardIndividual: false,
   hideScoreboardTotal: false,
-  hideEventMain: false,
-  eventMainLabel: '',
-  eventMainImageUrl: '',
-  eventFallbackImageUrl: '',
   image_icon: '',
   image_logo: '',
   image_preview: '',
-  discord: '',
 }
 
 const emptySecret: SecretConfig = {
@@ -116,8 +100,6 @@ export default function DevConfigDialog({ open, onOpenChange }: DevConfigDialogP
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string>('')
   const [error, setError] = useState<string>('')
-  const [categoryDraft, setCategoryDraft] = useState('')
-  const [subCategoryDraft, setSubCategoryDraft] = useState('')
   const [uploadingType, setUploadingType] = useState<string | null>(null)
 
   const sensors = useSensors(
@@ -182,7 +164,7 @@ export default function DevConfigDialog({ open, onOpenChange }: DevConfigDialogP
     setSecret((current) => ({ ...current, [key]: value }))
   }
 
-  const toggleField = (key: keyof Pick<SetupConfig, 'notifSolves' | 'teamsEnabled' | 'hideScoreboardIndividual' | 'hideScoreboardTotal' | 'hideEventMain'>) => {
+  const toggleField = (key: keyof Pick<SetupConfig, 'notifSolves' | 'teamsEnabled' | 'hideScoreboardIndividual' | 'hideScoreboardTotal'>) => {
     setConfig((current) => ({ ...current, [key]: !current[key] }))
   }
 
@@ -190,61 +172,7 @@ export default function DevConfigDialog({ open, onOpenChange }: DevConfigDialogP
     setSecret((current) => ({ ...current, [key]: !current[key] }))
   }
 
-  const addCategory = () => {
-    const value = categoryDraft.trim()
-    if (!value) return
-    setConfig((current) => {
-      if (current.challengeCategories.some(c => c.toLowerCase() === value.toLowerCase())) return current
-      return { ...current, challengeCategories: [...current.challengeCategories, value] }
-    })
-    setCategoryDraft('')
-  }
 
-  const removeCategory = (value: string) => {
-    setConfig((current) => ({
-      ...current,
-      challengeCategories: current.challengeCategories.filter(c => c !== value),
-    }))
-  }
-
-  const handleCategoryDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event
-    if (!over || active.id === over.id) return
-    setConfig((current) => {
-      const oldIndex = current.challengeCategories.indexOf(String(active.id))
-      const newIndex = current.challengeCategories.indexOf(String(over.id))
-      return { ...current, challengeCategories: arrayMove(current.challengeCategories, oldIndex, newIndex) }
-    })
-  }
-
-  const addSubCategory = () => {
-    const value = subCategoryDraft.trim()
-    if (!value) return
-    setConfig((current) => {
-      const existing = current.challengeSubCategories || []
-      if (existing.some(c => c.toLowerCase() === value.toLowerCase())) return current
-      return { ...current, challengeSubCategories: [...existing, value] }
-    })
-    setSubCategoryDraft('')
-  }
-
-  const removeSubCategory = (value: string) => {
-    setConfig((current) => ({
-      ...current,
-      challengeSubCategories: (current.challengeSubCategories || []).filter(c => c !== value),
-    }))
-  }
-
-  const handleSubCategoryDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event
-    if (!over || active.id === over.id) return
-    setConfig((current) => {
-      const existing = current.challengeSubCategories || []
-      const oldIndex = existing.indexOf(String(active.id))
-      const newIndex = existing.indexOf(String(over.id))
-      return { ...current, challengeSubCategories: arrayMove(existing, oldIndex, newIndex) }
-    })
-  }
 
   const handleFileUpload = async (file: File, type: string) => {
     setUploadingType(type)
@@ -428,10 +356,7 @@ export default function DevConfigDialog({ open, onOpenChange }: DevConfigDialogP
                   <ConfigField label="Full Platform Name" className="lg:col-span-3">
                     <Input value={config.fullName} onChange={(e) => updateField('fullName', e.target.value)} className={INPUT_CLASS} />
                   </ConfigField>
-                  <ConfigField label="Flag Format" className="lg:col-span-2">
-                    <Input value={config.flagFormat} onChange={(e) => updateField('flagFormat', e.target.value)} className={`${INPUT_CLASS} font-mono text-blue-500 dark:text-blue-400`} />
-                  </ConfigField>
-                  <ConfigField label="Description" className="lg:col-span-2">
+                  <ConfigField label="Description" className="lg:col-span-4">
                     <Input value={config.description} onChange={(e) => updateField('description', e.target.value)} className={INPUT_CLASS} />
                   </ConfigField>
                 </div>
@@ -445,96 +370,12 @@ export default function DevConfigDialog({ open, onOpenChange }: DevConfigDialogP
                 />
               </Section>
 
-              <Section title="Challenge Categories" description="Manage challenge classifications.">
-                <div className="space-y-4">
-                  <div className="flex gap-2">
-                    <Input
-                      value={categoryDraft}
-                      onChange={(e) => setCategoryDraft(e.target.value)}
-                      placeholder="Add new category..."
-                      className={INPUT_CLASS}
-                      onKeyDown={(e) => e.key === 'Enter' && addCategory()}
-                    />
-                    <Button onClick={addCategory} size="icon" className="h-10 w-10 shrink-0">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <DndContext collisionDetection={closestCenter} sensors={sensors} onDragEnd={handleCategoryDragEnd}>
-                    <SortableContext items={config.challengeCategories} strategy={verticalListSortingStrategy}>
-                      <div className="overflow-hidden rounded-xl border border-gray-200/80 dark:border-gray-800/80">
-                        {config.challengeCategories.map((cat) => (
-                          <SortableCategoryItem key={cat} id={cat} label={cat} onRemove={() => removeCategory(cat)} />
-                        ))}
-                        {config.challengeCategories.length === 0 && (
-                          <div className="px-4 py-6 text-center text-sm font-medium text-gray-500 dark:text-gray-400">
-                            No categories configured.
-                          </div>
-                        )}
-                      </div>
-                    </SortableContext>
-                  </DndContext>
-                </div>
-              </Section>
-
-              <Section title="Challenge Sub-Categories" description="Manage default sub-category suggestion chips.">
-                <div className="space-y-4">
-                  <div className="flex gap-2">
-                    <Input
-                      value={subCategoryDraft}
-                      onChange={(e) => setSubCategoryDraft(e.target.value)}
-                      placeholder="Add new sub-category..."
-                      className={INPUT_CLASS}
-                      onKeyDown={(e) => e.key === 'Enter' && addSubCategory()}
-                    />
-                    <Button onClick={addSubCategory} size="icon" className="h-10 w-10 shrink-0">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <DndContext collisionDetection={closestCenter} sensors={sensors} onDragEnd={handleSubCategoryDragEnd}>
-                    <SortableContext items={config.challengeSubCategories || []} strategy={verticalListSortingStrategy}>
-                      <div className="overflow-hidden rounded-xl border border-gray-200/80 dark:border-gray-800/80">
-                        {(config.challengeSubCategories || []).map((subCat) => (
-                          <SortableCategoryItem key={subCat} id={subCat} label={subCat} onRemove={() => removeSubCategory(subCat)} />
-                        ))}
-                        {(config.challengeSubCategories || []).length === 0 && (
-                          <div className="px-4 py-6 text-center text-sm font-medium text-gray-500 dark:text-gray-400">
-                            No sub-categories configured.
-                          </div>
-                        )}
-                      </div>
-                    </SortableContext>
-                  </DndContext>
-                </div>
-              </Section>
-
               <Section title="Feature Flags" description="Enable or disable platform modules.">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <ToggleItem title="Solve Notifications" desc="Real-time solve popups." checked={config.notifSolves} onToggle={() => toggleField('notifSolves')} />
                   <ToggleItem title="Enable Teams" desc="Enable team registration and management." checked={config.teamsEnabled} onToggle={() => toggleField('teamsEnabled')} />
                   <ToggleItem title="Hide Individual Ranking" desc="Hide personal scores from scoreboard." checked={config.hideScoreboardIndividual} onToggle={() => toggleField('hideScoreboardIndividual')} />
                   <ToggleItem title="Hide Scoreboard Total" desc="Hide the overall team scoreboard rank." checked={config.hideScoreboardTotal} onToggle={() => toggleField('hideScoreboardTotal')} />
-                </div>
-              </Section>
-
-              <Section title="Event Showcase" description="Configure the default event section.">
-                <div className="space-y-4">
-                  <ToggleItem title="Show Event Default/Main" desc="Display the main event if no event_id is specified." checked={!config.hideEventMain} onToggle={() => toggleField('hideEventMain')} />
-                  <div className="grid gap-4">
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <ConfigField label="Event Label">
-                        <Input value={config.eventMainLabel} onChange={(e) => updateField('eventMainLabel', e.target.value)} className={INPUT_CLASS} />
-                      </ConfigField>
-                      <ConfigField label="Discord Invite URL">
-                        <Input value={config.discord} onChange={(e) => updateField('discord', e.target.value)} className={MONO_INPUT_CLASS} />
-                      </ConfigField>
-                    </div>
-                    <ConfigField label="Banner Image URL">
-                      <Input value={config.eventMainImageUrl} onChange={(e) => updateField('eventMainImageUrl', e.target.value)} className={MONO_INPUT_CLASS} />
-                    </ConfigField>
-                    <ConfigField label="Fallback Banner">
-                      <Input value={config.eventFallbackImageUrl} onChange={(e) => updateField('eventFallbackImageUrl', e.target.value)} className={MONO_INPUT_CLASS} />
-                    </ConfigField>
-                  </div>
                 </div>
               </Section>
             </div>
@@ -679,37 +520,4 @@ function UploadAction({
   )
 }
 
-function SortableCategoryItem({ id, label, onRemove }: { id: string; label: string; onRemove: () => void }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
-  const style = { transform: CSS.Transform.toString(transform), transition }
 
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={cn(
-        "flex items-center gap-3 border-b border-gray-100/80 px-4 py-3 text-sm transition-colors last:border-b-0 hover:bg-blue-50/40 dark:border-gray-800/70 dark:hover:bg-blue-900/10",
-        isDragging && "relative z-50 scale-[1.01] border-blue-500 bg-white shadow-xl ring-2 ring-blue-500/20 dark:bg-[#111622]"
-      )}
-    >
-      <button
-        {...attributes}
-        {...listeners}
-        type="button"
-        className="cursor-grab rounded-lg p-1 text-gray-400 transition-colors hover:bg-blue-500/10 hover:text-blue-500 active:cursor-grabbing"
-        aria-label={`Drag ${label}`}
-      >
-        <GripVertical className="h-4 w-4" />
-      </button>
-      <span className="min-w-0 flex-1 truncate font-semibold text-gray-900 dark:text-gray-200">{label}</span>
-      <button
-        onClick={onRemove}
-        type="button"
-        className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-red-500/10 hover:text-red-500"
-        aria-label={`Remove ${label}`}
-      >
-        <X className="h-4 w-4" />
-      </button>
-    </div>
-  )
-}

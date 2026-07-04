@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import APP from '@/config'
+import { useSystemSettings } from '@/shared/contexts/SystemSettingsContext'
 import { AuthService } from '@/features/auth'
 import { getTeamByUserId } from '@/features/teams/services/team.service'
 import {
@@ -95,7 +96,8 @@ export function useUserProfile(userId: string | null, isCurrentUser: boolean) {
     [startedEvents, solvedEventSet]
   )
 
-  const showMainOption = hasMainSolved && !APP.hideEventMain
+  const { settings } = useSystemSettings()
+  const showMainOption = hasMainSolved && !settings.disable_default_challenges
 
   const effectiveSelectedEvent = useMemo(() => {
     const allowed = new Set<string>(['all'])

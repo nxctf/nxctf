@@ -3,6 +3,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import APP from '@/config'
+import { NXCTF } from '@/_vars/const'
 import PageBackground from '@/shared/components/PageBackground'
 import { cn } from '@/shared/lib/utils'
 import { THEME_PRIMARY_SELECTION_CLASS } from '@/shared/styles'
@@ -14,7 +15,7 @@ interface AuthPageShellProps {
 }
 
 export function AuthPageShell({ children, className, contentClassName }: AuthPageShellProps) {
-  const watermarkSrc = APP.nxctf?.nxctf_logo || APP.image_logo
+  const watermarkSrc = NXCTF.nxctf_logo || APP.image_logo
 
   return (
     <PageBackground

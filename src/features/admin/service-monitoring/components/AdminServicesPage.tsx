@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Activity, AlertTriangle, Server } from 'lucide-react'
 import APP from '@/config'
+import { useCategories } from '@/shared/contexts/CategoriesContext'
 import Loader from '@/shared/components/Loader'
 import ConfirmDialog from '@/shared/components/ConfirmDialog'
 import { AdminContentLoading, AdminPageShell, AdminPageSurface, AdminStickyToolbar, AdminTabs, useTabState } from '@/features/admin/ui'
@@ -56,6 +57,7 @@ function SafeStatusNotice({
 }
 
 export default function AdminServicesPage() {
+  const { categories: dbCategories } = useCategories()
   const {
     user,
     authLoading,
@@ -261,7 +263,7 @@ export default function AdminServicesPage() {
         open={openForm}
         onOpenChange={setOpenForm}
         challengeForm={challengeForm}
-        categories={APP.challengeCategories || []}
+        categories={dbCategories.map(c => c.name)}
         events={events}
         hideMainEventOption={!isGlobalAdmin}
         onSubmitSuccess={() => { void refresh() }}

@@ -119,11 +119,11 @@ export default function ChallengeJoyride() {
       run={runTour}
       continuous
       showProgress={false}
-      showSkipButton={false}
+      showSkipButton={true}
       hideCloseButton={true}
       hideBackButton={false}
-      disableCloseOnEsc={true}
-      disableOverlayClose={true}
+      disableCloseOnEsc={false}
+      disableOverlayClose={false}
       disableScrolling={true}
       scrollDuration={500}
       getHelpers={(helpers) => {
@@ -146,7 +146,7 @@ export default function ChallengeJoyride() {
         close: '',
         last: 'Finish',
         next: 'Next',
-        skip: '',
+        skip: 'Skip Tour',
       }}
     />
   )

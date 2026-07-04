@@ -8,7 +8,8 @@ import Image from "next/image";
 
 // Shared Imports
 import APP from "@/config";
-import { VERSION, BUILD_TIME } from "@/version";
+import { NXCTF } from "@/_vars/const";
+import { VERSION, BUILD_TIME } from "@/_vars/version";
 import Loader from '@/shared/components/Loader'
 import ImageWithFallback from '@/shared/components/ImageWithFallback'
 import BrandLogo from '@/shared/components/BrandLogo'
@@ -60,10 +61,10 @@ function fillContributors(list: string[], minLength = 14) {
 const filledContributors = fillContributors(CONTRIBUTORS, 14);
 
 const LINKS = [
-  { name: "Website", href: APP.nxctf.nxctf_url || "#", icon: Globe, description: "Official site" },
-  { name: "GitHub", href: APP.nxctf.nxctf_github || "#", icon: Github, description: "Source code" },
-  { name: "Docs", href: APP.nxctf.nxctf_docs || "#", icon: BookOpen, description: "Documentation" },
-  { name: "Discord", href: APP.nxctf?.nxctf_discord || "#", icon: MessageSquare, description: "Community chat" },
+  { name: "Website", href: NXCTF.nxctf_url || "#", icon: Globe, description: "Official site" },
+  { name: "GitHub", href: NXCTF.nxctf_github || "#", icon: Github, description: "Source code" },
+  { name: "Docs", href: NXCTF.nxctf_docs || "#", icon: BookOpen, description: "Documentation" },
+  { name: "Discord", href: NXCTF?.nxctf_discord || "#", icon: MessageSquare, description: "Community chat" },
 ];
 
 export default function InfoPage() {
@@ -71,7 +72,7 @@ export default function InfoPage() {
   const { loading } = useAuth()
 
   useEffect(() => {
-    const repoUrl = APP.nxctf.nxctf_github
+    const repoUrl = NXCTF.nxctf_github
     if (!repoUrl) return
     try {
       const m = repoUrl.match(/github\.com\/(.+?)\/(.+?)(?:\.git|\/|$)/i)
@@ -108,8 +109,8 @@ export default function InfoPage() {
             className="mb-2 flex flex-row items-center justify-center gap-3 text-3xl font-black tracking-tight sm:text-5xl"
           >
             <ImageWithFallback
-              src={APP.nxctf.nxctf_logo}
-              alt={`${APP.nxctf.nxctf_title} logo`}
+              src={NXCTF.nxctf_logo}
+              alt={`${NXCTF.nxctf_title} logo`}
               size={80}
               rounded={false}
             />
@@ -118,7 +119,7 @@ export default function InfoPage() {
               animate={{ opacity: 1, y: 0 }}
               className="text-3xl sm:text-5xl"
             >
-              <BrandLogo name={APP.nxctf.nxctf_title} />
+              <BrandLogo name={NXCTF.nxctf_title} />
             </motion.span>
           </motion.h1>
 
@@ -199,11 +200,11 @@ export default function InfoPage() {
               <span>{BUILD_TIME}</span>
             </div>
 
-            <a href={`${APP.nxctf.nxctf_github}/blob/main/LICENSE` || "https://www.apache.org/licenses/LICENSE-2.0"} target="_blank" rel="noopener" className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group">
+            <a href={`${NXCTF.nxctf_github}/blob/main/LICENSE` || "https://www.apache.org/licenses/LICENSE-2.0"} target="_blank" rel="noopener" className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group">
               <ScrollText size={14} className="group-hover:text-blue-500 transition-colors" /> Apache 2.0
             </a>
 
-            <a href={`${APP.nxctf.nxctf_github}/blob/main/CHANGELOG.md` || '#'} target="_blank" rel="noopener" className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group">
+            <a href={`${NXCTF.nxctf_github}/blob/main/CHANGELOG.md` || '#'} target="_blank" rel="noopener" className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group">
               <ListOrdered size={14} className="group-hover:text-blue-500 transition-colors" /> Changelog
             </a>
           </div>

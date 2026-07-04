@@ -137,7 +137,7 @@ if (!configStatus.isConfigured) {
   console.warn(`[supabase] ${configErrorMessage}`)
 }
 
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/const'
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/_vars/const'
 
 export const supabase: SupabaseClient<Database> = configStatus.isConfigured
   ? createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY)

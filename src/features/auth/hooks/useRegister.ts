@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation'
 import { AuthService } from '../services/auth.service'
 import { useAuth } from '@/shared/contexts/AuthContext'
 import { isValidUsername } from '../lib/auth-utils'
-import Config from '@/config'
+import { CAPTCHA_ENABLED, CAPTCHA_SITE_KEY } from '@/_vars/const'
 import { supabase } from '@/lib/supabase/client'
 
 export function useRegister() {
@@ -54,7 +54,7 @@ export function useRegister() {
       return
     }
 
-    if (Config.captchaEnabled && !captchaToken) {
+    if (CAPTCHA_ENABLED && !captchaToken) {
       setError('Please complete the CAPTCHA')
       return
     }
@@ -132,8 +132,8 @@ export function useRegister() {
     success,
     setCaptchaToken,
     turnstileKey,
-    captchaEnabled: Config.captchaEnabled,
-    captchaSiteKey: Config.captchaSiteKey,
+    captchaEnabled: CAPTCHA_ENABLED,
+    captchaSiteKey: CAPTCHA_SITE_KEY,
     signupDisabled,
     checkingSettings
   }

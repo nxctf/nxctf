@@ -49,6 +49,7 @@ export const FlagPreviewDialog: React.FC<FlagPreviewDialogProps> = ({
       <DialogContent
         hideCloseButton
         className="sm:max-w-md p-5 gap-0 flex flex-col max-h-[85dvh] overflow-y-auto scroll-hidden"
+        aria-describedby={undefined}
       >
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 font-semibold text-sm text-orange-600 dark:text-orange-400">

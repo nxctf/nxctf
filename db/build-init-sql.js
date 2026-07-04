@@ -10,6 +10,8 @@ const orderedFiles = [
   "schema/_reset.sql",
 
   // 2) Tables (respect FK dependencies)
+  "schema/categories.sql",
+  "schema/sub_categories.sql",
   "schema/users.sql",
   "schema/system_settings.sql",
   "schema/admin_audit_logs.sql",
@@ -30,6 +32,7 @@ const orderedFiles = [
 
   // 3) Query/functions (core first)
   "queries/users.sql",
+  "queries/categories.sql",
   "queries/admin_batch_create_users.sql",
   "queries/scoreboard.sql",
   "queries/admin_audit_logs.sql",
@@ -94,7 +97,9 @@ try {
   console.log("Next step (Supabase):");
   console.log("1) Open Supabase Dashboard -> SQL Editor.");
   console.log("2) Open db/init.sql from this project.");
-  console.log("3) Copy all SQL from db/init.sql, paste to SQL Editor, then Run.");
+  console.log(
+    "3) Copy all SQL from db/init.sql, paste to SQL Editor, then Run.",
+  );
 } catch (err) {
   console.error("Failed to build init.sql");
   console.error(err.message);

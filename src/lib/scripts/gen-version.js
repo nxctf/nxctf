@@ -9,5 +9,5 @@ export const VERSION = "${version}";
 export const BUILD_TIME = "${buildTime}";
 `;
 
-fs.writeFileSync(__dirname + "/../../version.ts", content);
-console.log("src/version.ts generated:", content);
+fs.writeFileSync(__dirname + "/../../_vars/version.ts", content);
+console.log("src/_vars/version.ts generated:", content);

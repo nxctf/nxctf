@@ -70,7 +70,7 @@ export default function ConfirmDialog({
       if (!isOpen) onRestoreWindowScroll?.()
       onOpenChange(isOpen)
     }}>
-      <DialogContent className="sm:max-w-md p-3 gap-2" hideCloseButton onKeyDown={(e) => {
+      <DialogContent className="sm:max-w-md p-3 gap-2" hideCloseButton aria-describedby={undefined} onKeyDown={(e) => {
         if (e.key === 'Enter' && !e.shiftKey && !loading && !confirmDisabled && (verificationText === undefined || verificationValue === verificationText)) {
           e.preventDefault()
           handleConfirm()

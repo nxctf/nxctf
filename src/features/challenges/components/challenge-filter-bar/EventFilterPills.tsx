@@ -3,6 +3,7 @@
 import React from 'react'
 import { ChevronLeft, ChevronRight, Lock, Zap } from 'lucide-react'
 import APP from '@/config'
+import { useSystemSettings } from '@/shared/contexts/SystemSettingsContext'
 import { formatEventTimingLabel } from '@/shared/lib'
 import { cn } from '@/shared/lib/utils'
 import {
@@ -45,6 +46,7 @@ export default function EventFilterPills({
   anyFilterDirty,
   className,
 }: EventFilterPillsProps) {
+  const { settings } = useSystemSettings()
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const optionButtonRefs = React.useRef(new Map<EventSelectorValue, HTMLButtonElement>())
   const [scrollState, setScrollState] = React.useState({
@@ -52,7 +54,7 @@ export default function EventFilterPills({
     canScrollLeft: false,
     canScrollRight: false,
   })
-  const mainLabel = String(APP.eventMainLabel || 'Main')
+  const mainLabel = String(settings.event_main_label || 'Main')
   const sortedEvents = React.useMemo(() => {
     return getVisibleSortedEvents({
       events,
@@ -70,7 +72,7 @@ export default function EventFilterPills({
       options.push({ value: 'all', label: 'All' })
     }
 
-    if (!hideMainEventOption && !APP.hideEventMain) {
+    if (!hideMainEventOption && !settings.disable_default_challenges) {
       options.push({ value: null, label: mainLabel })
     }
 
@@ -217,7 +219,7 @@ export default function EventFilterPills({
             All
           </button>
         )}
-        {!hideMainEventOption && !APP.hideEventMain && (
+        {!hideMainEventOption && !settings.disable_default_challenges && (
           <button
             type="button"
             ref={setOptionButtonRef(null)}

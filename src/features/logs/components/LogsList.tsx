@@ -7,8 +7,11 @@ import {
   Flame,
   Clock,
   ExternalLink,
+  Shield,
 } from "lucide-react";
+import * as LucideIcons from 'lucide-react';
 import { ElementType } from 'react'
+import { useCategories } from '@/shared/contexts/CategoriesContext'
 import { getCategoryIcon, getCategoryDetails } from '@/features/challenges/lib/challenge-utils'
 
 import { PageLoader, EmptyState } from '@/shared/components';
@@ -82,8 +85,12 @@ export default function LogsList({
 import { persistSelectedChallenge } from '@/features/challenges/lib/challenge-persistence'
 
 function LogItem({ notif }: { notif: LogEntry }) {
-  const CategoryIcon = getCategoryIcon(notif.log_category) as ElementType
-  const { color: catColor } = getCategoryDetails(notif.log_category)
+  const { categories: dbCategories } = useCategories()
+  const parentCategory = notif.log_category ? notif.log_category.split('/')[0] : '';
+  const dbCat = dbCategories.find(c => c.name.toLowerCase() === parentCategory.toLowerCase());
+
+  const CategoryIcon = dbCat ? ((LucideIcons as any)[dbCat.icon] || Shield) : getCategoryIcon(notif.log_category) as ElementType
+  const catColor = dbCat ? `text-${dbCat.color}-500` : getCategoryDetails(notif.log_category).color
 
   return (
     <div

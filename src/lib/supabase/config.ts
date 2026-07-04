@@ -12,7 +12,7 @@ function isValidHttpUrl(value: string) {
   }
 }
 
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/const'
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/_vars/const'
 
 export function getSupabaseConfigStatus(): SupabaseConfigStatus {
   const isConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY && isValidHttpUrl(SUPABASE_URL))

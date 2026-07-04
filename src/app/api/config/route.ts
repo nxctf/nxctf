@@ -13,21 +13,13 @@ type SetupConfig = {
   shortName: string
   fullName: string
   description: string
-  flagFormat: string
-  challengeCategories: string[]
-  challengeSubCategories: string[]
   notifSolves: boolean
   teamsEnabled: boolean
   hideScoreboardIndividual: boolean
   hideScoreboardTotal: boolean
-  hideEventMain: boolean
-  eventMainLabel: string
-  eventMainImageUrl: string
-  eventFallbackImageUrl: string
   image_icon: string
   image_logo: string
   image_preview: string
-  discord: string
 }
 
 type SecretConfig = {
@@ -176,21 +168,13 @@ function readConfig(source: string): SetupConfig {
     shortName: readString(source, /shortName:\s*['"]([^'"]*)['"]/),
     fullName: readString(source, /fullName:\s*['"]([^'"]*)['"]/),
     description: readString(source, /description:\s*['"]([^'"]*)['"]/),
-    flagFormat: readString(source, /flagFormat:\s*['"]([^'"]*)['"]/),
-    challengeCategories: readCategories(source, 'challengeCategories'),
-    challengeSubCategories: readCategories(source, 'challengeSubCategories'),
     notifSolves: readBoolean(source, /notifSolves:\s*(true|false)/),
     teamsEnabled: readBoolean(teamsBlock?.[1] || '', /enabled:\s*(true|false)/),
     hideScoreboardIndividual: readBoolean(teamsBlock?.[1] || '', /hideScoreboardIndividual:\s*(true|false)/),
     hideScoreboardTotal: readBoolean(teamsBlock?.[1] || '', /hidescoreboardTotal:\s*(true|false)/),
-    hideEventMain: readBoolean(source, /hideEventMain:\s*(true|false)/),
-    eventMainLabel: readString(source, /eventMainLabel:\s*['"]([^'"]*)['"]/),
-    eventMainImageUrl: readString(source, /eventMainImageUrl:\s*['"]([^'"]*)['"]/),
-    eventFallbackImageUrl: readString(source, /eventFallbackImageUrl:\s*['"]([^'"]*)['"]/),
     image_icon: readString(source, /image_icon:\s*['"]([^'"]*)['"]/),
     image_logo: readString(source, /image_logo:\s*['"]([^'"]*)['"]/),
     image_preview: readString(source, /image_preview:\s*['"]([^'"]*)['"]/),
-    discord: readString(source, /discord:\s*['"]([^'"]*)['"]/),
   }
 }
 
@@ -209,24 +193,7 @@ function updateConfig(source: string, config: SetupConfig) {
   updated = replaceFirst(updated, /shortName:\s*['"][^'"]*['"]/, `shortName: ${toJsonString(config.shortName)}`)
   updated = replaceFirst(updated, /fullName:\s*['"][^'"]*['"]/, `fullName: ${toJsonString(config.fullName)}`)
   updated = replaceFirst(updated, /description:\s*['"][^'"]*['"]/, `description: ${toJsonString(config.description)}`)
-  updated = replaceFirst(updated, /flagFormat:\s*['"][^'"]*['"]/, `flagFormat: ${toJsonString(config.flagFormat)}`)
   // baseUrl is env-backed (NEXT_PUBLIC_SITE_URL); do not change literal fallback here.
-
-  const categoriesBlock = (items: string[], key: string) => items.length
-    ? `${key}: [\n${items.map((c) => `    ${toJsonString(c)}`).join(',\n')}\n  ],`
-    : `${key}: [],`
-
-  updated = replaceFirst(
-    updated,
-    /challengeCategories:\s*\[([\s\S]*?)\n\s*\],/,
-    categoriesBlock(config.challengeCategories, 'challengeCategories')
-  )
-
-  updated = replaceFirst(
-    updated,
-    /challengeSubCategories:\s*\[([\s\S]*?)\n\s*\],/,
-    categoriesBlock(config.challengeSubCategories, 'challengeSubCategories')
-  )
 
   updated = replaceFirst(updated, /notifSolves:\s*(true|false)/, `notifSolves: ${config.notifSolves}`)
   updated = replaceFirst(
@@ -234,14 +201,9 @@ function updateConfig(source: string, config: SetupConfig) {
     /teams:\s*\{([\s\S]*?)\n\s*\},/,
     `teams: {\n    enabled: ${config.teamsEnabled},\n    hideScoreboardIndividual: ${config.hideScoreboardIndividual},\n    hidescoreboardTotal: ${config.hideScoreboardTotal},\n  },`
   )
-  updated = replaceFirst(updated, /hideEventMain:\s*(true|false)/, `hideEventMain: ${config.hideEventMain}`)
-  updated = replaceFirst(updated, /eventMainLabel:\s*['"][^'"]*['"]/, `eventMainLabel: ${toJsonString(config.eventMainLabel)}`)
-  updated = replaceFirst(updated, /eventMainImageUrl:\s*['"][^'"]*['"]/, `eventMainImageUrl: ${toJsonString(config.eventMainImageUrl)}`)
-  updated = replaceFirst(updated, /eventFallbackImageUrl:\s*['"][^'"]*['"]/, `eventFallbackImageUrl: ${toJsonString(config.eventFallbackImageUrl)}`)
   updated = replaceFirst(updated, /image_icon:\s*['"][^'"]*['"]/, `image_icon: ${toJsonString(config.image_icon)}`)
   updated = replaceFirst(updated, /image_logo:\s*['"][^'"]*['"]/, `image_logo: ${toJsonString(config.image_logo)}`)
   updated = replaceFirst(updated, /image_preview:\s*['"][^'"]*['"]/, `image_preview: ${toJsonString(config.image_preview)}`)
-  updated = replaceFirst(updated, /discord:\s*['"][^'"]*['"]/, `discord: ${toJsonString(config.discord)}`)
   // Note: maintenance mode and site URL are env-backed and will be written to .env.local instead of editing the literal fallback here.
 
   return updated
@@ -282,25 +244,13 @@ function normalizeConfig(input: Partial<SetupConfig>): SetupConfig {
     shortName: input.shortName?.trim() || '',
     fullName: input.fullName?.trim() || '',
     description: input.description?.trim() || '',
-    flagFormat: input.flagFormat?.trim() || '',
-    challengeCategories: Array.isArray(input.challengeCategories)
-      ? input.challengeCategories.map((item) => item.trim()).filter(Boolean)
-      : [],
-    challengeSubCategories: Array.isArray(input.challengeSubCategories)
-      ? input.challengeSubCategories.map((item) => item.trim()).filter(Boolean)
-      : [],
     notifSolves: Boolean(input.notifSolves),
     teamsEnabled: Boolean(input.teamsEnabled),
     hideScoreboardIndividual: Boolean(input.hideScoreboardIndividual),
     hideScoreboardTotal: Boolean(input.hideScoreboardTotal),
-    hideEventMain: Boolean(input.hideEventMain),
-    eventMainLabel: input.eventMainLabel?.trim() || '',
-    eventMainImageUrl: input.eventMainImageUrl?.trim() || '',
-    eventFallbackImageUrl: input.eventFallbackImageUrl?.trim() || '',
     image_icon: input.image_icon?.trim() || '',
     image_logo: input.image_logo?.trim() || '',
     image_preview: input.image_preview?.trim() || '',
-    discord: input.discord?.trim() || '',
   }
 }
 
@@ -369,17 +319,8 @@ export async function PUT(request: Request) {
       'shortName',
       'fullName',
       'description',
-      'flagFormat',
-      'challengeCategories',
-      'challengeSubCategories',
       'notifSolves',
       'teamsEnabled',
-      'hideScoreboardIndividual',
-      'hideScoreboardTotal',
-      'hideEventMain',
-      'eventMainLabel',
-      'eventMainImageUrl',
-      'eventFallbackImageUrl',
       'image_icon',
       'image_logo',
       'image_preview',
