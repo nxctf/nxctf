@@ -15,7 +15,7 @@ export default function ChallengeStatsBadge({ stats, className }: Props) {
   return (
     <div
       className={cn(
-        'flex w-full h-[38px] items-center justify-between rounded-full border border-gray-200 bg-white/60 px-4 py-2 shadow-sm backdrop-blur-md dark:border-gray-800 dark:bg-[#111622]/60',
+        'flex w-full h-[38px] items-center justify-between rounded-full border border-gray-200/30 bg-white/40 px-4 py-2 shadow-sm backdrop-blur-md dark:border-gray-800/30 dark:bg-gray-900/40',
         className
       )}
     >

@@ -26,7 +26,7 @@ ON CONFLICT (key) DO NOTHING;
 INSERT INTO public.categories (name, icon, color, description, sort_order)
 VALUES
   ('Intro', 'Lightbulb', 'gray', 'Pengenalan dan tutorial dasar platform.', 1),
-  ('Linux', 'Terminal', 'stone', 'Tantangan terkait command line Linux dan administrasi sistem.', 2),
+  ('Linux', 'Terminal', 'blue', 'Tantangan terkait command line Linux dan administrasi sistem.', 2),
   ('Boot To Root', 'Shield', 'red', 'Tantangan penetrasi dan rooting sistem target.', 3),
   ('Web', 'Globe', 'blue', 'Exploitasi kerentanan aplikasi web (SQLi, XSS, RCE, dll).', 4),
   ('Forensics', 'Search', 'cyan', 'Analisis paket jaringan, memory dump, file header, dan log.', 5),
@@ -34,7 +34,7 @@ VALUES
   ('Osint', 'Eye', 'orange', 'Pencarian informasi berbasis open-source intelligence.', 7),
   ('Crypto', 'Lock', 'yellow', 'Pemecahan sandi, analisis cipher, dan kriptografi.', 8),
   ('Reverse', 'Cpu', 'purple', 'Analisis binary, decompiling, dan memahami logika aplikasi.', 9),
-  ('Pwn', 'Flame', 'red', 'Eksploitasi memory corruption, buffer overflow, dll.', 10),
+  ('Pwn', 'Bomb', 'red', 'Eksploitasi memory corruption, buffer overflow, dll.', 10),
   ('Stegnography', 'Image', 'pink', 'Menemukan informasi tersembunyi di dalam media gambar/audio.', 11),
   ('Misc', 'FolderOpen', 'emerald', 'Tantangan umum yang tidak masuk ke kategori khusus.', 12),
   ('Blockchain', 'Coins', 'yellow', 'Kerentanan smart contract dan ekosistem blockchain.', 13),

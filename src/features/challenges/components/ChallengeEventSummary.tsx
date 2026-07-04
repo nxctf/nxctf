@@ -23,7 +23,7 @@ export default function ChallengeEventSummary({
   return (
     <div
       className={cn(
-        'flex h-[38px] items-center gap-3 rounded-full border border-gray-200 bg-white/60 px-4 py-2 shadow-sm backdrop-blur-md dark:border-gray-800 dark:bg-[#111622]/60',
+        'flex h-[38px] items-center gap-3 rounded-full border border-gray-200/30 bg-white/40 px-4 py-2 shadow-sm backdrop-blur-md dark:border-gray-800/30 dark:bg-gray-900/40',
         compact && 'gap-2 px-3',
         className
       )}

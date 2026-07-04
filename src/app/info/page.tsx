@@ -255,10 +255,7 @@ export default function InfoPage() {
             </h2>
           </div>
 
-          <div className="marquee-group relative w-full overflow-hidden space-y-3 py-2">
-            {/* Gradient Fades for Marquee */}
-            <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#fafafa] dark:from-[#0b0f19] to-transparent z-10" />
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#fafafa] dark:from-[#0b0f19] to-transparent z-10" />
+          <div className="marquee-group relative w-full overflow-hidden space-y-3 py-2 [mask-image:linear-gradient(to_right,transparent,white_20%,white_80%,transparent)]">
 
             {/* ROW 1 */}
             <div className="marquee marquee-left">

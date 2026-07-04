@@ -270,7 +270,7 @@ export default function TeamsPage() {
                       <span className="w-full border-t border-gray-200 dark:border-gray-800/60" />
                     </div>
                     <div className="relative flex justify-center text-[10px] uppercase">
-                      <span className="bg-[#fafafa] dark:bg-[#0b0f19] px-3 text-gray-400 font-black tracking-[0.2em]">Or Join One</span>
+                      <span className="bg-[#fafafa]/60 dark:bg-gray-900/50 backdrop-blur-sm px-3 py-0.5 rounded-full border border-gray-200/20 dark:border-gray-800/30 text-gray-400 font-black tracking-[0.2em]">Or Join One</span>
                     </div>
                   </div>
 

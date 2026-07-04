@@ -1,5 +1,5 @@
 export const SURFACE_GLASS_BASE_CLASS =
-  "bg-white/70 dark:bg-[#111622]/80 backdrop-blur-xl border border-gray-200/80 dark:border-gray-700/80"
+  "bg-white/40 dark:bg-[#111622]/40 backdrop-blur-md border border-gray-200/50 dark:border-gray-700/30"
 
 export const SURFACE_GLASS_CARD_CLASS =
   `${SURFACE_GLASS_BASE_CLASS} rounded-2xl shadow-sm`

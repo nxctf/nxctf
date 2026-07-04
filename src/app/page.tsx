@@ -73,9 +73,6 @@ export default function Home() {
     <PageBackground
       className="flex flex-col overflow-hidden"
       selectionClassName={THEME_PRIMARY_SELECTION_CLASS}
-      // backgroundUrl="https://raw.githubusercontent.com/NFCC-Com/assets/refs/heads/main/bg/bg-nurulfikri.png"
-      backgroundUrl="https://raw.githubusercontent.com/nxctf/assets/refs/heads/main/bg/fantasy-bg.png"
-      backgroundOpacity={15}
     >
 
       <main className="flex-1 flex flex-col items-center justify-center relative z-10 w-full px-6 py-10 lg:py-16">

@@ -112,8 +112,8 @@ export default function DesktopChallengeFilterSidebar({
         data-tour="challenge-sidebar-filters"
         className="relative z-20 hidden max-h-[calc(100vh-12rem)] overflow-y-auto overflow-x-hidden xl:block scroll-hidden pr-1 rounded-2xl"
       >
-        <div className="flex w-[176px] flex-col gap-1.5 rounded-2xl border border-blue-500/20 bg-white/60 p-2 shadow-sm shadow-blue-500/5 backdrop-blur-md dark:border-blue-500/10 dark:bg-gray-900/60">
-          <div className="flex h-9 w-full items-center justify-between rounded-xl border border-gray-200/80 bg-white/70 px-3 text-xs font-semibold shadow-sm backdrop-blur-md transition-all dark:border-gray-700/80 dark:bg-[#111622]/80">
+        <div className="flex w-[176px] flex-col gap-1.5 rounded-2xl border border-blue-500/10 bg-white/40 p-2 shadow-sm shadow-blue-500/5 backdrop-blur-md dark:border-blue-500/10 dark:bg-gray-900/40">
+          <div className="flex h-9 w-full items-center justify-between rounded-xl border border-gray-200/30 bg-white/40 px-3 text-xs font-semibold shadow-sm backdrop-blur-md transition-all dark:border-gray-800/30 dark:bg-gray-900/40">
             {stats == null || stats.total === 0 ? (
               <span className="w-full text-center tabular-nums text-gray-400 dark:text-gray-500">N/A</span>
             ) : (

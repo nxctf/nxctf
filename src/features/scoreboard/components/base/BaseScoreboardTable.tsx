@@ -34,7 +34,7 @@ export default function BaseScoreboardTable<TEntry>({
     <div className="overflow-x-auto">
       <Table>
         <TableHeader>
-          <TableRow className="border-b border-gray-200/80 hover:bg-transparent dark:border-gray-800">
+          <TableRow className="border-b border-gray-200/30 hover:bg-transparent dark:border-gray-800/30">
             {columns.map((column) => (
               <TableHead key={column.key} className={cn(headerTextClass, column.headerClassName)}>
                 {column.header}

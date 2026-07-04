@@ -64,7 +64,7 @@ export default function TeamSolves({
 
       <Dialog open={showAllSolves} onOpenChange={setShowAllSolves}>
         <DialogContent className={DIALOG_CONTENT_CLASS_3XL + " fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 !rounded-2xl border-none p-0 overflow-hidden"}>
-          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white/80 px-5 py-4 backdrop-blur-xl dark:border-gray-800 dark:bg-[#0b0f19]/80">
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200/30 bg-white/40 px-5 py-4 backdrop-blur-md dark:border-gray-800/30 dark:bg-[#0b0f19]/40">
             <DialogTitle className="text-base font-black uppercase tracking-widest text-gray-900 dark:text-white sm:text-lg">
               All Team Solves ({challenges.length})
             </DialogTitle>

@@ -95,6 +95,7 @@ export default function AdminCategoriesPage() {
   const [catDesc, setCatDesc] = useState("");
   const [catIcon, setCatIcon] = useState("HelpCircle");
   const [catColor, setCatColor] = useState("blue");
+  const [catSortOrder, setCatSortOrder] = useState<number | null>(null);
 
   // Subcategory form state
   const [subName, setSubName] = useState("");
@@ -170,6 +171,7 @@ export default function AdminCategoriesPage() {
     setCatDesc("");
     setCatIcon("HelpCircle");
     setCatColor("blue");
+    setCatSortOrder(null);
     setCategoryDialogOpen(true);
   };
 
@@ -179,6 +181,7 @@ export default function AdminCategoriesPage() {
     setCatDesc(cat.description || "");
     setCatIcon(cat.icon || "HelpCircle");
     setCatColor(cat.color || "blue");
+    setCatSortOrder(cat.sort_order);
     setCategoryDialogOpen(true);
   };
 
@@ -193,7 +196,7 @@ export default function AdminCategoriesPage() {
       p_description: catDesc.trim(),
       p_icon: catIcon,
       p_color: catColor,
-      p_sort_order: null,
+      p_sort_order: isEditMode ? catSortOrder : null,
     };
 
     try {

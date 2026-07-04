@@ -108,6 +108,8 @@ const scoreboardSolvePointPlugin: Plugin<'line'> = {
     )
 
     ctx.save()
+    const lastDrawnXByDataset = new Map<number, number>()
+
     markers?.forEach((marker) => {
       if (!chart.isDatasetVisible(marker.datasetIndex)) return
 
@@ -117,6 +119,13 @@ const scoreboardSolvePointPlugin: Plugin<'line'> = {
 
       if (x < chartArea.left || x > chartArea.right || y < chartArea.top || y > chartArea.bottom) {
         return
+      }
+
+      if (!isActive) {
+        const lastX = lastDrawnXByDataset.get(marker.datasetIndex)
+        if (lastX !== undefined && Math.abs(x - lastX) < 12) {
+          return
+        }
       }
 
       ctx.beginPath()
@@ -132,6 +141,7 @@ const scoreboardSolvePointPlugin: Plugin<'line'> = {
         ctx.lineWidth = 1.35
         ctx.strokeStyle = '#f8fafc'
         ctx.stroke()
+        lastDrawnXByDataset.set(marker.datasetIndex, x)
       }
     })
 
@@ -500,12 +510,7 @@ export default function BaseScoreboardChart({
         order: drawOrderByName.get(s.name) ?? i,
         stepped: 'before' as const,
         tension: 0,
-        pointRadius(context) {
-          const date = labels[context.dataIndex]
-          const value = context.dataset.data[context.dataIndex]
-          if (typeof value !== 'number' || value <= 0) return 0
-          return solveDateSets[context.datasetIndex]?.has(date) ? 3 : 0
-        },
+        pointRadius: 0,
         pointHitRadius: 12,
         pointHoverRadius: 0,
         pointBackgroundColor: color,

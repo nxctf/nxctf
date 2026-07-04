@@ -30,8 +30,8 @@ export default function BaseScoreboardCard({
 }: BaseScoreboardCardProps) {
   const hasHeader = title || headerCenter || action
   const headerLayoutClass = headerCenter
-    ? 'grid grid-cols-1 gap-3 border-b border-gray-200/70 px-4 py-3.5 dark:border-gray-800/80 sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:px-5'
-    : 'flex flex-row items-center justify-between gap-3 border-b border-gray-200/70 px-4 py-3.5 dark:border-gray-800/80 sm:px-5'
+    ? 'grid grid-cols-1 gap-3 border-b border-gray-200/30 px-4 py-3.5 dark:border-gray-800/30 sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:px-5'
+    : 'flex flex-row items-center justify-between gap-3 border-b border-gray-200/30 px-4 py-3.5 dark:border-gray-800/30 sm:px-5'
 
   return (
     <SurfaceCard variant="interactive" className={cn('overflow-hidden', className)}>
