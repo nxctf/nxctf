@@ -95,6 +95,8 @@ export default function AdminChallengeFilters({
               { value: 'difficulty_desc', label: 'Difficulty desc' },
               { value: 'title_asc', label: 'Name A-Z' },
               { value: 'title_desc', label: 'Name Z-A' },
+              { value: 'created_at_desc', label: 'Newest first' },
+              { value: 'created_at_asc', label: 'Oldest first' },
             ]}
           />
         </div>

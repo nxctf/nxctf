@@ -26,6 +26,7 @@ const orderedFiles = [
   "schema/solves_nonactive.sql",
   "schema/flag_submissions.sql",
   "schema/notifications.sql",
+  "schema/scheduled_jobs.sql",
   "schema/teams.sql",
   "schema/team_members.sql",
   "schema/keep-alive.sql",
@@ -48,6 +49,7 @@ const orderedFiles = [
   "queries/teams.sql",
   "queries/team_members.sql",
   "queries/notifications.sql",
+  "queries/scheduled_jobs.sql",
   "queries/keep-alive.sql",
   "queries/system.sql",
   "queries/performance_indexes.sql",
@@ -97,9 +99,7 @@ try {
   console.log("Next step (Supabase):");
   console.log("1) Open Supabase Dashboard -> SQL Editor.");
   console.log("2) Open db/init.sql from this project.");
-  console.log(
-    "3) Copy all SQL from db/init.sql, paste to SQL Editor, then Run.",
-  );
+  console.log("3) Copy all SQL from db/init.sql, paste to SQL Editor, then Run.");
 } catch (err) {
   console.error("Failed to build init.sql");
   console.error(err.message);

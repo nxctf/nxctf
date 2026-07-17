@@ -104,6 +104,13 @@ export function getFilteredAdminChallenges({
       return (b.title || '').localeCompare(a.title || '')
     }
 
+    if (sortBy === 'created_at_desc') {
+      return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+    }
+    if (sortBy === 'created_at_asc') {
+      return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
+    }
+
     // Default fallback sorting
     if (b.points !== a.points) return (b.points || 0) - (a.points || 0)
     return (a.title || '').localeCompare(b.title || '')

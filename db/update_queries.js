@@ -27,6 +27,7 @@ const orderedFiles = [
   "queries/teams.sql",
   "queries/team_members.sql",
   "queries/notifications.sql",
+  "queries/scheduled_jobs.sql",
   "queries/keep-alive.sql",
   "queries/system.sql",
   "queries/performance_indexes.sql",
@@ -76,9 +77,7 @@ try {
   console.log("Next step (Supabase):");
   console.log("1) Open Supabase Dashboard -> SQL Editor.");
   console.log("2) Open db/update_queries.sql from this project.");
-  console.log(
-    "3) Copy all SQL from db/update_queries.sql, paste to SQL Editor, then Run.",
-  );
+  console.log("3) Copy all SQL from db/update_queries.sql, paste to SQL Editor, then Run.");
 } catch (err) {
   console.error("Failed to build update_queries.sql");
   console.error(err.message);

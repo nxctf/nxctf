@@ -1242,3 +1242,90 @@ export async function getActiveUserTags(): Promise<string[]> {
     return []
   }
 }
+
+// ==============================================
+// Scheduled Jobs (Admin)
+// ==============================================
+
+export async function createScheduledJob(
+  jobType: string,
+  scheduledAt: string,
+  targetId?: string | null,
+  payload?: Record<string, unknown>
+): Promise<string | null> {
+  try {
+    const { data, error } = await callChallengeRpc('create_scheduled_job', {
+      p_job_type: jobType,
+      p_scheduled_at: scheduledAt,
+      p_target_id: targetId ?? null,
+      p_payload: payload ?? {},
+    })
+    if (error) throw new Error(error.message)
+    return data ? String(data) : null
+  } catch (err) {
+    console.error('Error creating scheduled job:', err)
+    throw err
+  }
+}
+
+export async function repostChallenge(
+  challengeId: string,
+  newDate: string
+): Promise<{ success: boolean; message?: string; created_at?: string }> {
+  try {
+    const { data, error } = await callChallengeRpc('repost_challenge', {
+      p_challenge_id: challengeId,
+      p_new_date: newDate,
+    })
+    if (error) throw new Error(error.message)
+    return data as { success: boolean; message?: string; created_at?: string }
+  } catch (err) {
+    console.error('Error reposting challenge:', err)
+    throw err
+  }
+}
+
+export async function getScheduledJobs(
+  status?: string | null,
+  limit?: number,
+  offset?: number
+): Promise<any[]> {
+  try {
+    const { data, error } = await callChallengeRpc('get_scheduled_jobs', {
+      p_status: status ?? null,
+      p_limit: limit ?? 50,
+      p_offset: offset ?? 0,
+    })
+    if (error) throw error
+    return Array.isArray(data) ? data : []
+  } catch (err) {
+    console.error('Error fetching scheduled jobs:', err)
+    return []
+  }
+}
+
+export async function deleteScheduledJob(jobId: string): Promise<boolean> {
+  try {
+    const { data, error } = await callChallengeRpc('delete_scheduled_job', {
+      p_job_id: jobId,
+    })
+    if (error) throw error
+    return !!data
+  } catch (err) {
+    console.error('Error deleting scheduled job:', err)
+    return false
+  }
+}
+
+export async function getChallengeFirstBlood(challengeId: string): Promise<string | null> {
+  try {
+    const { data, error } = await callChallengeRpc('get_challenge_first_blood', {
+      p_challenge_id: challengeId,
+    })
+    if (error) throw error
+    return data ? String(data) : null
+  } catch (err) {
+    console.error('Error fetching first blood:', err)
+    return null
+  }
+}

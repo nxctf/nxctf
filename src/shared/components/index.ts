@@ -9,3 +9,4 @@ export { default as EditActionButton } from '@/shared/components/EditActionButto
 export { BaseModal, ModalBody, ModalFooter, ModalHeader } from '@/shared/components/BaseModal'
 export { SegmentedTabs } from '@/shared/components/SegmentedTabs'
 export { RouteError } from '@/shared/components/RouteError'
+export { default as DateBadge } from '@/shared/components/DateBadge'

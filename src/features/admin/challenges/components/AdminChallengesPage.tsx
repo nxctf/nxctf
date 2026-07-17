@@ -12,6 +12,8 @@ import ConfirmDialog from '@/shared/components/ConfirmDialog'
 import ChallengeListPanel from './ChallengeListPanel'
 import ChallengeFormDialogHost from './ChallengeFormDialogHost'
 import { FlagPreviewDialog } from './FlagPreviewDialog'
+import RepostModal from './RepostModal'
+import ScheduleModal from './ScheduleModal'
 import { useAdminChallengesData } from '../hooks/useAdminChallengesData'
 import { useChallengeForm } from '../hooks/useChallengeForm'
 import { getAdminScope, getEvents, getFilteredAdminChallenges } from '../lib'
@@ -34,6 +36,7 @@ export default function AdminChallengesPage() {
     challenges,
     events,
     adminScope,
+    scheduledJobsMap,
     isLoading: dataLoading,
     isRefreshing,
     initAdminData,
@@ -57,6 +60,8 @@ export default function AdminChallengesPage() {
   const [openForm, setOpenForm] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [pendingDelete, setPendingDelete] = useState<Challenge | null>(null)
+  const [repostTarget, setRepostTarget] = useState<Challenge | null>(null)
+  const [scheduleTarget, setScheduleTarget] = useState<Challenge | null>(null)
   const [eventId, setEventId] = useState<AdminChallengeEventId>('all')
   const [filters, setFilters] = useState<AdminChallengeFilterState>({
     category: "all",
@@ -79,7 +84,7 @@ export default function AdminChallengesPage() {
     }
 
     const init = async () => {
-      await initAdminData()
+      const allChallenges = await initAdminData()
 
       const urlEvent = searchParams.get('event')
       const urlAdd = searchParams.get('add') === '1'
@@ -100,6 +105,15 @@ export default function AdminChallengesPage() {
           : (resolvedUrlEvent === 'all' ? '' : defaultManagedEventId)
         resetForm({ event_id: addEventId })
         setOpenForm(true)
+      }
+
+      const urlEdit = searchParams.get('edit')
+      if (urlEdit) {
+        const target = allChallenges?.find((c: Challenge) => c.id === urlEdit)
+        if (target) {
+          await loadChallengeForEdit(target)
+          setOpenForm(true)
+        }
       }
     }
 
@@ -167,6 +181,7 @@ export default function AdminChallengesPage() {
             selectedEventId={eventId}
             isRefreshing={isRefreshing}
             isGlobalAdmin={isGlobalAdmin}
+            scheduledJobsMap={scheduledJobsMap}
             onFiltersChange={setFilters}
             onEventChange={setEventId}
             onAdd={handleOpenAdd}
@@ -175,6 +190,8 @@ export default function AdminChallengesPage() {
             onViewFlag={handleViewFlag}
             onToggleMaintenance={toggleChallengeMaintenance}
             onToggleActive={toggleChallengeActive}
+            onRepost={(c) => setRepostTarget(c)}
+            onSchedule={(c) => setScheduleTarget(c)}
           />
         </div>
       </AdminPageShell>
@@ -208,6 +225,19 @@ export default function AdminChallengesPage() {
           }
         }}
         fetchedFlag={fetchedFlag}
+      />
+      <RepostModal
+        open={!!repostTarget}
+        onOpenChange={(v) => { if (!v) setRepostTarget(null) }}
+        challenge={repostTarget}
+        onSuccess={() => initAdminData(true)}
+      />
+      <ScheduleModal
+        open={!!scheduleTarget}
+        onOpenChange={(v) => { if (!v) setScheduleTarget(null) }}
+        challenge={scheduleTarget}
+        existingScheduledAt={scheduleTarget?.id ? scheduledJobsMap[scheduleTarget.id] : undefined}
+        onSuccess={() => initAdminData(true)}
       />
     </>
   )

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { Challenge, SiteInfo, Event, SolverRow, AdminScope } from '../types'
+import { getScheduledJobs } from '@/shared/lib'
 import {
   getAdminScope,
   getChallengesList,
@@ -20,6 +21,7 @@ export function useAdminChallengesData() {
   const [siteInfo, setSiteInfo] = useState<SiteInfo | null>(null)
   const [events, setEvents] = useState<Event[]>([])
   const [adminScope, setAdminScope] = useState<AdminScope | null>(null)
+  const [scheduledJobsMap, setScheduledJobsMap] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -41,14 +43,24 @@ export function useAdminChallengesData() {
       const scope = await getAdminScope()
       setAdminScope(scope)
 
-      const [challengeList, info, eventList] = await Promise.all([
+      const [challengeList, info, eventList, scheduledJobs] = await Promise.all([
         getChallengesList(undefined, true, 'all'),
         getInfo(),
         getEvents(),
+        getScheduledJobs('pending'),
       ])
 
       setChallenges(challengeList)
       setSiteInfo(info)
+
+      return challengeList
+      setScheduledJobsMap(
+        Object.fromEntries(
+          (scheduledJobs || [])
+            .filter((j: any) => j.job_type === 'challenge_activate' && j.target_id)
+            .map((j: any) => [String(j.target_id), j.scheduled_at])
+        )
+      )
 
       const allowedSet = new Set(scope.event_ids || [])
       const visibleEvents = scope.is_global_admin
@@ -102,6 +114,7 @@ export function useAdminChallengesData() {
     siteInfo,
     events,
     adminScope,
+    scheduledJobsMap,
     isLoading,
     isRefreshing,
     initAdminData,

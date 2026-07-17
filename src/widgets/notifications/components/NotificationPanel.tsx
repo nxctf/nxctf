@@ -1,10 +1,13 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Bell, Check, Plus, Loader2, X, Megaphone, Settings2, Trash2, Calendar } from 'lucide-react'
+import toast from 'react-hot-toast'
+import { Bell, Check, Plus, Loader2, X, Megaphone, Settings2, Trash2, Calendar, Clock, CalendarClock } from 'lucide-react'
 import { Switch, Button, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui'
 import { cn, formatRelativeDate } from '@/shared/lib/utils'
+import { createScheduledJob, getScheduledJobs, deleteScheduledJob } from '@/shared/lib'
+import { formatJakartaDate } from '@/features/admin/audit-logs/lib/audit-log-utils'
 import NotificationItem from './NotificationItem'
 
 function formatNotificationText(content: string) {
@@ -46,6 +49,18 @@ type NotificationPanelProps = {
   handleDeleteNotif: (id: string) => void
 }
 
+function toDatetimeLocalValue(date: Date): string {
+  const offset = date.getTimezoneOffset()
+  const local = new Date(date.getTime() - offset * 60000)
+  return local.toISOString().slice(0, 16)
+}
+
+function oneHourLater(): string {
+  const d = new Date()
+  d.setHours(d.getHours() + 1)
+  return toDatetimeLocalValue(d)
+}
+
 export default function NotificationPanel({
   theme,
   notifPanelRef,
@@ -73,6 +88,28 @@ export default function NotificationPanel({
   )
 
   const [explicitExpanded, setExplicitExpanded] = useState<Record<string, boolean>>({})
+  const [scheduleMode, setScheduleMode] = useState(false)
+  const [scheduledAt, setScheduledAt] = useState(oneHourLater())
+  const [scheduledItems, setScheduledItems] = useState<Array<{ id: string; scheduled_at: string; title: string; message: string; level: string; payload: any }>>([])
+  const [scheduleLoading, setScheduleLoading] = useState(false)
+  const [sending, setSending] = useState(false)
+
+  useEffect(() => {
+    if (activeTab !== 'admin' || !globalAdminStatus) return
+    const loadScheduled = async () => {
+      const all = await getScheduledJobs('pending', 100)
+      const notifJobs = (all || []).filter((j: any) => j.job_type === 'notification')
+      setScheduledItems(notifJobs.map((j: any) => ({
+        id: j.id,
+        scheduled_at: j.scheduled_at,
+        title: j.payload?.title || '',
+        message: j.payload?.message || '',
+        level: j.payload?.level || 'info',
+        payload: j.payload,
+      })))
+    }
+    loadScheduled()
+  }, [activeTab, globalAdminStatus])
 
   const isItemExpanded = (id: string, isRead: boolean) => {
     if (explicitExpanded[id] !== undefined) {
@@ -88,6 +125,59 @@ export default function NotificationPanel({
       ...prev,
       [id]: !currentlyExpanded,
     }))
+  }
+
+  const handleScheduleNotif = async () => {
+    if (!notifTitle.trim() || !notifMessage.trim()) return
+    if (!scheduledAt) return
+    setSending(true)
+    try {
+      const title = notifTitle.trim()
+      const message = notifMessage.trim()
+      const level = notifLevel
+      const jobId = await createScheduledJob(
+        'notification',
+        new Date(scheduledAt).toISOString(),
+        null,
+        { title, message, level }
+      )
+      if (jobId) {
+        toast.success(`Notification scheduled for ${formatJakartaDate(scheduledAt)}`)
+        setNotifTitle('')
+        setNotifMessage('')
+        setScheduleMode(false)
+        // Refresh scheduled list
+        const all = await getScheduledJobs('pending', 100)
+        const notifJobs = (all || []).filter((j: any) => j.job_type === 'notification')
+        setScheduledItems(notifJobs.map((j: any) => ({
+          id: j.id,
+          scheduled_at: j.scheduled_at,
+          title: j.payload?.title || '',
+          message: j.payload?.message || '',
+          level: j.payload?.level || 'info',
+          payload: j.payload,
+        })))
+      }
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to schedule notification')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const handleDeleteScheduled = async (jobId: string) => {
+    setScheduleLoading(true)
+    try {
+      const ok = await deleteScheduledJob(jobId)
+      if (ok) {
+        toast.success('Scheduled notification cancelled')
+        setScheduledItems(prev => prev.filter(s => s.id !== jobId))
+      }
+    } catch {
+      toast.error('Failed to delete scheduled notification')
+    } finally {
+      setScheduleLoading(false)
+    }
   }
 
   const groupedNotifs = React.useMemo(() => {
@@ -298,15 +388,88 @@ export default function NotificationPanel({
                       </SelectContent>
                     </Select>
                     <Button
-                      onClick={handleSendNotif}
+                      onClick={scheduleMode ? handleScheduleNotif : handleSendNotif}
                       size="sm"
                       className="px-5 font-bold uppercase tracking-wider text-[10px]"
+                      disabled={sending || (!notifTitle.trim() || !notifMessage.trim())}
                     >
-                      Send
+                      {sending ? 'Scheduling...' : scheduleMode ? 'Schedule' : 'Send'}
                     </Button>
                   </div>
+
+                  {/* Schedule Toggle */}
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-xs text-gray-500 flex items-center gap-1.5">
+                      <Clock className="size-3" />
+                      Send later
+                    </span>
+                    <Switch
+                      checked={scheduleMode}
+                      onCheckedChange={setScheduleMode}
+                      className="scale-75 origin-right"
+                    />
+                  </div>
+
+                  {scheduleMode && (
+                    <div className="space-y-1.5 pt-1">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="size-3 text-gray-400" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Schedule At</span>
+                      </div>
+                      <Input
+                        type="datetime-local"
+                        value={scheduledAt}
+                        onChange={(e) => setScheduledAt(e.target.value)}
+                        className="h-9 text-sm"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
+
+              {/* Scheduled Section */}
+              {scheduledItems.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CalendarClock size={14} className="text-amber-500" />
+                      <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Scheduled</h3>
+                    </div>
+                    <span className="text-[9px] font-bold text-amber-500 opacity-60 uppercase">
+                      {scheduledItems.length} Pending
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    {scheduledItems.map((s) => (
+                      <div
+                        key={s.id}
+                        className={`p-3 rounded-lg border text-xs space-y-1
+                          ${theme === 'dark' ? 'bg-gray-800/30 border-gray-700/50' : 'bg-gray-50 border-gray-200'}
+                        `}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold truncate">{s.title}</p>
+                            <p className="text-gray-400 line-clamp-1">{s.message}</p>
+                            <p className="text-[10px] text-amber-500 mt-1 flex items-center gap-1">
+                              <Calendar className="size-3" />
+                              {formatJakartaDate(s.scheduled_at)}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteScheduled(s.id)}
+                            disabled={scheduleLoading}
+                            className="p-1 rounded-md text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-all shrink-0"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Recent History List */}
               <div className="space-y-3">

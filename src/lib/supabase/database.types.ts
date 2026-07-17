@@ -468,6 +468,53 @@ export type Database = {
           },
         ]
       }
+      scheduled_jobs: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          error_message: string | null
+          executed_at: string | null
+          id: string
+          job_type: string
+          payload: Json | null
+          scheduled_at: string
+          status: string | null
+          target_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          error_message?: string | null
+          executed_at?: string | null
+          id?: string
+          job_type: string
+          payload?: Json | null
+          scheduled_at: string
+          status?: string | null
+          target_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          error_message?: string | null
+          executed_at?: string | null
+          id?: string
+          job_type?: string
+          payload?: Json | null
+          scheduled_at?: string
+          status?: string | null
+          target_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_jobs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       solves: {
         Row: {
           challenge_id: string | null
@@ -826,11 +873,21 @@ export type Database = {
         Args: { p_id: string; p_username: string }
         Returns: undefined
       }
+      create_scheduled_job: {
+        Args: {
+          p_job_type: string
+          p_payload?: Json
+          p_scheduled_at: string
+          p_target_id?: string
+        }
+        Returns: string
+      }
       create_team: { Args: { p_name: string }; Returns: string }
       delete_category: { Args: { p_name: string }; Returns: boolean }
       delete_challenge: { Args: { p_challenge_id: string }; Returns: boolean }
       delete_event: { Args: { p_event_id: string }; Returns: boolean }
       delete_notification: { Args: { p_id: string }; Returns: boolean }
+      delete_scheduled_job: { Args: { p_job_id: string }; Returns: boolean }
       delete_solver: { Args: { p_solve_id: string }; Returns: boolean }
       delete_sub_challenge: { Args: { p_id: string }; Returns: boolean }
       delete_subcategory: { Args: { p_name: string }; Returns: boolean }
@@ -964,6 +1021,10 @@ export type Database = {
           category: string
           total_challenges: number
         }[]
+      }
+      get_challenge_first_blood: {
+        Args: { p_challenge_id: string }
+        Returns: string
       }
       get_challenge_placeholder: {
         Args: { p_challenge_id: string }
@@ -1135,6 +1196,22 @@ export type Database = {
         }[]
       }
       get_request_headers: { Args: never; Returns: Json }
+      get_scheduled_jobs: {
+        Args: { p_limit?: number; p_offset?: number; p_status?: string }
+        Returns: {
+          created_at: string
+          created_by: string
+          error_message: string
+          executed_at: string
+          id: string
+          job_type: string
+          payload: Json
+          scheduled_at: string
+          status: string
+          target_id: string
+          target_title: string
+        }[]
+      }
       get_solve_info: {
         Args: { p_challenge_id: string; p_user_id: string }
         Returns: {
@@ -1415,6 +1492,14 @@ export type Database = {
           prefix: string
         }[]
       }
+      process_scheduled_jobs: {
+        Args: never
+        Returns: {
+          job_id: string
+          job_type: string
+          result: string
+        }[]
+      }
       regenerate_event_join_key: {
         Args: { p_event_id: string }
         Returns: string
@@ -1434,6 +1519,10 @@ export type Database = {
       reorder_subcategories: {
         Args: { p_ordered_names: string[] }
         Returns: boolean
+      }
+      repost_challenge: {
+        Args: { p_challenge_id: string; p_new_date: string }
+        Returns: Json
       }
       resolve_profile_picture: {
         Args: { p_profile_picture_url: string; p_raw_user_meta_data: Json }

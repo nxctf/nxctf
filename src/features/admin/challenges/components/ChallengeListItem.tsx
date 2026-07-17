@@ -13,27 +13,36 @@ import {
   ListChecks,
   MapPin,
   Shield,
+  CalendarSync,
+  CalendarClock,
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
+import DateBadge, { formatDate } from "@/shared/components/DateBadge";
 import { Challenge } from "../types";
 import { useCategories } from "@/shared/contexts/CategoriesContext";
 
 interface ChallengeListItemProps {
   challenge: Challenge;
+  scheduledAt?: string;
   onEdit: (challenge: Challenge) => void;
   onDelete: (id: string) => void;
   onViewFlag: (id: string) => void;
   onToggleActive: (id: string, checked: boolean) => Promise<any>;
   onToggleMaintenance: (id: string, checked: boolean) => Promise<any>;
+  onRepost?: (challenge: Challenge) => void;
+  onSchedule?: (challenge: Challenge) => void;
 }
 
 const ChallengeListItem: React.FC<ChallengeListItemProps> = ({
   challenge,
+  scheduledAt,
   onEdit,
   onDelete,
   onViewFlag,
   onToggleActive,
   onToggleMaintenance,
+  onRepost,
+  onSchedule,
 }) => {
   const handleToggleActive = async (id: string, checked: boolean) => {
     await onToggleActive(id, checked);
@@ -82,8 +91,16 @@ const ChallengeListItem: React.FC<ChallengeListItemProps> = ({
                 {challenge.points} pts
               </span>
               <span className="shrink-0 text-gray-400">•</span>
+              <DateBadge dateStr={challenge.created_at} />
+              {scheduledAt && (
+                <span className="inline-flex items-center gap-1 text-cyan-600 dark:text-cyan-400" title="Scheduled activation">
+                  <CalendarClock size={11} />
+                  {formatDate(scheduledAt)}
+                </span>
+              )}
               {challenge.is_dynamic && (
                 <>
+                  <span className="shrink-0 text-gray-400">•</span>
                   <Badge className="bg-indigo-100 text-indigo-800 dark:bg-indigo-600 dark:text-white px-1 py-0.5">
                     <span className="inline-block min-w-[14px] text-center text-[10px] leading-4 font-semibold">
                       Dynamic:{" "}
@@ -132,7 +149,31 @@ const ChallengeListItem: React.FC<ChallengeListItemProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-1 justify-end order-1 sm:order-2 w-full sm:w-auto sm:min-w-[180px] shrink-0">
+        <div className="flex items-center gap-1 justify-end order-1 sm:order-2 w-full sm:w-auto shrink-0">
+          {onRepost && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onRepost(challenge)}
+              aria-label="Repost Challenge"
+              title="Repost (change post date)"
+              className="text-indigo-600 dark:text-indigo-400"
+            >
+              <CalendarSync size={16} />
+            </Button>
+          )}
+          {onSchedule && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onSchedule(challenge)}
+              aria-label="Schedule Activation"
+              title="Schedule activation"
+              className="text-cyan-600 dark:text-cyan-400"
+            >
+              <CalendarClock size={16} />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
