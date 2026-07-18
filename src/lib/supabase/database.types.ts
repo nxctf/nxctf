@@ -804,6 +804,8 @@ export type Database = {
           p_description?: string
           p_end_time?: string
           p_image_url?: string
+          p_join_key?: string
+          p_join_mode?: string
           p_name: string
           p_start_time?: string
         }
@@ -1614,6 +1616,8 @@ export type Database = {
           p_end_time?: string
           p_event_id: string
           p_image_url?: string
+          p_join_key?: string
+          p_join_mode?: string
           p_name?: string
           p_start_time?: string
         }

@@ -65,7 +65,7 @@ export default function GeoMapSelector({
   onCancel,
 }: GeoMapSelectorProps) {
   const [prefix, setPrefix] = useState('NXCTF')
-  const [radius, setRadius] = useState(1.5)
+  const [radius, setRadius] = useState('1.5')
   const [coords, setCoords] = useState<GeoCoordinates | null>(null)
   const [isMoving, setIsMoving] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
@@ -85,7 +85,7 @@ export default function GeoMapSelector({
     const parsed = parseGeoFlagClient(initialFlag)
     if (parsed) {
       setPrefix(parsed.prefix)
-      setRadius(parsed.radius_km)
+      setRadius(parsed.radius_km.toString())
       const c = { lat: parsed.lat, lng: parsed.lng }
       setCoords(c)
       setLatInput(parsed.lat.toFixed(6))
@@ -153,7 +153,9 @@ export default function GeoMapSelector({
 
   const handleConfirm = () => {
     if (!coords) return
-    const flagString = `${prefix}{geo:${coords.lat.toFixed(6)},${coords.lng.toFixed(6)},${radius.toFixed(3)}}`
+    const r = parseFloat(radius)
+    const finalRadius = isNaN(r) ? 1.5 : r
+    const flagString = `${prefix}{geo:${coords.lat.toFixed(6)},${coords.lng.toFixed(6)},${finalRadius.toFixed(3)}}`
 
     if (initialFlag && initialFlag.trim() !== '') {
       setPendingFlag(flagString)
@@ -184,9 +186,9 @@ export default function GeoMapSelector({
           <Input
             type="number"
             step="0.05"
-            min="0.01"
+            min="0"
             value={radius}
-            onChange={(e) => setRadius(parseFloat(e.target.value) || 0.1)}
+            onChange={(e) => setRadius(e.target.value)}
             placeholder="e.g. 1.5"
             className="h-9 text-sm"
           />
@@ -272,7 +274,7 @@ export default function GeoMapSelector({
               {!isMoving && (
                 <Circle
                   center={[coords.lat, coords.lng]}
-                  radius={(radius || 1.5) * 1000}
+                  radius={(parseFloat(radius) || 1.5) * 1000}
                   pathOptions={{
                     color: '#EF4444',
                     fillColor: '#EF4444',

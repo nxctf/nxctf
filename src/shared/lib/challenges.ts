@@ -541,9 +541,7 @@ export async function getChallengesLite(showAll: boolean = true) {
 
     if (ids.length > 0) {
       const { data: subChallengeRows } = await supabase
-        .from('sub_challenges')
-        .select('challenge_id')
-        .in('challenge_id', ids)
+        .rpc('get_challenges_with_sub_challenges', { p_challenge_ids: ids })
 
       questionIds = new Set((subChallengeRows || []).map((row: any) => String(row.challenge_id)))
     }

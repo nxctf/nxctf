@@ -18,6 +18,7 @@ export type ChallengeFilterState = {
   difficulty: string
   search: string
   feature?: ChallengeFeatureFilter
+  excludedEventIds?: string[]
 }
 
 export type ChallengeEventFilterItem = Pick<

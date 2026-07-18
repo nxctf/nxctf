@@ -37,6 +37,8 @@ export async function addEvent(payload: {
   end_time?: string | null
   always_show_challenges?: boolean | null
   image_url?: string | null
+  join_mode?: 'open' | 'request' | 'key' | null
+  join_key?: string | null
 }) {
   const { data, error } = await supabase.rpc('add_event', {
     p_name: payload.name,
@@ -45,6 +47,8 @@ export async function addEvent(payload: {
     p_end_time: payload.end_time ?? null,
     p_always_show_challenges: payload.always_show_challenges ?? false,
     p_image_url: payload.image_url ?? null,
+    p_join_mode: payload.join_mode ?? 'open',
+    p_join_key: payload.join_mode === 'key' ? payload.join_key ?? null : null,
   } as any)
 
   if (error) {
@@ -62,6 +66,8 @@ export async function updateEvent(eventId: string, payload: {
   end_time?: string | null
   always_show_challenges?: boolean | null
   image_url?: string | null
+  join_mode?: 'open' | 'request' | 'key' | null
+  join_key?: string | null
 }) {
   const { data, error } = await supabase.rpc('update_event', {
     p_event_id: eventId,
@@ -71,6 +77,8 @@ export async function updateEvent(eventId: string, payload: {
     p_end_time: payload.end_time ?? null,
     p_always_show_challenges: payload.always_show_challenges ?? null,
     p_image_url: payload.image_url ?? null,
+    p_join_mode: payload.join_mode ?? null,
+    p_join_key: payload.join_mode === 'key' ? payload.join_key ?? null : null,
   } as any)
 
   if (error) {

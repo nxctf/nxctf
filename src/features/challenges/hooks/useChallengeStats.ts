@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { getUserDetailLite } from '@/features/users/services/user-profile.service'
 import type { ChallengeWithSolve } from '@/shared/types'
+import type { ChallengeFilterState } from '../types'
 
 export type ChallengeStats = {
   rank: number | null
@@ -13,7 +14,8 @@ export type ChallengeStats = {
 export function useChallengeStats(
   user: { id: string } | null,
   challenges: ChallengeWithSolve[],
-  eventId: string | null | undefined
+  eventId: string | null | undefined,
+  filters?: ChallengeFilterState
 ): ChallengeStats | null {
   const [stats, setStats] = useState<ChallengeStats | null>(null)
 
@@ -24,7 +26,15 @@ export function useChallengeStats(
     }
 
     const eventChallenges = challenges.filter((c) => {
-      if (eventId === 'all') return true
+      if (eventId === 'all') {
+        const excludedIds = filters?.excludedEventIds || []
+        if (c.event_id) {
+          if (excludedIds.includes(c.event_id)) return false
+        } else {
+          if (excludedIds.includes('main')) return false
+        }
+        return true
+      }
       if (eventId === null) return c.event_id == null
       if (typeof eventId === 'string') return c.event_id === eventId
       return false
@@ -55,7 +65,7 @@ export function useChallengeStats(
     return () => {
       cancelled = true
     }
-  }, [user?.id, eventId, challenges])
+  }, [user?.id, eventId, challenges, filters?.excludedEventIds])
 
   return stats
 }

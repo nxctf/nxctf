@@ -23,6 +23,7 @@ export type ChallengeFilterDirtyState = {
   isSearchDirty: boolean
   isFeatureDirty: boolean
   isEventDirty: boolean
+  isExcludedEventDirty: boolean
   anyFilterDirty: boolean
 }
 
@@ -58,7 +59,10 @@ export function filterChallengesByState({
 }): ChallengeWithSolve[] {
   return challenges.filter((challenge) => {
     if (eventId === 'all') {
+      const excludedIds = filters.excludedEventIds || []
       if (challenge.event_id) {
+        if (excludedIds.includes(challenge.event_id)) return false
+
         const event = events.find((candidate) => candidate.id === challenge.event_id)
         if (!event) return false
 
@@ -66,6 +70,8 @@ export function filterChallengesByState({
         const end = event.end_time ? new Date(event.end_time).getTime() : null
         if (start && !Number.isNaN(start) && nowMs < start) return false
         if (end && !Number.isNaN(end) && nowMs > end) return false
+      } else {
+        if (excludedIds.includes('main')) return false
       }
 
       const catLower = String(challenge.category || '').toLowerCase()
@@ -156,7 +162,8 @@ export function getChallengeFilterDirtyState(
   const isSearchDirty = String(filters.search || '').trim() !== DEFAULT_FILTERS.search
   const isFeatureDirty = (filters.feature || DEFAULT_FILTERS.feature) !== DEFAULT_FILTERS.feature
   const isEventDirty = selectedEventId !== 'all' && selectedEventId !== undefined && selectedEventId !== null
-  const anyFilterDirty = isStatusDirty || isCategoryDirty || isDifficultyDirty || isSearchDirty || isFeatureDirty
+  const isExcludedEventDirty = Array.isArray(filters.excludedEventIds) && filters.excludedEventIds.length > 0
+  const anyFilterDirty = isStatusDirty || isCategoryDirty || isDifficultyDirty || isSearchDirty || isFeatureDirty || isExcludedEventDirty
 
   return {
     isStatusDirty,
@@ -165,6 +172,7 @@ export function getChallengeFilterDirtyState(
     isSearchDirty,
     isFeatureDirty,
     isEventDirty,
+    isExcludedEventDirty,
     anyFilterDirty,
   }
 }

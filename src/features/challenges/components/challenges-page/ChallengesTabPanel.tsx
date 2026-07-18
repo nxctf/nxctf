@@ -19,7 +19,7 @@ export default function ChallengesTabPanel({
   data,
 }: ChallengesTabPanelProps) {
   const { settings } = useSystemSettings()
-  const myStats = useChallengeStats(data.user, data.challenges, data.eventId)
+  const myStats = useChallengeStats(data.user, data.challenges, data.eventId, data.filters)
 
   return (
     <div className="flex flex-col gap-4 xl:grid xl:grid-cols-[176px_minmax(0,1fr)] xl:gap-8 2xl:gap-10 xl:items-start">
@@ -57,7 +57,7 @@ export default function ChallengesTabPanel({
           difficulties={data.difficulties}
           onFilterChange={data.setFilters}
           onSettingsChange={data.setFilterSettings}
-          onClear={() => data.setFilters({ status: 'all', category: 'all', difficulty: 'all', search: '', feature: 'N' })}
+          onClear={() => data.setFilters({ status: 'all', category: 'all', difficulty: 'all', search: '', feature: 'N', excludedEventIds: [] })}
           hideSidebarFiltersOnDesktop
         />
 

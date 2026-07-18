@@ -306,7 +306,7 @@ ${links || '- (No links)'}
         {/* Fixed Header Section */}
         <div className="p-4 md:px-6 pb-0 shrink-0">
           <div className="flex flex-col gap-3 mb-5">
-            {/* ROW 1: Title, Event & Copy */}
+            {/* ROW 1: Title & Event */}
             <div className="flex items-start justify-between gap-4">
               <DialogTitle asChild>
                 <h2 className="select-text text-xl sm:text-2xl font-black text-gray-900 dark:text-gray-100 tracking-tight leading-tight flex-1 min-w-0">
@@ -317,22 +317,6 @@ ${links || '- (No links)'}
                 <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] font-bold">
                   {eventName}
                 </span>
-                <span
-                  aria-hidden="true"
-                  className="h-3 w-px bg-gray-200 dark:bg-gray-700"
-                />
-                <button
-                  type="button"
-                  title="Copy Challenge Markdown"
-                  onClick={handleCopyChallengeMarkdown}
-                  className="flex items-center justify-center h-7 min-w-[28px] px-1.5 rounded-lg bg-transparent hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-all duration-200 dark:hover:bg-gray-800/60 dark:text-gray-400 dark:hover:text-gray-200 shrink-0"
-                >
-                  {copiedMarkdown ? (
-                    <Check size={14} className="shrink-0 text-emerald-500 dark:text-emerald-400" />
-                  ) : (
-                    <ClipboardCopy size={14} className="shrink-0" />
-                  )}
-                </button>
               </div>
             </div>
 
@@ -445,8 +429,20 @@ ${links || '- (No links)'}
           {challengeTab === 'challenge' && (
             <div className="min-h-full flex flex-col pb-5">
               {/* Description at the Top */}
-              <div className="flex-1">
-                <div className="max-w-full overflow-x-auto break-words mt-2">
+              <div className="flex-1 relative group">
+                <button
+                  type="button"
+                  title="Copy Challenge Markdown"
+                  onClick={handleCopyChallengeMarkdown}
+                  className="absolute right-0 top-0.5 z-10 flex items-center justify-center h-8 w-8 rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-100 text-gray-500 hover:text-gray-800 dark:bg-gray-800/40 dark:hover:bg-gray-800 dark:border-gray-700/60 dark:text-gray-400 dark:hover:text-gray-200 transition-all duration-200"
+                >
+                  {copiedMarkdown ? (
+                    <Check size={14} className="shrink-0 text-emerald-500 dark:text-emerald-400" />
+                  ) : (
+                    <ClipboardCopy size={14} className="shrink-0" />
+                  )}
+                </button>
+                <div className="max-w-full overflow-x-auto break-words mt-1 pr-10">
                   <ChallengeDescription description={challenge.description} />
                 </div>
               </div>

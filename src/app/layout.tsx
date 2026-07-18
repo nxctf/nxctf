@@ -16,6 +16,7 @@ import { getPageMinHeightStyle, PAGE_BG_BASE_CLASS } from '@/shared/styles/page-
 import { THEME_PRIMARY_SELECTION_CLASS } from '@/shared/styles/theme-colors'
 import APP from '@/config'
 import { BASE_URL } from '@/_vars/const'
+import DonationSection from '@/shared/components/DonationSection'
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
@@ -84,6 +85,7 @@ export default async function RootLayout({
   const headersList = await headers()
   const pathname = headersList.get('x-pathname') || ''
   const isMaintenancePage = pathname === '/maintenance'
+  const isAdminPage = pathname.startsWith('/admin')
 
   return (
     <html lang="id" suppressHydrationWarning>
@@ -119,6 +121,7 @@ export default async function RootLayout({
                   <CategoriesProvider>
                     <Navbar />
                     <div className="pt-14">{children}</div>
+                    {!isAdminPage && <DonationSection />}
                     <Toaster position="top-right" reverseOrder={false} />
                     <ScrollToggle />
                   </CategoriesProvider>

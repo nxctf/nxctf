@@ -63,10 +63,11 @@ export function useFilteredChallenges({
         difficulty: 'all',
         search: '',
         feature: 'N',
+        excludedEventIds: deferredFilters.excludedEventIds,
       },
       settings: deferredFilterSettings,
     })
-  }, [challenges, deferredFilterSettings, eventId, events])
+  }, [challenges, deferredFilterSettings, eventId, events, deferredFilters.excludedEventIds])
 
   const { categories, difficulties } = useMemo(() => {
     const options = buildChallengeFilterOptions(challengesForFilterOptions, preferredOrder)

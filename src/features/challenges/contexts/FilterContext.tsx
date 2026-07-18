@@ -12,7 +12,7 @@ export type ChallengeFilters = {
   difficulty: string
   search: string
   feature: 'T' | 'S' | 'F' | 'G' | 'N'
-
+  excludedEventIds?: string[]
 }
 
 const STORAGE_KEY = 'nxctf:challengeFilters'
@@ -22,7 +22,8 @@ const defaultFilters: ChallengeFilters = {
   category: 'all',
   difficulty: 'all',
   search: '',
-  feature: 'N'
+  feature: 'N',
+  excludedEventIds: []
 }
 
 type SortMode = 'default' | 'newest'
@@ -35,6 +36,8 @@ type FilterContextValue = {
   setLayoutMode: (m: ChallengeLayoutMode | ((prev: ChallengeLayoutMode) => ChallengeLayoutMode)) => void
   sortMode: SortMode
   setSortMode: (m: SortMode | ((prev: SortMode) => SortMode)) => void
+  toggleEventExclusion: (eventId: string) => void
+  resetExcludedEvents: () => void
 }
 
 const FilterContext = React.createContext<FilterContextValue | null>(null)
@@ -48,8 +51,10 @@ function readStored(): { filters: ChallengeFilters; layoutMode: ChallengeLayoutM
     const storedFeature = parsed?.filters?.feature ?? parsed?.feature
     const normalizedFeature = storedFeature === 'T' || storedFeature === 'S' || storedFeature === 'F' || storedFeature === 'G' || storedFeature === 'N' ? storedFeature : 'N'
     const normalizedSortMode = parsed.sortMode === 'newest' ? 'newest' : 'default'
+    const parsedFilters = parsed.filters || parsed
+    const excludedEventIds = Array.isArray(parsedFilters?.excludedEventIds) ? parsedFilters.excludedEventIds : []
     return {
-      filters: { ...defaultFilters, ...(parsed.filters || parsed), feature: normalizedFeature },
+      filters: { ...defaultFilters, ...parsedFilters, feature: normalizedFeature, excludedEventIds },
       layoutMode: isChallengeLayoutMode(parsed.layoutMode)
         ? parsed.layoutMode
         : CHALLENGE_LAYOUT_MODES.GROUPED,
@@ -106,7 +111,53 @@ export function FilterProvider({ children }: { children: React.ReactNode }) {
     setFiltersState(defaultFilters)
   }, [])
 
-  const value: FilterContextValue = React.useMemo(() => ({ filters, setFilters, resetFilters, layoutMode, setLayoutMode, sortMode, setSortMode }), [filters, setFilters, resetFilters, layoutMode, setLayoutMode, sortMode, setSortMode])
+  const toggleEventExclusion = React.useCallback((eventId: string) => {
+    setFiltersState((prev) => {
+      const current = prev.excludedEventIds || []
+      const next = current.includes(eventId)
+        ? current.filter((id) => id !== eventId)
+        : [...current, eventId]
+      const nextFilters = { ...prev, excludedEventIds: next }
+      try {
+        const raw = JSON.stringify({ filters: nextFilters, layoutMode, sortMode })
+        localStorage.setItem(STORAGE_KEY, raw)
+      } catch { }
+      return nextFilters
+    })
+  }, [layoutMode, sortMode])
+
+  const resetExcludedEvents = React.useCallback(() => {
+    setFiltersState((prev) => {
+      const nextFilters = { ...prev, excludedEventIds: [] }
+      try {
+        const raw = JSON.stringify({ filters: nextFilters, layoutMode, sortMode })
+        localStorage.setItem(STORAGE_KEY, raw)
+      } catch { }
+      return nextFilters
+    })
+  }, [layoutMode, sortMode])
+
+  const value: FilterContextValue = React.useMemo(() => ({
+    filters,
+    setFilters,
+    resetFilters,
+    layoutMode,
+    setLayoutMode,
+    sortMode,
+    setSortMode,
+    toggleEventExclusion,
+    resetExcludedEvents,
+  }), [
+    filters,
+    setFilters,
+    resetFilters,
+    layoutMode,
+    setLayoutMode,
+    sortMode,
+    setSortMode,
+    toggleEventExclusion,
+    resetExcludedEvents,
+  ])
 
   return <FilterContext.Provider value={value}>{children}</FilterContext.Provider>
 }
